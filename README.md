@@ -9,9 +9,9 @@
 
    > This will list all branches in the repo
 
-3. Change your branch if you are not in the working branch "dev" already, Pull the latest from your main working branch (In our case, it'll be "dev")
-   `git checkout dev`
-   `git pull origin dev`
+3. Change your branch if you are not in the working branch "development" already, Pull the latest from your main working branch (In our case, it'll be "development")
+   `git checkout development`
+   `git pull origin development`
 
 4. Change the branch again (⚠️Dont work on "main"!)
    `git checkout -b <feature/yourname>`
