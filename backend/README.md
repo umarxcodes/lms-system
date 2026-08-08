@@ -6,88 +6,18 @@ A full-stack Learning Management System (LMS) built for Saylani Bootcamp.
 
 ```
 Saylani-Bootcamp-LMS4/
-
-## Backend Structure
-
+├── backend/          # Node.js / Express backend API
+│   ├── src/
+│   │   ├── app.js            # Express application entry point
+│   │   └── modules/
+│   │       └── auth/           # Authentication module
+│   │           ├── auth.controller.js
+│   │           ├── auth.model.js
+│   │           ├── auth.routes.js
+│   │           ├── auth.service.js
+│   │           └── auth.validation.js
+└── README.md
 ```
-backend/
-├── src/
-│   ├── config/
-│   │   ├── database.js
-│   │   └── env.js
-│   │
-│   ├── middlewares/
-│   │   ├── auth.middleware.js
-│   │   ├── role.middleware.js
-│   │   ├── error.middleware.js
-│   │   └── notFound.middleware.js
-│   │
-│   ├── modules/
-│   │   │
-│   │   ├── auth/
-│   │   │   ├── auth.controller.js
-│   │   │   ├── auth.model.js
-│   │   │   ├── auth.routes.js
-│   │   │   ├── auth.service.js
-│   │   │   └── auth.validation.js
-│   │   │
-│   │   ├── students/
-│   │   │   ├── student.controller.js
-│   │   │   ├── student.model.js
-│   │   │   ├── student.routes.js
-│   │   │   ├── student.service.js
-│   │   │   └── student.validation.js
-│   │   │
-│   │   ├── attendance/
-│   │   │   ├── attendance.controller.js
-│   │   │   ├── attendance.model.js
-│   │   │   ├── attendance.routes.js
-│   │   │   ├── attendance.service.js
-│   │   │   └── attendance.validation.js
-│   │   │
-│   │   ├── teams/
-│   │   │   ├── team.controller.js
-│   │   │   ├── team.model.js
-│   │   │   ├── team.routes.js
-│   │   │   ├── team.service.js
-│   │   │   └── team.validation.js
-│   │   │
-│   │   ├── projects/
-│   │   │   ├── project.controller.js
-│   │   │   ├── project.model.js
-│   │   │   ├── project.routes.js
-│   │   │   ├── project.service.js
-│   │   │   └── project.validation.js
-│   │   │
-│   │   ├── tasks/
-│   │   │   ├── task.controller.js
-│   │   │   ├── task.model.js
-│   │   │   ├── task.routes.js
-│   │   │   ├── task.service.js
-│   │   │   └── task.validation.js
-│   │   │
-│   │   └── dashboard/
-│   │       ├── dashboard.controller.js
-│   │       ├── dashboard.routes.js
-│   │       └── dashboard.service.js
-│   │
-│   ├── utils/
-│   │   ├── jwt.js
-│   │   ├── password.js
-│   │   ├── response.js
-│   │   └── logger.js
-│   │
-│   ├── app.js
-│   └── server.js
-│
-├── .env
-├── .env.example
-├── .gitignore
-├── package.json
-├── README.md
-└── yarn.lock
-```
-
 
 ## Features
 
