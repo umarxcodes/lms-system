@@ -18,10 +18,13 @@
    If you want to change to a branch that has already been created run
    `git checkout <feature/yourname>`
 
-5. After cloning and pullling the latest from the repo, Run this command in your branch:
+5. Merge with development branch:
+   `git merge development`
+
+6. After cloning and pullling the latest from the repo, Run this command in your branch:
    `npm install `
 
-6. Now start working on your task, once task code is done, push the code to your own branch"
+7. Now start working on your task, once task code is done, push the code to your own branch"
    `git add .`
    `git commit -m "Your task message"`
    `git add push -u origin <feature/yourname>`
@@ -29,3 +32,5 @@
    > By <feature/yourname> I mean the branch you have created already.
 
 ---
+
+After this create a PR to development
