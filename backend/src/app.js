@@ -1,13 +1,14 @@
 import express from "express";
 
-
 const app = express();
 
 app.use(express.json());
 
-
 app.get("/", (req, res) => {
-  res.send("Api is Working Fine !");
+  res.status(200).json({
+    success: true,
+    message: "Bootcamp LMS API is running",
+  });
 });
 
 export default app;
