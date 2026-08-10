@@ -1,7 +1,7 @@
 const StudentsPage = () => {
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6  bg-white ">
+    <div className="flex flex-col bg-white rounded-4xl">
+      <div className="flex flex-col rounded-4xl sm:flex-row sm:items-center justify-between gap-4 p-6  bg-white ">
         <div>
           <h1 className="text-3xl font-bold text-[#0F172A]">Students</h1>
           <p className="mt-1.5 text-base text-[#64748B]">
@@ -53,8 +53,8 @@ const StudentsPage = () => {
         {/*  */}
       </div>
 
-      <div className='fiter className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white'>
-        <div className="w-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm mt-0 gap-6">
+      <div className="flex rounded-4xl flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white">
+        <div className="w-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm -mt-5 gap-6">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
               <select className="appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
