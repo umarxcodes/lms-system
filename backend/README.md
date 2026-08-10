@@ -129,15 +129,21 @@ Supported statuses are `present`, `absent`, `leave`, and legacy-compatible `late
 
 ### Teams
 
+`Team.members` is the membership source of truth and stores linked Student User IDs. A Student can belong to one Team only. Admins manage Teams; Students can read only their own Team and its members.
+
 | Method | Endpoint | Role | Purpose |
 | --- | --- | --- | --- |
 | POST | `/api/v1/teams` | Admin | Create Team; creator is derived from JWT |
-| GET | `/api/v1/teams` | Admin | List Teams |
-| GET | `/api/v1/teams/:id` | Admin | Get Team |
+| GET | `/api/v1/teams` | Admin | List/search Teams |
+| GET | `/api/v1/teams/me` | Student | Own Team, derived from JWT |
+| GET | `/api/v1/teams/:id` | Admin / owning Student | Get Team |
 | PATCH | `/api/v1/teams/:id` | Admin | Update Team |
-| DELETE | `/api/v1/teams/:id` | Admin | Delete Team without Projects |
-| POST | `/api/v1/teams/:id/members` | Admin | Add Student User member |
+| DELETE | `/api/v1/teams/:id` | Admin | Delete Team without Projects or members |
+| POST | `/api/v1/teams/:id/members` | Admin | Add Student member |
 | DELETE | `/api/v1/teams/:id/members/:memberId` | Admin | Remove member |
+| GET | `/api/v1/teams/:id/members` | Admin / owning Student | List Team members |
+
+Create/update bodies accept only `name` and optional `description`. Member addition accepts `{ "studentId": "Student-profile ObjectId" }`; `{ "memberId": "Student User ObjectId" }` remains accepted for compatibility. `GET /api/v1/teams?search=alpha` searches Team names. Duplicate Team names, duplicate membership, and assignment to another Team return `409`.
 
 ### Projects
 
