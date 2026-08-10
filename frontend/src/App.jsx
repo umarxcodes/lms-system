@@ -5,6 +5,8 @@ import StudentsPage from "./pages/StudentsPage.jsx";
 import AttendancePage from "./pages/AttendancePage.jsx";
 import TeamsPage from "./pages/TeamsPage.jsx";
 import TasksPage from "./pages/TasksPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +18,8 @@ const router = createBrowserRouter([
       { path: "attendance", element: <AttendancePage /> },
       { path: "teams", element: <TeamsPage /> },
       { path: "tasks", element: <TasksPage /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
     ],
   },
 ]);
