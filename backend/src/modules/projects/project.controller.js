@@ -1,4 +1,4 @@
-import { createProject, getAllProjects, getProjectById, updateProjectStatus } from "./project.service.js";
+import { createProject, getAllProjects, getProjectById, updateProjectStatus, updateProject, deleteProject } from "./project.service.js";
 import { success, error } from "../../utils/response.js";
 
 export const createProjectController = async (req, res, next) => {
@@ -32,7 +32,28 @@ export const getProjectByIdController = async (req, res, next) => {
 export const updateProjectStatusController = async (req, res, next) => {
   try {
     const project = await updateProjectStatus(req.params.id, req.body.status);
-    success(res, project, "Project status updated");
+    if (!project) return error(res, "Project not found", 404);
+    return success(res, project, "Project status updated");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateProjectController = async (req, res, next) => {
+  try {
+    const project = await updateProject(req.params.id, req.body);
+    if (!project) return error(res, "Project not found", 404);
+    return success(res, project, "Project updated");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteProjectController = async (req, res, next) => {
+  try {
+    const project = await deleteProject(req.params.id);
+    if (!project) return error(res, "Project not found", 404);
+    return success(res, null, "Project deleted");
   } catch (err) {
     next(err);
   }

@@ -1,7 +1,17 @@
 import Project from "./project.model.js";
+import Team from "../teams/team.model.js";
+import Task from "../tasks/task.model.js";
+import mongoose from "mongoose";
+import { appError } from "../../utils/appError.js";
 
-export const createProject = async (data) => {
-  return await Project.create(data);
+function assertObjectId(id, label = "Id") {
+  if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
+}
+
+export const createProject = async ({ teamId, ...data }) => {
+  assertObjectId(teamId, "Team id");
+  if (!await Team.exists({ _id: teamId })) throw appError("Team not found", 404);
+  return Project.create({ ...data, team: teamId });
 };
 
 export const getAllProjects = async () => {
@@ -9,9 +19,22 @@ export const getAllProjects = async () => {
 };
 
 export const getProjectById = async (id) => {
+  assertObjectId(id, "Project id");
   return await Project.findById(id).populate("team", "name");
 };
 
 export const updateProjectStatus = async (id, status) => {
-  return await Project.findByIdAndUpdate(id, { status }, { new: true }).populate("team", "name");
+  assertObjectId(id, "Project id");
+  return Project.findByIdAndUpdate(id, { status }, { new: true, runValidators: true }).populate("team", "name");
+};
+
+export const updateProject = async (id, data) => {
+  assertObjectId(id, "Project id");
+  return Project.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("team", "name");
+};
+
+export const deleteProject = async (id) => {
+  assertObjectId(id, "Project id");
+  if (await Task.exists({ project: id })) throw appError("Project cannot be deleted while it has tasks", 409);
+  return Project.findByIdAndDelete(id);
 };

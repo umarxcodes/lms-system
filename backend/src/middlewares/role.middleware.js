@@ -1,6 +1,10 @@
-export function authorize(...roles) {
+import { error } from "../utils/response.js";
+
+export function requireRole(...roles) {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) return res.status(403).json({ success: false, message: "Not authorized" });
-    next();
+    if (!req.user || !roles.includes(req.user.role)) return error(res, "Access denied", 403);
+    return next();
   };
 }
+
+export const authorize = requireRole;

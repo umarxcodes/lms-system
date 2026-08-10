@@ -32,7 +32,7 @@ app.use("/api/v1/attendance", attendanceRoutes);
 app.use("/api/v1/teams", teamRoutes);
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/tasks", taskRoutes);
-app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/admin", dashboardRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Bootcamp LMS API is running" });
