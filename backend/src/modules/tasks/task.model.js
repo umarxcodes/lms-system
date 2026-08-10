@@ -10,4 +10,4 @@ const taskSchema = new mongoose.Schema({
   deadline: { type: Date }
 }, { timestamps: true });
 
-export default mongoose.model("Task", taskSchema);
+export default mongoose.models.Task || mongoose.model("Task", taskSchema);
