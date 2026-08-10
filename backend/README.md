@@ -101,14 +101,31 @@ The startup seed exists only to bootstrap the first trusted development Admin. I
 
 ### Attendance
 
+Attendance belongs to a Student profile. Admins manage records; Students can read only records resolved through their authenticated Student profile. One record is allowed per Student per LMS day.
+
 | Method | Endpoint | Role | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/v1/attendance/mark` | Admin | Mark Student attendance |
+| POST | `/api/v1/attendance` | Admin | Mark Student attendance |
+| POST | `/api/v1/attendance/mark` | Admin | Legacy-compatible mark endpoint |
+| GET | `/api/v1/attendance` | Admin | List/filter attendance |
+| GET | `/api/v1/attendance/me` | Student | Own attendance history |
 | GET | `/api/v1/attendance/student/:studentId` | Admin | Student attendance history |
 | GET | `/api/v1/attendance/date/:date` | Admin | Attendance for `YYYY-MM-DD` |
+| GET | `/api/v1/attendance/:id` | Admin / owning Student | Get one attendance record |
 | PATCH | `/api/v1/attendance/:id` | Admin | Update attendance record |
 
-Supported statuses are `present`, `absent`, `leave`, and legacy-compatible `late`.
+Mark attendance request:
+
+```json
+{
+  "studentId": "Student-profile ObjectId",
+  "date": "2026-08-10",
+  "status": "present",
+  "notes": "Optional"
+}
+```
+
+Supported statuses are `present`, `absent`, `leave`, and legacy-compatible `late`. Admin list filters are optional `studentId`, `status`, `date`, `startDate`, and `endDate`. Dates are normalized to the configured `DASHBOARD_TIMEZONE`; duplicate Student-plus-day submissions return `409`.
 
 ### Teams
 

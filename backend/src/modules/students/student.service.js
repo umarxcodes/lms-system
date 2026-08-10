@@ -63,7 +63,7 @@ export const deleteStudent = async (id) => {
       if (!student) throw appError("Student not found", 404);
 
       const [attendanceCount, taskCount, teamCount] = await Promise.all([
-        Attendance.countDocuments({ student: student.user }).session(session),
+        Attendance.countDocuments({ student: student._id }).session(session),
         Task.countDocuments({ assignedTo: student.user }).session(session),
         Team.countDocuments({ members: student.user }).session(session)
       ]);
