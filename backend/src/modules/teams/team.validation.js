@@ -14,3 +14,12 @@ export const updateTeamSchema = z.object({
 }).strict();
 
 export const memberSchema = z.object({ memberId: objectId }).strict();
+
+export const addMemberSchema = z.union([
+  z.object({ studentId: objectId }).strict(),
+  z.object({ memberId: objectId }).strict()
+]);
+
+export const teamQuerySchema = z.object({
+  search: z.string().trim().min(1).max(100).optional()
+}).strict();

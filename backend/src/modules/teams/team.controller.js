@@ -1,5 +1,6 @@
-import { createTeam, getAllTeams, getTeamById, addMember, removeMember, updateTeam, deleteTeam } from "./team.service.js";
+import { createTeam, getAllTeams, getMyTeam, getTeamById, getTeamMembers, resolveTeamMember, resolveTeamMemberIdentifier, addMember, removeMember, updateTeam, deleteTeam } from "./team.service.js";
 import { success, error } from "../../utils/response.js";
+import { ROLES } from "../auth/auth.model.js";
 
 export const createTeamController = async (req, res, next) => {
   try {
@@ -12,8 +13,8 @@ export const createTeamController = async (req, res, next) => {
 
 export const getAllTeamsController = async (req, res, next) => {
   try {
-    const teams = await getAllTeams();
-    success(res, teams);
+    const teams = await getAllTeams(req.validatedQuery);
+    return success(res, teams);
   } catch (err) {
     next(err);
   }
@@ -23,7 +24,10 @@ export const getTeamByIdController = async (req, res, next) => {
   try {
     const team = await getTeamById(req.params.id);
     if (!team) return error(res, "Team not found", 404);
-    success(res, team);
+    if (req.user.role === ROLES.STUDENT && !team.members.some((member) => member._id.toString() === req.user.userId)) {
+      return error(res, "Access denied", 403);
+    }
+    return success(res, team);
   } catch (err) {
     next(err);
   }
@@ -31,7 +35,8 @@ export const getTeamByIdController = async (req, res, next) => {
 
 export const addMemberController = async (req, res, next) => {
   try {
-    const team = await addMember(req.params.id, req.body.memberId);
+    const memberId = await resolveTeamMember(req.body);
+    const team = await addMember(req.params.id, memberId);
     if (!team) return error(res, "Team not found", 404);
     return success(res, team, "Member added");
   } catch (err) {
@@ -39,9 +44,33 @@ export const addMemberController = async (req, res, next) => {
   }
 };
 
+export const getMyTeamController = async (req, res, next) => {
+  try {
+    const team = await getMyTeam(req.user.userId);
+    if (!team) return error(res, "Team not found", 404);
+    return success(res, team);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTeamMembersController = async (req, res, next) => {
+  try {
+    const team = await getTeamMembers(req.params.id);
+    if (!team) return error(res, "Team not found", 404);
+    if (req.user.role === ROLES.STUDENT && !team.members.some((member) => member._id.toString() === req.user.userId)) {
+      return error(res, "Access denied", 403);
+    }
+    return success(res, team.members);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const removeMemberController = async (req, res, next) => {
   try {
-    const team = await removeMember(req.params.id, req.params.memberId);
+    const memberId = await resolveTeamMemberIdentifier(req.params.memberId);
+    const team = await removeMember(req.params.id, memberId);
     if (!team) return error(res, "Team not found", 404);
     return success(res, team, "Member removed");
   } catch (err) {
