@@ -19,7 +19,7 @@ The Bootcamp LMS backend provides role-based administration for Students, Attend
 src/
   config/          environment and database connection
   middlewares/     authentication, authorization, errors
-  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard)
+  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard, reports)
   services/        startup services, including initial Admin seeding
   utils/           JWT, password, response, and error helpers
   app.js           Express configuration and route registration
@@ -211,6 +211,25 @@ Student Portal endpoints reuse the existing Student, Attendance, Team, Project, 
 | GET | `/api/v1/tasks/my-assigned` | Student | Authorized Tasks assigned to the Student |
 
 The dashboard's attendance summary exposes the existing `present`, `absent`, `leave`, and `late` counts plus a total. It intentionally does not calculate attendance percentage or Progress because neither has a documented calculation rule or dedicated data model. Project and Task detail endpoints also perform server-side Team ownership checks.
+
+## Progress and Reports
+
+Reports aggregate the existing Attendance, Student, Team, Project, and Task data; they do not introduce duplicate records or calculated fields on Project or Task documents. All administrative report routes require an Admin JWT. `GET /api/v1/reports/me` is Student-only and derives the Student profile from the verified JWT.
+
+| Method | Endpoint | Role | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/reports/attendance` | Admin | Attendance records and status totals |
+| GET | `/api/v1/reports/attendance/export.csv` | Admin | Download attendance CSV, compatible with Excel |
+| GET | `/api/v1/reports/assignments` | Admin | Task-assignment records and Task status totals |
+| GET | `/api/v1/reports/assignments/export.csv` | Admin | Download task-assignment CSV, compatible with Excel |
+| GET | `/api/v1/reports/students/:studentId` | Admin | One Student's attendance, Team, Projects, and Task status counts |
+| GET | `/api/v1/reports/me` | Student | Authenticated Student's own progress report |
+
+Attendance report query parameters are optional `studentId`, `status`, `date`, `startDate`, and `endDate`. Assignment report query parameters are optional `projectId`, `assignedTo` (Student User ObjectId), `status`, and `priority`. All query parameters are strictly validated.
+
+Progress consists of existing, directly measurable counts: attendance by its stored status and Tasks by `todo`, `in-progress`, and `done`, including the number assigned to the reported Student. Attendance percentage is intentionally not calculated because the application has no documented policy for whether `late` or `leave` count as attended. Likewise, no Project percentage is persisted or inferred from Task counts.
+
+Quiz reports are unavailable because there is no Quiz, Assignment-submission, or grading data model. The application exports CSV files that Excel can open; true `.xlsx` and PDF exports are not implemented because no export library or output format is configured.
 
 ## Testing
 
