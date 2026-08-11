@@ -11,6 +11,9 @@ function assertObjectId(id, label = "Id") {
 export const createProject = async ({ teamId, ...data }) => {
   assertObjectId(teamId, "Team id");
   if (!await Team.exists({ _id: teamId })) throw appError("Team not found", 404);
+  if (await Project.exists({ team: teamId })) {
+    throw appError("This team already has a project", 409);
+  }
   return Project.create({ ...data, team: teamId });
 };
 
@@ -21,6 +24,20 @@ export const getAllProjects = async () => {
 export const getProjectById = async (id) => {
   assertObjectId(id, "Project id");
   return await Project.findById(id).populate("team", "name");
+};
+
+export const getMyProjects = async (userId) => {
+  assertObjectId(userId, "User id");
+  const team = await Team.findOne({ members: userId }).select("_id");
+  if (!team) throw appError("You are not assigned to a team", 404);
+
+  return Project.find({ team: team._id }).populate("team", "name");
+};
+
+export const userOwnsProject = async (project, userId) => {
+  assertObjectId(userId, "User id");
+  const teamId = project.team?._id || project.team;
+  return Boolean(teamId && await Team.exists({ _id: teamId, members: userId }));
 };
 
 export const updateProjectStatus = async (id, status) => {

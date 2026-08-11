@@ -147,11 +147,18 @@ Create/update bodies accept only `name` and optional `description`. Member addit
 
 ### Projects
 
+Project Management connects one Team to one Project. Admins create and manage Projects; Students have read-only access to the Project associated with the Team derived from their verified JWT. Project data includes `title`, optional `description`, `team`, `status`, and optional ISO-8601 `deadline`. Supported statuses are `pending`, `in-progress`, and `completed`.
+
+`GET /api/v1/projects/me` never accepts a Team ID from the client. The API resolves Team membership from `Team.members`, while `GET /api/v1/projects/:id` verifies that the requested Project's Team contains the authenticated Student. These checks prevent cross-Team IDOR access. Project creation rejects an unknown Team and a Team that already has a Project. Updates use strict allow-listed validation, so Team ownership and internal fields cannot be mass assigned.
+
+Tasks reference Projects. A Project cannot be deleted while Tasks reference it; the API does not perform undocumented cascade deletion. Archiving, start dates, and calculated progress are not implemented because the current Project schema does not define them.
+
 | Method | Endpoint | Role | Purpose |
 | --- | --- | --- | --- |
 | POST | `/api/v1/projects` | Admin | Create Project for Team |
 | GET | `/api/v1/projects` | Admin | List Projects |
-| GET | `/api/v1/projects/:id` | Admin | Get Project |
+| GET | `/api/v1/projects/me` | Student | List Projects for the authenticated student's Team |
+| GET | `/api/v1/projects/:id` | Admin / Student | Admin can view any Project; Students can view only their Team's Project |
 | PATCH | `/api/v1/projects/:id` | Admin | Update Project |
 | PATCH | `/api/v1/projects/:id/status` | Admin | Update Project status |
 | DELETE | `/api/v1/projects/:id` | Admin | Delete Project without Tasks |
@@ -174,6 +181,7 @@ Create/update bodies accept only `name` and optional `description`. Member addit
 - JWT verification is required before all protected routes.
 - `requireRole` enforces role-based authorization.
 - Student identity is resolved from verified JWT claims, not request-supplied Student IDs.
+- Student Project reads verify Team membership server-side to prevent cross-Team IDOR access.
 - Admin creation is restricted to the trusted environment-driven seed.
 - Deletion blocks when documented related records would be left inconsistent; no undocumented cascade deletion is performed.
 

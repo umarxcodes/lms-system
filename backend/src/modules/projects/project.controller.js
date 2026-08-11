@@ -1,4 +1,5 @@
-import { createProject, getAllProjects, getProjectById, updateProjectStatus, updateProject, deleteProject } from "./project.service.js";
+import { ROLES } from "../auth/auth.model.js";
+import { createProject, getAllProjects, getProjectById, getMyProjects, userOwnsProject, updateProjectStatus, updateProject, deleteProject } from "./project.service.js";
 import { success, error } from "../../utils/response.js";
 
 export const createProjectController = async (req, res, next) => {
@@ -23,7 +24,19 @@ export const getProjectByIdController = async (req, res, next) => {
   try {
     const project = await getProjectById(req.params.id);
     if (!project) return error(res, "Project not found", 404);
+    if (req.user.role === ROLES.STUDENT && !await userOwnsProject(project, req.user.userId)) {
+      return error(res, "You do not have access to this project", 403);
+    }
     success(res, project);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyProjectsController = async (req, res, next) => {
+  try {
+    const projects = await getMyProjects(req.user.userId);
+    success(res, projects);
   } catch (err) {
     next(err);
   }
