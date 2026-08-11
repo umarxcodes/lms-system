@@ -55,7 +55,7 @@ export const getUnreadNotificationCount = async (userId) => {
 export const markNotificationAsRead = async (id, userId) => {
   assertObjectId(id, "Notification id");
   assertObjectId(userId, "Authenticated user id");
-  const notification = await Notification.findOneAndUpdate({ _id: id, recipient: userId }, { isRead: true }, { new: true, runValidators: true });
+  const notification = await Notification.findOneAndUpdate({ _id: id, recipient: userId }, { isRead: true }, { returnDocument: "after", runValidators: true });
   if (!notification) throw appError("Notification not found", 404);
   return notification;
 };

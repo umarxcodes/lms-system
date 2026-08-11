@@ -59,14 +59,14 @@ export const userOwnsProject = async (project, userId) => {
 
 export const updateProjectStatus = async (id, status) => {
   assertObjectId(id, "Project id");
-  const project = await Project.findByIdAndUpdate(id, { status }, { new: true, runValidators: true }).populate("team", "name");
+  const project = await Project.findByIdAndUpdate(id, { status }, { returnDocument: "after", runValidators: true }).populate("team", "name");
   if (project) await notifyProjectTeam(project, "Project status updated", `The status of ${project.title} is now ${project.status}.`);
   return project;
 };
 
 export const updateProject = async (id, data) => {
   assertObjectId(id, "Project id");
-  const project = await Project.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("team", "name");
+  const project = await Project.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("team", "name");
   if (project) await notifyProjectTeam(project, "Project updated", `Project details for ${project.title} were updated.`);
   return project;
 };

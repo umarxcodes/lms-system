@@ -27,7 +27,7 @@ export const createStudent = async (data) => {
       user.student = createdStudent._id;
       await user.save({ session });
     });
-    return createdStudent.populate("user", "name email role");
+    return Student.findById(createdStudent._id).populate("user", "name email role");
   } catch (err) {
     if (err?.code === 11000) throw appError("A student with this email or roll number already exists", 409);
     throw err;
@@ -51,7 +51,7 @@ export const getAuthenticatedStudent = async (userId) => {
 
 export const updateStudent = async (id, data) => {
   assertObjectId(id);
-  return await Student.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("user", "name email");
+  return await Student.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("user", "name email");
 };
 
 export const deleteStudent = async (id) => {

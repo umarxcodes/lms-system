@@ -71,7 +71,7 @@ export const addMember = async (id, memberId) => {
     throw appError("Student is already a member of this Team", 409);
   }
   await assertUsersAreUnassigned([memberId]);
-  return Team.findByIdAndUpdate(id, { $addToSet: { members: memberId } }, { new: true, runValidators: true }).populate("members", "name email");
+  return Team.findByIdAndUpdate(id, { $addToSet: { members: memberId } }, { returnDocument: "after", runValidators: true }).populate("members", "name email");
 };
 
 export const removeMember = async (id, memberId) => {
@@ -82,13 +82,13 @@ export const removeMember = async (id, memberId) => {
   if (!team.members.some((member) => member.toString() === memberId.toString())) {
     throw appError("Student is not a member of this Team", 404);
   }
-  return Team.findByIdAndUpdate(id, { $pull: { members: memberId } }, { new: true, runValidators: true }).populate("members", "name email");
+  return Team.findByIdAndUpdate(id, { $pull: { members: memberId } }, { returnDocument: "after", runValidators: true }).populate("members", "name email");
 };
 
 export const updateTeam = async (id, data) => {
   assertObjectId(id, "Team id");
   try {
-    return await Team.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("createdBy", "name email").populate("members", "name email");
+    return await Team.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("createdBy", "name email").populate("members", "name email");
   } catch (err) {
     if (err?.code === 11000) throw appError("A Team with this name already exists", 409);
     throw err;

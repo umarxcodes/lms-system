@@ -253,4 +253,13 @@ There is no Quiz module, Assignment-submission module, scheduled-job system, or 
 
 ## Testing
 
-No automated test framework is currently configured. Verify endpoints against a test MongoDB database using the route tables above. At minimum test valid/invalid login, JWT failures, Student/Admin authorization, Student ownership, CRUD validation, relationship constraints, and dashboard aggregate values.
+The repository includes a database-backed API smoke test that creates dummy data in a dedicated MongoDB database, verifies authentication, RBAC, Student ownership, CRUD paths, reports, notifications, CSV exports, and cleanup behavior, then drops that test database.
+
+Never point this test at a shared or production database. `TEST_MONGO_URI` must use a database name beginning with `bootcamp_lms_api_test_`.
+
+```bash
+cd backend
+TEST_MONGO_URI='mongodb+srv://.../bootcamp_lms_api_test_local' yarn test:api
+```
+
+The script does not read or modify `MONGO_URI`; it requires the explicit test-only environment variable as a safety boundary. It can be used in CI with a disposable MongoDB database.

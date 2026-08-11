@@ -95,7 +95,7 @@ export const updateAttendance = async (id, data) => {
     update.date = day.start;
   }
   try {
-    return await Attendance.findByIdAndUpdate(id, update, { new: true, runValidators: true }).populate(studentPopulation);
+    return await Attendance.findByIdAndUpdate(id, update, { returnDocument: "after", runValidators: true }).populate(studentPopulation);
   } catch (err) {
     if (err?.code === 11000) throw appError("Attendance is already marked for this Student on this date", 409);
     throw err;

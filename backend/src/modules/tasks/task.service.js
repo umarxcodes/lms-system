@@ -85,7 +85,7 @@ export const userOwnsTask = async (task, userId) => {
 
 export const updateTaskStatus = async (id, status) => {
   assertObjectId(id, "Task id");
-  return Task.findByIdAndUpdate(id, { status }, { new: true, runValidators: true }).populate("project", "title").populate("assignedTo", "name email");
+  return Task.findByIdAndUpdate(id, { status }, { returnDocument: "after", runValidators: true }).populate("project", "title").populate("assignedTo", "name email");
 };
 
 export const assignTask = async (id, userId) => {
@@ -94,7 +94,7 @@ export const assignTask = async (id, userId) => {
   if (!task) return null;
   const project = await getProject(task.project);
   await assertStudentBelongsToProjectTeam(userId, project);
-  const updatedTask = await Task.findByIdAndUpdate(id, { assignedTo: userId }, { new: true, runValidators: true }).populate("assignedTo", "name email");
+  const updatedTask = await Task.findByIdAndUpdate(id, { assignedTo: userId }, { returnDocument: "after", runValidators: true }).populate("assignedTo", "name email");
   if (updatedTask) {
     await createNotification({
       recipient: userId,
@@ -110,7 +110,7 @@ export const assignTask = async (id, userId) => {
 
 export const updateTask = async (id, data) => {
   assertObjectId(id, "Task id");
-  return Task.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("project", "title").populate("assignedTo", "name email");
+  return Task.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("project", "title").populate("assignedTo", "name email");
 };
 
 export const deleteTask = async (id) => {
