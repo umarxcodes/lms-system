@@ -4,6 +4,7 @@ import Team from "../teams/team.model.js";
 import User, { ROLES } from "../auth/auth.model.js";
 import mongoose from "mongoose";
 import { appError } from "../../utils/appError.js";
+import { createNotification } from "../notifications/notification.service.js";
 
 function assertObjectId(id, label = "Id") {
   if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
@@ -41,7 +42,18 @@ async function getStudentProjectIds(userId) {
 export const createTask = async ({ projectId, assignedTo, ...data }) => {
   const project = await getProject(projectId);
   await assertStudentBelongsToProjectTeam(assignedTo, project);
-  return Task.create({ ...data, project: projectId, assignedTo });
+  const task = await Task.create({ ...data, project: projectId, assignedTo });
+  if (assignedTo) {
+    await createNotification({
+      recipient: assignedTo,
+      type: "ASSIGNMENT",
+      title: "New task assigned",
+      message: `You have been assigned the task: ${task.title}.`,
+      relatedEntity: "Task",
+      relatedEntityId: task._id
+    });
+  }
+  return task;
 };
 
 export const getAllTasks = async () => {
@@ -82,7 +94,18 @@ export const assignTask = async (id, userId) => {
   if (!task) return null;
   const project = await getProject(task.project);
   await assertStudentBelongsToProjectTeam(userId, project);
-  return Task.findByIdAndUpdate(id, { assignedTo: userId }, { new: true, runValidators: true }).populate("assignedTo", "name email");
+  const updatedTask = await Task.findByIdAndUpdate(id, { assignedTo: userId }, { new: true, runValidators: true }).populate("assignedTo", "name email");
+  if (updatedTask) {
+    await createNotification({
+      recipient: userId,
+      type: "ASSIGNMENT",
+      title: "Task assigned",
+      message: `You have been assigned the task: ${updatedTask.title}.`,
+      relatedEntity: "Task",
+      relatedEntityId: updatedTask._id
+    });
+  }
+  return updatedTask;
 };
 
 export const updateTask = async (id, data) => {
