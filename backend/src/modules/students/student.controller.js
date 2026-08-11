@@ -1,4 +1,5 @@
 import { createStudent, getAllStudents, getStudentById, getAuthenticatedStudent, updateStudent, deleteStudent } from "./student.service.js";
+import { getStudentDashboard } from "./studentPortal.service.js";
 import { success, error } from "../../utils/response.js";
 import { ROLES } from "../auth/auth.model.js";
 
@@ -38,6 +39,15 @@ export const getMyStudentProfileController = async (req, res, next) => {
     const student = await getAuthenticatedStudent(req.user.userId);
     if (!student) return error(res, "Student profile not found", 404);
     return success(res, student);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getStudentDashboardController = async (req, res, next) => {
+  try {
+    const dashboard = await getStudentDashboard(req.user.userId);
+    return success(res, dashboard);
   } catch (err) {
     next(err);
   }

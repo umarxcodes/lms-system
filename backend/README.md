@@ -196,6 +196,22 @@ Create body: `{ "title": "Build authentication", "projectId": "Project ObjectId"
 - Admin creation is restricted to the trusted environment-driven seed.
 - Deletion blocks when documented related records would be left inconsistent; no undocumented cascade deletion is performed.
 
+## Student Portal
+
+Student Portal endpoints reuse the existing Student, Attendance, Team, Project, and Task modules. Every endpoint requires a Student JWT and resolves identity from its verified `userId`; no endpoint accepts a client-supplied Student or Team ID as ownership proof.
+
+| Method | Endpoint | Role | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/students/me` | Student | Own profile |
+| GET | `/api/v1/students/dashboard` | Student | Own profile, attendance summary, Team, Projects, Tasks, and assigned Tasks |
+| GET | `/api/v1/attendance/me` | Student | Own attendance records |
+| GET | `/api/v1/teams/me` | Student | Own Team and safe member details |
+| GET | `/api/v1/projects/me` | Student | Own Team's Projects |
+| GET | `/api/v1/tasks/me` | Student | Tasks accessible through own Team Projects |
+| GET | `/api/v1/tasks/my-assigned` | Student | Authorized Tasks assigned to the Student |
+
+The dashboard's attendance summary exposes the existing `present`, `absent`, `leave`, and `late` counts plus a total. It intentionally does not calculate attendance percentage or Progress because neither has a documented calculation rule or dedicated data model. Project and Task detail endpoints also perform server-side Team ownership checks.
+
 ## Testing
 
 No automated test framework is currently configured. Verify endpoints against a test MongoDB database using the route tables above. At minimum test valid/invalid login, JWT failures, Student/Admin authorization, Student ownership, CRUD validation, relationship constraints, and dashboard aggregate values.

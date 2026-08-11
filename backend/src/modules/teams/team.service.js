@@ -106,7 +106,7 @@ export const deleteTeam = async (id) => {
 
 export const getMyTeam = async (userId) => {
   assertObjectId(userId, "Authenticated user id");
-  return Team.findOne({ members: userId }).populate("createdBy", "name email").populate("members", "name email");
+  return Team.findOne({ members: userId }).select("name description members createdAt updatedAt").populate("members", "name email");
 };
 
 export const getTeamMembers = async (id) => {

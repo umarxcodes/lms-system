@@ -27,6 +27,11 @@ export const getTeamByIdController = async (req, res, next) => {
     if (req.user.role === ROLES.STUDENT && !team.members.some((member) => member._id.toString() === req.user.userId)) {
       return error(res, "Access denied", 403);
     }
+    if (req.user.role === ROLES.STUDENT) {
+      const studentTeam = team.toObject();
+      delete studentTeam.createdBy;
+      return success(res, studentTeam);
+    }
     return success(res, team);
   } catch (err) {
     next(err);
