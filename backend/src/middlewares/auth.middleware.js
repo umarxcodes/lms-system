@@ -1,7 +1,8 @@
 import { verifyToken } from "../utils/jwt.js";
 import { error } from "../utils/response.js";
+import User from "../modules/auth/auth.model.js";
 
-export function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   const authorization = req.get("authorization");
   if (!authorization || !authorization.startsWith("Bearer ")) return error(res, "Authentication required", 401);
 
@@ -11,7 +12,9 @@ export function authenticate(req, res, next) {
   try {
     const payload = verifyToken(token);
     if (!payload.userId || !payload.role) return error(res, "Authentication required", 401);
-    req.user = { userId: payload.userId, role: payload.role };
+    const user = await User.findById(payload.userId).select("role").lean();
+    if (!user || user.role !== payload.role) return error(res, "Authentication required", 401);
+    req.user = { userId: user._id.toString(), role: user.role };
     return next();
   } catch (err) {
     return error(res, "Authentication required", 401);
