@@ -3,9 +3,24 @@ import Team from "../teams/team.model.js";
 import Task from "../tasks/task.model.js";
 import mongoose from "mongoose";
 import { appError } from "../../utils/appError.js";
+import { createNotifications } from "../notifications/notification.service.js";
 
 function assertObjectId(id, label = "Id") {
   if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
+}
+
+async function notifyProjectTeam(project, title, message) {
+  const teamId = project.team?._id || project.team;
+  const team = await Team.findById(teamId).select("members");
+  if (!team?.members.length) return;
+  await createNotifications({
+    recipientIds: team.members,
+    type: "PROJECT",
+    title,
+    message,
+    relatedEntity: "Project",
+    relatedEntityId: project._id
+  });
 }
 
 export const createProject = async ({ teamId, ...data }) => {
@@ -14,7 +29,9 @@ export const createProject = async ({ teamId, ...data }) => {
   if (await Project.exists({ team: teamId })) {
     throw appError("This team already has a project", 409);
   }
-  return Project.create({ ...data, team: teamId });
+  const project = await Project.create({ ...data, team: teamId });
+  await notifyProjectTeam(project, "New project assigned", `Your Team has been assigned the project: ${project.title}.`);
+  return project;
 };
 
 export const getAllProjects = async () => {
@@ -42,12 +59,16 @@ export const userOwnsProject = async (project, userId) => {
 
 export const updateProjectStatus = async (id, status) => {
   assertObjectId(id, "Project id");
-  return Project.findByIdAndUpdate(id, { status }, { new: true, runValidators: true }).populate("team", "name");
+  const project = await Project.findByIdAndUpdate(id, { status }, { new: true, runValidators: true }).populate("team", "name");
+  if (project) await notifyProjectTeam(project, "Project status updated", `The status of ${project.title} is now ${project.status}.`);
+  return project;
 };
 
 export const updateProject = async (id, data) => {
   assertObjectId(id, "Project id");
-  return Project.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("team", "name");
+  const project = await Project.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate("team", "name");
+  if (project) await notifyProjectTeam(project, "Project updated", `Project details for ${project.title} were updated.`);
+  return project;
 };
 
 export const deleteProject = async (id) => {

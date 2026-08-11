@@ -19,7 +19,7 @@ The Bootcamp LMS backend provides role-based administration for Students, Attend
 src/
   config/          environment and database connection
   middlewares/     authentication, authorization, errors
-  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard, reports)
+  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard, reports, notifications)
   services/        startup services, including initial Admin seeding
   utils/           JWT, password, response, and error helpers
   app.js           Express configuration and route registration
@@ -230,6 +230,26 @@ Attendance report query parameters are optional `studentId`, `status`, `date`, `
 Progress consists of existing, directly measurable counts: attendance by its stored status and Tasks by `todo`, `in-progress`, and `done`, including the number assigned to the reported Student. Attendance percentage is intentionally not calculated because the application has no documented policy for whether `late` or `leave` count as attended. Likewise, no Project percentage is persisted or inferred from Task counts.
 
 Quiz reports are unavailable because there is no Quiz, Assignment-submission, or grading data model. The application exports CSV files that Excel can open; true `.xlsx` and PDF exports are not implemented because no export library or output format is configured.
+
+## Notifications
+
+Notifications are stored per recipient User and use the documented stable types: `ANNOUNCEMENT`, `ASSIGNMENT`, `QUIZ`, and `PROJECT`. The response includes `type`, `title`, `message`, `isRead`, and `createdAt`; the frontend uses these fields to render its icon, unread indicator, and Today/Earlier grouping. The API defaults to newest-first ordering and never stores a time-dependent display group.
+
+| Method | Endpoint | Role | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/notifications/announcements` | Admin | Send an announcement to explicitly selected Student Users |
+| GET | `/api/v1/notifications/me` | Student | Paginated own notifications |
+| GET | `/api/v1/notifications/unread` | Student | Paginated own unread notifications |
+| GET | `/api/v1/notifications/unread/count` | Student | Own unread count |
+| PATCH | `/api/v1/notifications/read-all` | Student | Mark all own unread notifications as read |
+| PATCH | `/api/v1/notifications/:id/read` | Student | Mark one own notification as read |
+| DELETE | `/api/v1/notifications/:id` | Student | Delete one own notification |
+
+List endpoints accept optional `page` (default `1`), `limit` (default `20`, maximum `100`), and `type`. They return `{ items, pagination }`. Announcement creation accepts `{ "title": "...", "message": "...", "recipientIds": ["Student User ObjectId"] }`; it intentionally requires explicit recipients rather than assuming a system-wide broadcast.
+
+Project creation, Project updates/status changes, and Task assignment use the Notification service to create supported alerts. Project alerts are sent to the Project Team members; assignment alerts are sent to the assigned Student User. Student notification reads and mutations query by both notification ID and verified JWT recipient, preventing IDOR and recipient manipulation.
+
+There is no Quiz module, Assignment-submission module, scheduled-job system, or Student notification-preferences model. Therefore, Quiz alerts, deadline reminders, and preference management are not implemented.
 
 ## Testing
 
