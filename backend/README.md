@@ -165,15 +165,25 @@ Tasks reference Projects. A Project cannot be deleted while Tasks reference it; 
 
 ### Tasks
 
+Tasks belong to one Project, and Projects belong to Teams. Admins can create, update, assign, change status, and delete Tasks. A Task may be assigned to one Student User; assignment is accepted only when that User has the `STUDENT` role and belongs to the Project's Team. This prevents cross-Team assignments.
+
+Students have read-only Task access. `GET /api/v1/tasks/me` returns all Tasks for Projects owned by the authenticated Student's Team, while `GET /api/v1/tasks/my-assigned` returns only the subset assigned to that Student. `GET /api/v1/tasks/:id` uses the same server-side Team/Project ownership check and rejects another Team's Task with `403`. No Student Task update endpoint is implemented because the current requirements do not define Student-editable Task fields.
+
+Task fields are `title`, optional `description`, `project`, optional `assignedTo`, `status`, `priority`, and optional ISO-8601 `deadline`. Statuses are `todo`, `in-progress`, and `done`; priorities are `low`, `medium`, and `high`. Progress and archiving are not implemented because they are not defined in the Task model. All task write bodies use strict allow-listed validation.
+
 | Method | Endpoint | Role | Purpose |
 | --- | --- | --- | --- |
 | POST | `/api/v1/tasks` | Admin | Create Task for Project |
 | GET | `/api/v1/tasks` | Admin | List Tasks |
-| GET | `/api/v1/tasks/:id` | Admin | Get Task |
+| GET | `/api/v1/tasks/me` | Student | List Tasks for the authenticated Student's Team Projects |
+| GET | `/api/v1/tasks/my-assigned` | Student | List authorized Tasks assigned to the authenticated Student |
+| GET | `/api/v1/tasks/:id` | Admin / owning Student | Get Task |
 | PATCH | `/api/v1/tasks/:id` | Admin | Update Task |
 | PATCH | `/api/v1/tasks/:id/status` | Admin | Update Task status |
 | PATCH | `/api/v1/tasks/:id/assign` | Admin | Assign to Student User |
 | DELETE | `/api/v1/tasks/:id` | Admin | Delete Task |
+
+Create body: `{ "title": "Build authentication", "projectId": "Project ObjectId", "assignedTo": "Student User ObjectId" }`. Assignment uses `{ "userId": "Student User ObjectId" }`. Invalid IDs, unknown Projects or Students, invalid statuses/priorities/dates, unknown body fields, and cross-Team assignments are rejected with client errors.
 
 ## Security
 
@@ -182,6 +192,7 @@ Tasks reference Projects. A Project cannot be deleted while Tasks reference it; 
 - `requireRole` enforces role-based authorization.
 - Student identity is resolved from verified JWT claims, not request-supplied Student IDs.
 - Student Project reads verify Team membership server-side to prevent cross-Team IDOR access.
+- Student Task reads derive Team ownership from the verified JWT and the Task Project, preventing cross-Team IDOR access.
 - Admin creation is restricted to the trusted environment-driven seed.
 - Deletion blocks when documented related records would be left inconsistent; no undocumented cascade deletion is performed.
 

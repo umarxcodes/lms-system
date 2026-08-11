@@ -1,5 +1,6 @@
 import Task from "./task.model.js";
 import Project from "../projects/project.model.js";
+import Team from "../teams/team.model.js";
 import User, { ROLES } from "../auth/auth.model.js";
 import mongoose from "mongoose";
 import { appError } from "../../utils/appError.js";
@@ -14,10 +15,32 @@ async function assertStudentUser(userId) {
   if (!await User.exists({ _id: userId, role: ROLES.STUDENT })) throw appError("Student not found", 404);
 }
 
-export const createTask = async ({ projectId, assignedTo, ...data }) => {
+async function getProject(projectId) {
   assertObjectId(projectId, "Project id");
-  if (!await Project.exists({ _id: projectId })) throw appError("Project not found", 404);
-  await assertStudentUser(assignedTo);
+  const project = await Project.findById(projectId).select("team");
+  if (!project) throw appError("Project not found", 404);
+  return project;
+}
+
+async function assertStudentBelongsToProjectTeam(userId, project) {
+  if (!userId) return;
+  await assertStudentUser(userId);
+  if (!await Team.exists({ _id: project.team, members: userId })) {
+    throw appError("Assigned student must belong to the project's team", 400);
+  }
+}
+
+async function getStudentProjectIds(userId) {
+  assertObjectId(userId, "User id");
+  const team = await Team.findOne({ members: userId }).select("_id");
+  if (!team) throw appError("You are not assigned to a team", 404);
+  const projects = await Project.find({ team: team._id }).select("_id");
+  return projects.map((project) => project._id);
+}
+
+export const createTask = async ({ projectId, assignedTo, ...data }) => {
+  const project = await getProject(projectId);
+  await assertStudentBelongsToProjectTeam(assignedTo, project);
   return Task.create({ ...data, project: projectId, assignedTo });
 };
 
@@ -27,7 +50,25 @@ export const getAllTasks = async () => {
 
 export const getTaskById = async (id) => {
   assertObjectId(id, "Task id");
-  return await Task.findById(id).populate("project", "title").populate("assignedTo", "name email");
+  return await Task.findById(id).populate("project", "title team").populate("assignedTo", "name email");
+};
+
+export const getMyTasks = async (userId) => {
+  const projectIds = await getStudentProjectIds(userId);
+  return Task.find({ project: { $in: projectIds } }).populate("project", "title").populate("assignedTo", "name email");
+};
+
+export const getMyAssignedTasks = async (userId) => {
+  const projectIds = await getStudentProjectIds(userId);
+  return Task.find({ assignedTo: userId, project: { $in: projectIds } })
+    .populate("project", "title")
+    .populate("assignedTo", "name email");
+};
+
+export const userOwnsTask = async (task, userId) => {
+  assertObjectId(userId, "User id");
+  const projectTeamId = task.project?.team;
+  return Boolean(projectTeamId && await Team.exists({ _id: projectTeamId, members: userId }));
 };
 
 export const updateTaskStatus = async (id, status) => {
@@ -37,7 +78,10 @@ export const updateTaskStatus = async (id, status) => {
 
 export const assignTask = async (id, userId) => {
   assertObjectId(id, "Task id");
-  await assertStudentUser(userId);
+  const task = await Task.findById(id).select("project");
+  if (!task) return null;
+  const project = await getProject(task.project);
+  await assertStudentBelongsToProjectTeam(userId, project);
   return Task.findByIdAndUpdate(id, { assignedTo: userId }, { new: true, runValidators: true }).populate("assignedTo", "name email");
 };
 
