@@ -2,7 +2,7 @@ import express from "express";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { requireRole } from "../../middlewares/role.middleware.js";
 import { ROLES } from "../auth/auth.model.js";
-import { createTaskController, getAllTasksController, getTaskByIdController, updateTaskStatusController, assignTaskController, updateTaskController, deleteTaskController } from "./task.controller.js";
+import { createTaskController, getAllTasksController, getMyTasksController, getMyAssignedTasksController, getTaskByIdController, updateTaskStatusController, assignTaskController, updateTaskController, deleteTaskController } from "./task.controller.js";
 import { createTaskSchema, updateTaskSchema, updateTaskStatusSchema, assignTaskSchema } from "./task.validation.js";
 
 const validate = (schema) => (req, res, next) => {
@@ -18,7 +18,9 @@ const router = express.Router();
 
 router.post("/", authenticate, requireRole(ROLES.ADMIN), validate(createTaskSchema), createTaskController);
 router.get("/", authenticate, requireRole(ROLES.ADMIN), getAllTasksController);
-router.get("/:id", authenticate, requireRole(ROLES.ADMIN), getTaskByIdController);
+router.get("/me", authenticate, requireRole(ROLES.STUDENT), getMyTasksController);
+router.get("/my-assigned", authenticate, requireRole(ROLES.STUDENT), getMyAssignedTasksController);
+router.get("/:id", authenticate, requireRole(ROLES.ADMIN, ROLES.STUDENT), getTaskByIdController);
 router.patch("/:id/status", authenticate, requireRole(ROLES.ADMIN), validate(updateTaskStatusSchema), updateTaskStatusController);
 router.patch("/:id/assign", authenticate, requireRole(ROLES.ADMIN), validate(assignTaskSchema), assignTaskController);
 router.patch("/:id", authenticate, requireRole(ROLES.ADMIN), validate(updateTaskSchema), updateTaskController);
