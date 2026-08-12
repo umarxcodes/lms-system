@@ -19,7 +19,7 @@ The Bootcamp LMS backend provides role-based administration for Students, Attend
 src/
   config/          environment and database connection
   middlewares/     authentication, authorization, errors
-  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard, reports, notifications)
+  modules/         feature modules (auth, students, attendance, teams, projects, tasks, dashboard, reports, notifications, settings)
   services/        startup services, including initial Admin seeding
   utils/           JWT, password, response, and error helpers
   app.js           Express configuration and route registration
@@ -85,6 +85,23 @@ The startup seed exists only to bootstrap the first trusted development Admin. I
 | Method | Endpoint | Role | Purpose |
 | --- | --- | --- | --- |
 | GET | `/api/v1/admin/dashboard` | Admin | Database-derived LMS summary |
+
+### Admin Settings
+
+Admin Settings endpoints require an Admin JWT and derive ownership from the authenticated token. Students receive `403`, and unauthenticated requests receive `401`. Profile and password operations reuse the existing `User` model; application and notification preferences are stored in one Admin-owned Settings document. Secrets such as `JWT_SECRET`, `MONGO_URI`, password hashes, tokens, and environment variables are never returned or editable through Settings.
+
+| Method | Endpoint | Role | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/settings/profile` | Admin | Safe Admin profile |
+| PATCH | `/api/v1/settings/profile` | Admin | Update Admin `name` and/or `email` |
+| PATCH | `/api/v1/settings/password` | Admin | Change password using current password verification |
+| GET | `/api/v1/settings/application` | Admin | Admin application preferences |
+| PATCH | `/api/v1/settings/application` | Admin | Update supported application preferences |
+| GET | `/api/v1/settings/notifications` | Admin | Admin notification preferences |
+| PATCH | `/api/v1/settings/notifications` | Admin | Update notification preferences |
+| GET | `/api/v1/settings/security` | Admin | Supported security metadata |
+
+Profile updates accept only `name` and `email`; duplicate emails return `409`. Password changes require `currentPassword`, `newPassword`, and `confirmPassword`; the new password must be at least 8 characters and match confirmation. Application settings support `applicationName`, `timezone`, `dateFormat` (`YYYY-MM-DD`, `DD-MM-YYYY`, `MM-DD-YYYY`), and `defaultPageSize` from 1 to 100. Notification preferences support boolean `emailNotifications`, `taskNotifications`, `attendanceNotifications`, `projectNotifications`, and `systemNotifications`. Protected fields such as `role`, `adminId`, `passwordHash`, `createdAt`, and `updatedAt` are rejected by strict validation.
 
 ### Students
 
@@ -193,6 +210,7 @@ Create body: `{ "title": "Build authentication", "projectId": "Project ObjectId"
 - Student identity is resolved from verified JWT claims, not request-supplied Student IDs.
 - Student Project reads verify Team membership server-side to prevent cross-Team IDOR access.
 - Student Task reads derive Team ownership from the verified JWT and the Task Project, preventing cross-Team IDOR access.
+- Admin Settings derive ownership from the verified Admin JWT and reject protected-field mass assignment.
 - Admin creation is restricted to the trusted environment-driven seed.
 - Deletion blocks when documented related records would be left inconsistent; no undocumented cascade deletion is performed.
 

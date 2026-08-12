@@ -16,10 +16,11 @@ if (!databaseName.startsWith("bootcamp_lms_api_test_")) {
 process.env.MONGO_URI = testUri;
 process.env.NODE_ENV = "test";
 
-const [{ default: mongoose }, { default: app }, { default: User, ROLES }] = await Promise.all([
+const [{ default: mongoose }, { default: app }, { default: User, ROLES }, { default: AdminSettings }] = await Promise.all([
   import("mongoose"),
   import("../src/app.js"),
-  import("../src/modules/auth/auth.model.js")
+  import("../src/modules/auth/auth.model.js"),
+  import("../src/modules/settings/settings.model.js")
 ]);
 
 const server = app.listen(0, "127.0.0.1");
@@ -73,7 +74,8 @@ try {
   await expectStatus("POST", "/auth/login", 401, { body: { email: "audit.admin@example.test", password: "wrong-password" } });
 
   const adminLogin = await expectStatus("POST", "/auth/login", 200, { body: { email: "audit.admin@example.test", password: "AuditPass123!" } });
-  const adminToken = adminLogin.data.data.token;
+  let adminToken = adminLogin.data.data.token;
+  const adminUserId = adminLogin.data.data.user.id;
   expect(typeof adminToken === "string", "Admin login must return a token");
   expectStatus("GET", "/auth/me", 200, { token: adminToken });
 
@@ -101,6 +103,65 @@ try {
   expectStatus("GET", "/students/me", 200, { token: studentAToken });
   expectStatus("GET", `/students/${studentBId}`, 403, { token: studentAToken });
   expectStatus("POST", "/students", 403, { token: studentAToken, body: studentPayload("Blocked", "blocked@example.test", "AUDIT-X") });
+
+  await expectStatus("GET", "/settings/profile", 401);
+  const settingsEndpoints = [
+    ["GET", "/settings/profile"],
+    ["PATCH", "/settings/profile", { name: "Blocked" }],
+    ["PATCH", "/settings/password", { currentPassword: "StudentPass123!", newPassword: "StudentPass456!", confirmPassword: "StudentPass456!" }],
+    ["GET", "/settings/application"],
+    ["PATCH", "/settings/application", { applicationName: "Blocked" }],
+    ["GET", "/settings/notifications"],
+    ["PATCH", "/settings/notifications", { emailNotifications: false }],
+    ["GET", "/settings/security"]
+  ];
+  for (const [method, path, body] of settingsEndpoints) {
+    expectStatus(method, path, 403, { token: studentAToken, ...(body ? { body } : {}) });
+  }
+
+  const adminProfile = await expectStatus("GET", "/settings/profile", 200, { token: adminToken });
+  expect(adminProfile.data.data.role === ROLES.ADMIN, "Settings profile must return Admin role");
+  expect(!("password" in adminProfile.data.data), "Settings profile must not return password");
+  expectStatus("PATCH", "/settings/profile", 400, { token: adminToken, body: { role: ROLES.STUDENT } });
+  expectStatus("PATCH", "/settings/profile", 400, { token: adminToken, body: { email: "not-an-email" } });
+  expectStatus("PATCH", "/settings/profile", 400, { token: adminToken, body: { name: "" } });
+  expectStatus("PATCH", "/settings/profile", 409, { token: adminToken, body: { email: "student.a@example.test" } });
+  const updatedAdminProfile = await expectStatus("PATCH", "/settings/profile", 200, { token: adminToken, body: { name: "Audit Admin Updated", email: "audit.admin.updated@example.test" } });
+  expect(updatedAdminProfile.data.data.email === "audit.admin.updated@example.test", "Updated Admin email must persist in response");
+  expect(updatedAdminProfile.data.data.role === ROLES.ADMIN, "Profile update must not change Admin role");
+
+  const appSettings = await expectStatus("GET", "/settings/application", 200, { token: adminToken });
+  expect(appSettings.data.data.applicationName === "Bootcamp LMS", "Default application name must be returned");
+  expectStatus("PATCH", "/settings/application", 400, { token: adminToken, body: { adminId: studentAUserId } });
+  expectStatus("PATCH", "/settings/application", 400, { token: adminToken, body: { defaultPageSize: 0 } });
+  const updatedAppSettings = await expectStatus("PATCH", "/settings/application", 200, { token: adminToken, body: { applicationName: "Audit LMS", timezone: "Asia/Karachi", dateFormat: "DD-MM-YYYY", defaultPageSize: 25 } });
+  expect(updatedAppSettings.data.data.applicationName === "Audit LMS", "Application settings update must persist in response");
+  expect(updatedAppSettings.data.data.defaultPageSize === 25, "Default page size update must persist in response");
+
+  const notificationSettings = await expectStatus("GET", "/settings/notifications", 200, { token: adminToken });
+  expect(notificationSettings.data.data.emailNotifications === true, "Default email notifications must be enabled");
+  expectStatus("PATCH", "/settings/notifications", 400, { token: adminToken, body: { role: ROLES.STUDENT } });
+  expectStatus("PATCH", "/settings/notifications", 400, { token: adminToken, body: { taskNotifications: "yes" } });
+  const updatedNotificationSettings = await expectStatus("PATCH", "/settings/notifications", 200, { token: adminToken, body: { emailNotifications: false, projectNotifications: false } });
+  expect(updatedNotificationSettings.data.data.emailNotifications === false, "Notification preference update must persist in response");
+
+  const securitySettings = await expectStatus("GET", "/settings/security", 200, { token: adminToken });
+  expect(securitySettings.data.data.accountStatus === "active", "Security settings must expose active account status");
+  expect(!("password" in securitySettings.data.data), "Security settings must not return password");
+
+  const persistedSettings = await AdminSettings.findOne({ admin: adminUserId }).lean();
+  expect(persistedSettings.application.applicationName === "Audit LMS", "Application settings must persist in MongoDB");
+  expect(persistedSettings.notifications.emailNotifications === false, "Notification preferences must persist in MongoDB");
+
+  expectStatus("PATCH", "/settings/password", 401, { token: adminToken, body: { currentPassword: "wrong-password", newPassword: "AuditPass456!", confirmPassword: "AuditPass456!" } });
+  expectStatus("PATCH", "/settings/password", 400, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "short", confirmPassword: "short" } });
+  expectStatus("PATCH", "/settings/password", 400, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "AuditPass456!", confirmPassword: "Mismatch456!" } });
+  expectStatus("PATCH", "/settings/password", 400, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "AuditPass456!", confirmPassword: "AuditPass456!", passwordHash: "blocked" } });
+  const passwordChange = await expectStatus("PATCH", "/settings/password", 200, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "AuditPass456!", confirmPassword: "AuditPass456!" } });
+  expect(passwordChange.data.data.passwordChanged === true, "Password change must report success");
+  expectStatus("POST", "/auth/login", 401, { body: { email: "audit.admin.updated@example.test", password: "AuditPass123!" } });
+  const updatedAdminLogin = await expectStatus("POST", "/auth/login", 200, { body: { email: "audit.admin.updated@example.test", password: "AuditPass456!" } });
+  adminToken = updatedAdminLogin.data.data.token;
 
   const teamA = await expectStatus("POST", "/teams", 201, { token: adminToken, body: { name: "Audit Team A", members: [studentAUserId] } });
   const teamB = await expectStatus("POST", "/teams", 201, { token: adminToken, body: { name: "Audit Team B", members: [studentBUserId] } });
