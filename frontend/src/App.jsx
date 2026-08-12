@@ -6,22 +6,23 @@ import AttendancePage from "./pages/AttendancePage.jsx";
 import TeamsPage from "./pages/TeamsPage.jsx";
 import TasksPage from "./pages/TasksPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 
 const router = createBrowserRouter([
+  { path: "/login", element: <LoginPage /> },
+  { path: "/register", element: <RegisterPage /> },
   {
-    path: "/",
     element: <AppLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: "students", element: <StudentsPage /> },
-      { path: "attendance", element: <AttendancePage /> },
-      { path: "teams", element: <TeamsPage /> },
-      { path: "tasks", element: <TasksPage /> },
-      { path: "login", element: <LoginPage /> },
-      { path: "register", element: <RegisterPage /> },
+      { path: "/", element: <DashboardPage /> },
+      { path: "/students", element: <StudentsPage /> },
+      { path: "/attendance", element: <AttendancePage /> },
+      { path: "/teams", element: <TeamsPage /> },
+      { path: "/tasks", element: <TasksPage /> },
     ],
   },
+  { path: "*", element: <NotFoundPage /> },
 ]);
 
 export default function App() {

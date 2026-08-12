@@ -8,7 +8,7 @@ export default function AppLayout() {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-y-auto">
+      <div className="flex-1 flex flex-col overflow-y-auto bg-slate-200">
         <Header />
         <main className="p-8">
           <Outlet />
