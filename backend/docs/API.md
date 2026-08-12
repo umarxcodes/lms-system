@@ -16,6 +16,8 @@ Students receive `403`. Missing or invalid tokens receive `401`.
 | --- | --- | --- | --- | --- |
 | GET | `/api/v1/settings/profile` | Required | ADMIN | Return safe Admin profile fields |
 | PATCH | `/api/v1/settings/profile` | Required | ADMIN | Update `name` and/or `email` |
+| POST | `/api/v1/settings/profile/avatar` | Required | ADMIN | Upload or replace own profile image |
+| DELETE | `/api/v1/settings/profile/avatar` | Required | ADMIN | Delete own profile image |
 | PATCH | `/api/v1/settings/password` | Required | ADMIN | Change Admin password |
 | GET | `/api/v1/settings/application` | Required | ADMIN | Return application preferences |
 | PATCH | `/api/v1/settings/application` | Required | ADMIN | Update supported application preferences |
@@ -42,6 +44,18 @@ Validation:
 - `email` is optional but must be valid and unique when provided.
 - Unknown or protected fields are rejected.
 - Duplicate email returns `409`.
+
+`POST /api/v1/settings/profile/avatar` uses `multipart/form-data` with one file field named `avatar`. Supported image content is JPEG/JPG, PNG, or WEBP up to 2MB. The backend validates MIME type and file signature. A successful response returns only:
+
+```json
+{
+  "profileImage": {
+    "url": "https://res.cloudinary.com/.../image/upload/..."
+  }
+}
+```
+
+`DELETE /api/v1/settings/profile/avatar` deletes the stored Cloudinary asset by `publicId`, removes metadata from MongoDB, and returns `{ "profileImage": null }`.
 
 ### Password
 
@@ -108,3 +122,20 @@ Validation:
 ```
 
 `lastLogin` is currently `null` because the existing authentication system does not persist login timestamps. JWTs remain stateless; password changes do not invalidate already issued tokens because no token blacklist/session store is implemented.
+
+## Student Profile Image
+
+Student profile image endpoints require:
+
+```http
+Authorization: Bearer <STUDENT_JWT>
+```
+
+| Method | Endpoint | Auth | Role | Purpose |
+| --- | --- | --- | --- | --- |
+| POST | `/api/v1/students/me/avatar` | Required | STUDENT | Upload or replace own profile image |
+| DELETE | `/api/v1/students/me/avatar` | Required | STUDENT | Delete own profile image |
+
+Both endpoints derive ownership from the verified JWT. Request body fields such as `studentId`, `userId`, or `adminId` are not accepted as ownership proof. Student A cannot modify Student B's image because there is no cross-user image endpoint.
+
+Upload requirements match Admin avatar upload: `multipart/form-data`, one `avatar` file, JPEG/JPG/PNG/WEBP content, maximum 2MB.

@@ -8,6 +8,7 @@ function toProfile(user) {
     name: user.name,
     email: user.email,
     role: user.role,
+    profileImage: user.profileImage?.url ? { url: user.profileImage.url } : null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   };

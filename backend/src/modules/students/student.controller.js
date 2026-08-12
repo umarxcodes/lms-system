@@ -2,6 +2,7 @@ import { createStudent, getAllStudents, getStudentById, getAuthenticatedStudent,
 import { getStudentDashboard } from "./studentPortal.service.js";
 import { success, error } from "../../utils/response.js";
 import { ROLES } from "../auth/auth.model.js";
+import { deleteAuthenticatedProfileImage, uploadAuthenticatedProfileImage } from "../../services/profileImage.service.js";
 
 export const createStudentController = async (req, res, next) => {
   try {
@@ -67,6 +68,24 @@ export const deleteStudentController = async (req, res, next) => {
   try {
     await deleteStudent(req.params.id);
     return success(res, null, "Student deleted");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const uploadMyProfileImageController = async (req, res, next) => {
+  try {
+    const result = await uploadAuthenticatedProfileImage(req.user.userId, ROLES.STUDENT, req.file);
+    return success(res, result, "Profile image uploaded successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteMyProfileImageController = async (req, res, next) => {
+  try {
+    const result = await deleteAuthenticatedProfileImage(req.user.userId, ROLES.STUDENT);
+    return success(res, result, "Profile image deleted successfully");
   } catch (err) {
     next(err);
   }

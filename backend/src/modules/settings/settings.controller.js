@@ -1,5 +1,7 @@
 import { success } from "../../utils/response.js";
 import { getAdminProfile, updateAdminProfile, changeAdminPassword, getApplicationSettings, updateApplicationSettings, getNotificationPreferences, updateNotificationPreferences, getSecuritySettings } from "./settings.service.js";
+import { deleteAuthenticatedProfileImage, uploadAuthenticatedProfileImage } from "../../services/profileImage.service.js";
+import { ROLES } from "../auth/auth.model.js";
 
 export const getProfileController = async (req, res, next) => {
   try {
@@ -68,6 +70,24 @@ export const getSecuritySettingsController = async (req, res, next) => {
   try {
     const security = await getSecuritySettings(req.user.userId);
     return success(res, security, "Security settings retrieved");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const uploadAdminProfileImageController = async (req, res, next) => {
+  try {
+    const result = await uploadAuthenticatedProfileImage(req.user.userId, ROLES.ADMIN, req.file);
+    return success(res, result, "Profile image uploaded successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteAdminProfileImageController = async (req, res, next) => {
+  try {
+    const result = await deleteAuthenticatedProfileImage(req.user.userId, ROLES.ADMIN);
+    return success(res, result, "Profile image deleted successfully");
   } catch (err) {
     next(err);
   }

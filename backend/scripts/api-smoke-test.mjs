@@ -16,11 +16,12 @@ if (!databaseName.startsWith("bootcamp_lms_api_test_")) {
 process.env.MONGO_URI = testUri;
 process.env.NODE_ENV = "test";
 
-const [{ default: mongoose }, { default: app }, { default: User, ROLES }, { default: AdminSettings }] = await Promise.all([
+const [{ default: mongoose }, { default: app }, { default: User, ROLES }, { default: AdminSettings }, { deleteProfileImage }] = await Promise.all([
   import("mongoose"),
   import("../src/app.js"),
   import("../src/modules/auth/auth.model.js"),
-  import("../src/modules/settings/settings.model.js")
+  import("../src/modules/settings/settings.model.js"),
+  import("../src/services/cloudinary.service.js")
 ]);
 
 const server = app.listen(0, "127.0.0.1");
@@ -49,9 +50,39 @@ async function request(method, path, { token, body } = {}) {
   return { response, data, contentType };
 }
 
+async function requestMultipart(method, path, { token, file, fields = {} } = {}) {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) form.append(key, value);
+  if (file) form.append("avatar", new Blob([file.buffer], { type: file.type }), file.filename);
+
+  const response = await fetch(`${baseUrl}${path}`, {
+    method,
+    headers: {
+      ...(token ? { authorization: `Bearer ${token}` } : {})
+    },
+    body: form
+  });
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json") ? await response.json() : await response.text();
+  return { response, data, contentType };
+}
+
 async function expectStatus(method, path, expected, options) {
   const job = requestQueue.then(async () => {
     const result = await request(method, path, options);
+    expect(result.response.status === expected, `${method} ${path}: expected ${expected}, received ${result.response.status}`);
+    return result;
+  });
+  requestQueue = job.catch((error) => {
+    queuedError ||= error;
+  });
+  job.catch(() => undefined);
+  return job;
+}
+
+async function expectUploadStatus(method, path, expected, options) {
+  const job = requestQueue.then(async () => {
+    const result = await requestMultipart(method, path, options);
     expect(result.response.status === expected, `${method} ${path}: expected ${expected}, received ${result.response.status}`);
     return result;
   });
@@ -67,6 +98,13 @@ try {
   await mongoose.connection.dropDatabase();
 
   await User.create({ name: "Audit Admin", email: "audit.admin@example.test", password: "AuditPass123!", role: ROLES.ADMIN });
+  const pngImage = {
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=", "base64"),
+    type: "image/png",
+    filename: "avatar.png"
+  };
+  const textFile = { buffer: Buffer.from("not an image"), type: "text/plain", filename: "avatar.txt" };
+  const fakePng = { buffer: Buffer.from("not an image"), type: "image/png", filename: "avatar.png" };
 
   await expectStatus("GET", "/missing", 404);
   await expectStatus("GET", "/students/me", 401);
@@ -108,6 +146,8 @@ try {
   const settingsEndpoints = [
     ["GET", "/settings/profile"],
     ["PATCH", "/settings/profile", { name: "Blocked" }],
+    ["POST", "/settings/profile/avatar"],
+    ["DELETE", "/settings/profile/avatar"],
     ["PATCH", "/settings/password", { currentPassword: "StudentPass123!", newPassword: "StudentPass456!", confirmPassword: "StudentPass456!" }],
     ["GET", "/settings/application"],
     ["PATCH", "/settings/application", { applicationName: "Blocked" }],
@@ -153,6 +193,28 @@ try {
   expect(persistedSettings.application.applicationName === "Audit LMS", "Application settings must persist in MongoDB");
   expect(persistedSettings.notifications.emailNotifications === false, "Notification preferences must persist in MongoDB");
 
+  await expectUploadStatus("POST", "/settings/profile/avatar", 401, { file: pngImage });
+  await expectUploadStatus("POST", "/settings/profile/avatar", 400, { token: adminToken });
+  await expectUploadStatus("POST", "/settings/profile/avatar", 400, { token: adminToken, file: textFile });
+  await expectUploadStatus("POST", "/settings/profile/avatar", 400, { token: adminToken, file: fakePng });
+  const adminAvatar = await expectUploadStatus("POST", "/settings/profile/avatar", 200, { token: adminToken, file: pngImage });
+  expect(adminAvatar.data.data.profileImage.url.startsWith("https://"), "Admin avatar upload must return a secure URL");
+  expect(!("publicId" in adminAvatar.data.data.profileImage), "Admin avatar response must not expose publicId");
+  const adminAfterAvatar = await User.findById(adminUserId).select("profileImage.url +profileImage.publicId").lean();
+  const oldAdminPublicId = adminAfterAvatar.profileImage.publicId;
+  expect(Boolean(adminAfterAvatar.profileImage.url), "Admin avatar URL must persist in MongoDB");
+  expect(Boolean(oldAdminPublicId), "Admin avatar publicId must persist in MongoDB");
+  const adminAvatarReplacement = await expectUploadStatus("POST", "/settings/profile/avatar", 200, { token: adminToken, file: pngImage });
+  expect(adminAvatarReplacement.data.data.profileImage.url.startsWith("https://"), "Admin avatar replacement must return a secure URL");
+  const adminAfterReplacement = await User.findById(adminUserId).select("profileImage.url +profileImage.publicId").lean();
+  expect(adminAfterReplacement.profileImage.publicId !== oldAdminPublicId, "Admin avatar replacement must store a new publicId");
+  const adminProfileAfterAvatar = await expectStatus("GET", "/settings/profile", 200, { token: adminToken });
+  expect(adminProfileAfterAvatar.data.data.profileImage.url.startsWith("https://"), "Admin profile must include profileImage URL");
+  const adminAvatarDelete = await expectStatus("DELETE", "/settings/profile/avatar", 200, { token: adminToken });
+  expect(adminAvatarDelete.data.data.profileImage === null, "Admin avatar delete must return null profileImage");
+  const adminAfterDelete = await User.findById(adminUserId).select("profileImage.url +profileImage.publicId").lean();
+  expect(!adminAfterDelete.profileImage?.url && !adminAfterDelete.profileImage?.publicId, "Admin avatar metadata must be removed from MongoDB");
+
   expectStatus("PATCH", "/settings/password", 401, { token: adminToken, body: { currentPassword: "wrong-password", newPassword: "AuditPass456!", confirmPassword: "AuditPass456!" } });
   expectStatus("PATCH", "/settings/password", 400, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "short", confirmPassword: "short" } });
   expectStatus("PATCH", "/settings/password", 400, { token: adminToken, body: { currentPassword: "AuditPass123!", newPassword: "AuditPass456!", confirmPassword: "Mismatch456!" } });
@@ -162,6 +224,35 @@ try {
   expectStatus("POST", "/auth/login", 401, { body: { email: "audit.admin.updated@example.test", password: "AuditPass123!" } });
   const updatedAdminLogin = await expectStatus("POST", "/auth/login", 200, { body: { email: "audit.admin.updated@example.test", password: "AuditPass456!" } });
   adminToken = updatedAdminLogin.data.data.token;
+
+  await expectUploadStatus("POST", "/students/me/avatar", 401, { file: pngImage });
+  await expectUploadStatus("POST", "/students/me/avatar", 403, { token: adminToken, file: pngImage });
+  await expectUploadStatus("POST", "/students/me/avatar", 400, { token: studentAToken });
+  await expectUploadStatus("POST", "/students/me/avatar", 400, { token: studentAToken, file: textFile });
+  await expectUploadStatus("POST", "/students/me/avatar", 400, { token: studentAToken, file: fakePng });
+  const studentAAvatar = await expectUploadStatus("POST", "/students/me/avatar", 200, {
+    token: studentAToken,
+    file: pngImage,
+    fields: { studentId: studentBId, userId: studentBUserId }
+  });
+  expect(studentAAvatar.data.data.profileImage.url.startsWith("https://"), "Student avatar upload must return a secure URL");
+  expect(!("publicId" in studentAAvatar.data.data.profileImage), "Student avatar response must not expose publicId");
+  const studentAAfterAvatar = await User.findById(studentAUserId).select("profileImage.url +profileImage.publicId").lean();
+  const oldStudentAPublicId = studentAAfterAvatar.profileImage.publicId;
+  const studentBAfterStudentAAttempt = await User.findById(studentBUserId).select("profileImage.url +profileImage.publicId").lean();
+  expect(Boolean(studentAAfterAvatar.profileImage.url), "Student A avatar URL must persist in MongoDB");
+  expect(Boolean(oldStudentAPublicId), "Student A avatar publicId must persist in MongoDB");
+  expect(!studentBAfterStudentAAttempt.profileImage?.url, "Student A must not modify Student B avatar via request fields");
+  const studentAAvatarReplacement = await expectUploadStatus("POST", "/students/me/avatar", 200, { token: studentAToken, file: pngImage });
+  expect(studentAAvatarReplacement.data.data.profileImage.url.startsWith("https://"), "Student avatar replacement must return a secure URL");
+  const studentAAfterReplacement = await User.findById(studentAUserId).select("profileImage.url +profileImage.publicId").lean();
+  expect(studentAAfterReplacement.profileImage.publicId !== oldStudentAPublicId, "Student avatar replacement must store a new publicId");
+  const studentAProfileAfterAvatar = await expectStatus("GET", "/students/me", 200, { token: studentAToken });
+  expect(studentAProfileAfterAvatar.data.data.user.profileImage.url.startsWith("https://"), "Student profile must include profileImage URL");
+  const studentAAvatarDelete = await expectStatus("DELETE", "/students/me/avatar", 200, { token: studentAToken });
+  expect(studentAAvatarDelete.data.data.profileImage === null, "Student avatar delete must return null profileImage");
+  const studentAAfterDelete = await User.findById(studentAUserId).select("profileImage.url +profileImage.publicId").lean();
+  expect(!studentAAfterDelete.profileImage?.url && !studentAAfterDelete.profileImage?.publicId, "Student avatar metadata must be removed from MongoDB");
 
   const teamA = await expectStatus("POST", "/teams", 201, { token: adminToken, body: { name: "Audit Team A", members: [studentAUserId] } });
   const teamB = await expectStatus("POST", "/teams", 201, { token: adminToken, body: { name: "Audit Team B", members: [studentBUserId] } });
@@ -250,6 +341,8 @@ try {
   if (queuedError) throw queuedError;
   console.log(`API smoke test passed with ${assertions} assertions against ${databaseName}`);
 } finally {
+  const usersWithImages = await User.find({ "profileImage.publicId": { $exists: true } }).select("+profileImage.publicId").lean().catch(() => []);
+  await Promise.all(usersWithImages.map((user) => deleteProfileImage(user.profileImage?.publicId).catch(() => undefined)));
   await mongoose.connection.dropDatabase().catch(() => undefined);
   await mongoose.disconnect().catch(() => undefined);
   await new Promise((resolve) => server.close(resolve));

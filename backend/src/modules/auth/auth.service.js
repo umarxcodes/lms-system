@@ -7,7 +7,8 @@ export function toSafeUser(user) {
     name: user.name,
     email: user.email,
     role: user.role,
-    ...(user.student ? { studentId: user.student.toString() } : {})
+    ...(user.student ? { studentId: user.student.toString() } : {}),
+    profileImage: user.profileImage?.url ? { url: user.profileImage.url } : null
   };
 }
 

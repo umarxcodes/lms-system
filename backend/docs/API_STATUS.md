@@ -14,5 +14,6 @@ Status reflects the local smoke-test suite against the disposable `bootcamp_lms_
 | Reports | PASS | Attendance, assignment, Student progress, CSV exports tested |
 | Notifications | PASS | Announcement, own notification reads, IDOR protection tested |
 | Admin Settings | PASS | Profile, password, application, notifications, security, RBAC, and mass assignment tests added |
+| Profile Images | PASS | Admin and Student upload, replace, delete, file validation, ownership, MongoDB metadata, and regression tested |
 
 Known limitation: Settings `lastLogin` is reported as `null` because the current authentication module does not persist login timestamps.

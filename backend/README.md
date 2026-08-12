@@ -47,6 +47,9 @@ JWT_EXPIRES_IN=7d
 PORT=5000
 NODE_ENV=development
 DASHBOARD_TIMEZONE=Asia/Karachi
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 # Optional development-only initial Admin seed; set all three together.
 ADMIN_NAME=Bootcamp Admin
@@ -94,6 +97,8 @@ Admin Settings endpoints require an Admin JWT and derive ownership from the auth
 | --- | --- | --- | --- |
 | GET | `/api/v1/settings/profile` | Admin | Safe Admin profile |
 | PATCH | `/api/v1/settings/profile` | Admin | Update Admin `name` and/or `email` |
+| POST | `/api/v1/settings/profile/avatar` | Admin | Upload or replace own profile image |
+| DELETE | `/api/v1/settings/profile/avatar` | Admin | Delete own profile image |
 | PATCH | `/api/v1/settings/password` | Admin | Change password using current password verification |
 | GET | `/api/v1/settings/application` | Admin | Admin application preferences |
 | PATCH | `/api/v1/settings/application` | Admin | Update supported application preferences |
@@ -103,6 +108,8 @@ Admin Settings endpoints require an Admin JWT and derive ownership from the auth
 
 Profile updates accept only `name` and `email`; duplicate emails return `409`. Password changes require `currentPassword`, `newPassword`, and `confirmPassword`; the new password must be at least 8 characters and match confirmation. Application settings support `applicationName`, `timezone`, `dateFormat` (`YYYY-MM-DD`, `DD-MM-YYYY`, `MM-DD-YYYY`), and `defaultPageSize` from 1 to 100. Notification preferences support boolean `emailNotifications`, `taskNotifications`, `attendanceNotifications`, `projectNotifications`, and `systemNotifications`. Protected fields such as `role`, `adminId`, `passwordHash`, `createdAt`, and `updatedAt` are rejected by strict validation.
 
+Profile image upload uses `multipart/form-data` with a single file field named `avatar`.
+
 ### Students
 
 | Method | Endpoint | Role | Purpose |
@@ -110,11 +117,30 @@ Profile updates accept only `name` and `email`; duplicate emails return `409`. P
 | POST | `/api/v1/students` | Admin | Create linked Student login and profile |
 | GET | `/api/v1/students` | Admin | List Students |
 | GET | `/api/v1/students/me` | Student | Own profile, derived from JWT |
+| POST | `/api/v1/students/me/avatar` | Student | Upload or replace own profile image |
+| DELETE | `/api/v1/students/me/avatar` | Student | Delete own profile image |
 | GET | `/api/v1/students/:id` | Admin / owning Student | Get one Student |
 | PATCH | `/api/v1/students/:id` | Admin | Update Student profile |
 | DELETE | `/api/v1/students/:id` | Admin | Delete an unreferenced Student |
 
 `PUT /api/v1/students/:id` remains available as a compatibility alias for `PATCH`.
+
+### Profile Image Management
+
+Profile images are stored in Cloudinary under the `bootcamp-lms/profiles` folder. MongoDB stores only image metadata on the existing `User` document:
+
+```json
+{
+  "profileImage": {
+    "url": "https://res.cloudinary.com/.../image/upload/...",
+    "publicId": "bootcamp-lms/profiles/..."
+  }
+}
+```
+
+API responses expose only `profileImage.url`; Cloudinary credentials and `publicId` are not returned to clients. Uploads accept one `avatar` file, up to 2MB, with JPEG/JPG, PNG, or WEBP content. The backend validates MIME type and image file signature; PDFs, SVG, GIF, archives, scripts, and unknown file types are rejected.
+
+Admins manage only their own image through Admin Settings. Students manage only their own image through `/api/v1/students/me/avatar`; the backend ignores request-supplied ownership fields and derives ownership from the verified JWT. Replacing an image uploads the new asset first, updates MongoDB, then deletes the old Cloudinary asset. Deleting uses the stored Cloudinary `publicId`.
 
 ### Attendance
 
@@ -211,6 +237,7 @@ Create body: `{ "title": "Build authentication", "projectId": "Project ObjectId"
 - Student Project reads verify Team membership server-side to prevent cross-Team IDOR access.
 - Student Task reads derive Team ownership from the verified JWT and the Task Project, preventing cross-Team IDOR access.
 - Admin Settings derive ownership from the verified Admin JWT and reject protected-field mass assignment.
+- Profile image upload/delete derives ownership from the verified JWT and stores only Cloudinary URL/publicId metadata in MongoDB.
 - Admin creation is restricted to the trusted environment-driven seed.
 - Deletion blocks when documented related records would be left inconsistent; no undocumented cascade deletion is performed.
 

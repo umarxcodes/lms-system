@@ -1,9 +1,10 @@
 import express from "express";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { requireRole } from "../../middlewares/role.middleware.js";
+import { uploadSingleProfileImage } from "../../middlewares/upload.middleware.js";
 import { ROLES } from "../auth/auth.model.js";
 import { updateProfileSchema, changePasswordSchema, updateApplicationSettingsSchema, updateNotificationPreferencesSchema } from "./settings.validation.js";
-import { getProfileController, updateProfileController, changePasswordController, getApplicationSettingsController, updateApplicationSettingsController, getNotificationPreferencesController, updateNotificationPreferencesController, getSecuritySettingsController } from "./settings.controller.js";
+import { getProfileController, updateProfileController, changePasswordController, getApplicationSettingsController, updateApplicationSettingsController, getNotificationPreferencesController, updateNotificationPreferencesController, getSecuritySettingsController, uploadAdminProfileImageController, deleteAdminProfileImageController } from "./settings.controller.js";
 
 const validate = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);
@@ -18,6 +19,8 @@ router.use(authenticate, requireRole(ROLES.ADMIN));
 
 router.get("/profile", getProfileController);
 router.patch("/profile", validate(updateProfileSchema), updateProfileController);
+router.post("/profile/avatar", uploadSingleProfileImage, uploadAdminProfileImageController);
+router.delete("/profile/avatar", deleteAdminProfileImageController);
 router.patch("/password", validate(changePasswordSchema), changePasswordController);
 router.get("/application", getApplicationSettingsController);
 router.patch("/application", validate(updateApplicationSettingsSchema), updateApplicationSettingsController);

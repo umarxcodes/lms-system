@@ -76,7 +76,8 @@ async function getStudentReportData(student) {
       phone: student.phone,
       address: student.address,
       name: student.user.name,
-      email: student.user.email
+      email: student.user.email,
+      profileImage: student.user.profileImage?.url ? { url: student.user.profileImage.url } : null
     },
     attendance: countAttendance(attendance),
     team: team ? { id: team._id.toString(), name: team.name } : null,
@@ -112,14 +113,14 @@ export const getAssignmentReport = async ({ projectId, assignedTo, status, prior
 
 export const getStudentReport = async (studentId) => {
   assertObjectId(studentId, "Student id");
-  const student = await Student.findById(studentId).populate("user", "name email");
+  const student = await Student.findById(studentId).populate("user", "name email profileImage");
   if (!student) throw appError("Student not found", 404);
   return getStudentReportData(student);
 };
 
 export const getMyProgressReport = async (userId) => {
   assertObjectId(userId, "Authenticated user id");
-  const student = await Student.findOne({ user: userId }).populate("user", "name email");
+  const student = await Student.findOne({ user: userId }).populate("user", "name email profileImage");
   if (!student) throw appError("Student profile not found", 404);
   return getStudentReportData(student);
 };

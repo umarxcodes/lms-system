@@ -11,7 +11,11 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, select: false },
   role: { type: String, enum: Object.values(ROLES), required: true },
-  student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" }
+  student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+  profileImage: {
+    url: { type: String, trim: true },
+    publicId: { type: String, trim: true, select: false }
+  }
 }, { timestamps: true });
 
 userSchema.pre("save", async function hashNewPassword() {
