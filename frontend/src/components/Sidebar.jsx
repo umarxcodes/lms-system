@@ -14,7 +14,7 @@ import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicR
 const mainNavItems = [
   {
     label: "Dashboard",
-    to: "/dashboard",
+    to: "/",
     icon: <GridViewRoundedIcon fontSize="small" />,
   },
   {

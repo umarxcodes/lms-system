@@ -1,5 +1,15 @@
-import { Box, Stack, Typography, Avatar, IconButton } from "@mui/material";
+import {
+  InputBase,
+  Box,
+  Stack,
+  Typography,
+  Avatar,
+  Button,
+  IconButton,
+} from "@mui/material";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import SearchIcon from "@mui/icons-material/Search";
 
 /**
  * Reusable page header. Title/subtitle sit on the left; anything page-specific
@@ -159,5 +169,133 @@ export const NotificationButton = ({ onClick, hasUnread = true }) => {
         />
       )}
     </IconButton>
+  );
+};
+
+/**
+ * Date button shown in the header's actions slot (e.g. Attendance page).
+ * Matches: a white bordered pill with a calendar icon + date text.
+ *
+ * Usage:
+ *   import DateButton from "../components/DateButton";
+ *   <DateButton date="Oct 24, 2024" onClick={() => {...}} />
+ *
+ * `date` accepts a pre-formatted string, or omit it and pass a Date object
+ * via `value` to have it formatted automatically.
+ */
+export const DateButton = ({ date, value, onClick }) => {
+  const label =
+    date ??
+    (value ?? new Date()).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+  return (
+    <Button
+      onClick={onClick}
+      startIcon={
+        <CalendarTodayOutlinedIcon sx={{ fontSize: 15, color: "grey.400" }} />
+      }
+      sx={{
+        bgcolor: "#fff",
+        border: "1px solid",
+        borderColor: "grey.200",
+        borderRadius: 2, // rounded-lg
+        px: 1.75, // px-3
+        py: 1, // py-2
+        color: "grey.700",
+        fontSize: 14,
+        fontWeight: 500,
+        textTransform: "none",
+        whiteSpace: "nowrap",
+        "&:hover": {
+          bgcolor: "grey.50",
+          borderColor: "grey.200",
+        },
+      }}
+    >
+      {label}
+    </Button>
+  );
+};
+
+/**
+ * Search input shown in the header's actions slot (e.g. Dashboard page)
+ * or in a page's filter bar (e.g. Students, Teams).
+ * Matches: icon-left input, white/gray bg, rounded-lg border, focus ring.
+ *
+ * Usage (header, Dashboard):
+ *   <SearchField placeholder="Search students…" value={q} onChange={setQ} />
+ *
+ * Usage (filter bar, wider, gray background):
+ *   <SearchField
+ *     placeholder="Search..."
+ *     value={q}
+ *     onChange={setQ}
+ *     width="100%"
+ *     bgcolor="grey.50"
+ *   />
+ */
+export const SearchField = ({
+  placeholder = "Search…",
+  value,
+  onChange,
+  width = 256, // w-64
+  bgcolor = "#fff",
+  size = "medium", // "medium" (header) | "small" (filter bars)
+}) => {
+  const isSmall = size === "small";
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width,
+        display: { xs: "none", sm: "block" },
+      }}
+    >
+      <SearchIcon
+        sx={{
+          position: "absolute",
+          left: 12,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: isSmall ? 16 : 18,
+          color: "grey.400",
+          pointerEvents: "none",
+        }}
+      />
+      <InputBase
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        placeholder={placeholder}
+        sx={{
+          width: "100%",
+          bgcolor,
+          border: "1px solid",
+          borderColor: "grey.200",
+          borderRadius: 2, // rounded-lg
+          fontSize: 14,
+          pl: 4.5, // room for the icon
+          pr: 1.5,
+          py: isSmall ? 0.75 : 1,
+          color: "grey.800",
+          transition: "border-color .15s ease, box-shadow .15s ease",
+          "&:hover": {
+            borderColor: "grey.300",
+          },
+          "&.Mui-focused": {
+            borderColor: "#60a5fa", // brand-400
+            boxShadow: "0 0 0 3px rgba(59,130,246,0.15)", // brand-500/20 ring
+          },
+          "& input::placeholder": {
+            color: "grey.400",
+            opacity: 1,
+          },
+        }}
+      />
+    </Box>
   );
 };
