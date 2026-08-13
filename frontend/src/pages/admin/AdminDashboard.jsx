@@ -21,6 +21,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 import Header from "../../components/layout/Header";
@@ -67,17 +69,34 @@ export default function AdminDashboard() {
   const dueTodayTasks = data?.dueTodayTasks || [];
   const recentStudents = data?.recentStudents || [];
 
-  const pieData = [
+  const rawPieData = [
     { name: "Present", value: attendanceBreakdown.present || 0 },
     { name: "Absent", value: attendanceBreakdown.absent || 0 },
     { name: "Late", value: attendanceBreakdown.late || 0 },
     { name: "Excused", value: attendanceBreakdown.excused || 0 },
   ].filter((item) => item.value > 0);
 
-  const barData = Object.keys(taskStatusBreakdown).map((key) => ({
+  const pieData =
+    rawPieData.length > 0
+      ? rawPieData
+      : [
+          { name: "Present", value: summary.presentToday || 0 },
+          { name: "Absent", value: summary.absentToday || 0 },
+        ].filter((i) => i.value > 0);
+
+  const rawBarData = Object.keys(taskStatusBreakdown).map((key) => ({
     name: key.replace("_", " ").toUpperCase(),
     count: taskStatusBreakdown[key],
   }));
+
+  const barData =
+    rawBarData.length > 0
+      ? rawBarData
+      : [
+          { name: "TODO", count: 0 },
+          { name: "IN PROGRESS", count: 0 },
+          { name: "COMPLETED", count: 0 },
+        ];
 
   return (
     <>
@@ -89,8 +108,8 @@ export default function AdminDashboard() {
 
       <PageContent>
         {/* Stat Summary Cards */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -99,13 +118,14 @@ export default function AdminDashboard() {
                 value={summary.totalStudents || 0}
                 icon={PeopleAltOutlinedIcon}
                 iconBgColor="#eff6ff"
-                iconColor="#1d4ed8"
+                iconColor="#1e40af"
+                accentColor="#1e40af"
                 subtitle="Active bootcamp trainees"
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -115,12 +135,13 @@ export default function AdminDashboard() {
                 icon={EventAvailableIcon}
                 iconBgColor="#f0fdf4"
                 iconColor="#16a34a"
+                accentColor="#16a34a"
                 subtitle={`Absent: ${summary.absentToday || 0}`}
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -130,12 +151,13 @@ export default function AdminDashboard() {
                 icon={GroupsIcon}
                 iconBgColor="#faf5ff"
                 iconColor="#9333ea"
+                accentColor="#9333ea"
                 subtitle="Active project teams"
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -145,6 +167,7 @@ export default function AdminDashboard() {
                 icon={AssignmentTurnedInIcon}
                 iconBgColor="#fff7ed"
                 iconColor="#ea580c"
+                accentColor="#ea580c"
                 subtitle="Tasks awaiting completion"
               />
             )}
@@ -152,18 +175,36 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Charts Section */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card sx={{ p: 3, height: 360, display: "flex", flexDirection: "column" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                Today's Attendance Breakdown
-              </Typography>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                <AssessmentOutlinedIcon color="primary" fontSize="small" />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Today's Attendance Breakdown
+                </Typography>
+              </Stack>
+
               {loading ? (
                 <Skeleton variant="rounded" height={260} />
               ) : pieData.length === 0 ? (
-                <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No attendance records submitted for today.
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "grey.50",
+                    borderRadius: 2,
+                    p: 3,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    No attendance records logged for today yet.
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5 }}>
+                    Mark attendance in the Attendance module to view live breakdown.
                   </Typography>
                 </Box>
               ) : (
@@ -192,27 +233,25 @@ export default function AdminDashboard() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card sx={{ p: 3, height: 360, display: "flex", flexDirection: "column" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                Task Status Distribution
-              </Typography>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                <BarChartOutlinedIcon color="secondary" fontSize="small" />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Task Status Distribution
+                </Typography>
+              </Stack>
+
               {loading ? (
                 <Skeleton variant="rounded" height={260} />
-              ) : barData.length === 0 ? (
-                <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No task data available.
-                  </Typography>
-                </Box>
               ) : (
                 <Box sx={{ flex: 1, width: "100%", height: 260 }}>
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={barData}>
-                      <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
-                      <YAxis stroke="#64748b" fontSize={12} allowDecimals={false} />
+                      <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+                      <YAxis stroke="#64748b" fontSize={11} allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="#1e40af" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </Box>
@@ -223,8 +262,8 @@ export default function AdminDashboard() {
 
         {/* Data Tables */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={7}>
-            <Card>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card sx={{ height: "100%" }}>
               <CardContent sx={{ p: 3 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -241,8 +280,8 @@ export default function AdminDashboard() {
                 {loading ? (
                   <Skeleton variant="rounded" height={180} />
                 ) : dueTodayTasks.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-                    No tasks are due today.
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
+                    No pending tasks due today. All caught up!
                   </Typography>
                 ) : (
                   <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
@@ -272,8 +311,8 @@ export default function AdminDashboard() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={5}>
-            <Card>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card sx={{ height: "100%" }}>
               <CardContent sx={{ p: 3 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -290,8 +329,8 @@ export default function AdminDashboard() {
                 {loading ? (
                   <Skeleton variant="rounded" height={180} />
                 ) : recentStudents.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-                    No students registered yet.
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
+                    No recent student activity registered.
                   </Typography>
                 ) : (
                   <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>

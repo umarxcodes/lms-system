@@ -11,6 +11,7 @@ import {
   ListItemText,
   Drawer,
   Divider,
+  Avatar,
 } from "@mui/material";
 
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
@@ -23,7 +24,6 @@ import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicRounded";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 
@@ -58,7 +58,7 @@ const studentNavItems = [
 ];
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
-  const { role, logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const navigate = useNavigate();
 
   const navItems = role === "ADMIN" ? adminNavItems : studentNavItems;
@@ -84,13 +84,22 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
           alt="SMIT Logo"
           sx={{
-            height: 42,
+            height: 44,
             width: "auto",
             objectFit: "contain",
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.06))",
           }}
         />
         <Box sx={{ lineHeight: 1.2 }}>
-          <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 17, letterSpacing: "-0.02em" }}>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              color: "text.primary",
+              fontSize: 17,
+              letterSpacing: "-0.02em",
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+            }}
+          >
             SMIT LMS
           </Typography>
           <Typography sx={{ fontSize: 11, color: "text.secondary", fontWeight: 600 }}>
@@ -99,25 +108,26 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </Box>
       </Stack>
 
-      <Divider />
+      <Divider sx={{ borderColor: "grey.100" }} />
 
       {/* Navigation List */}
-      <Box sx={{ flex: 1, px: 1.5, py: 2, overflowY: "auto" }}>
+      <Box sx={{ flex: 1, px: 2, py: 2.5, overflowY: "auto" }}>
         <Typography
           variant="caption"
           sx={{
             px: 1.5,
-            pb: 1,
+            pb: 1.5,
             display: "block",
-            fontWeight: 700,
+            fontWeight: 800,
             color: "text.disabled",
-            letterSpacing: "0.05em",
+            letterSpacing: "0.08em",
+            fontSize: "0.7rem",
           }}
         >
           {role === "ADMIN" ? "ADMINISTRATION" : "STUDENT PORTAL"}
         </Typography>
 
-        <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+        <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
           {navItems.map((item) => (
             <ListItem key={item.to} disablePadding>
               <ListItemButton
@@ -125,27 +135,36 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 to={item.to}
                 onClick={onMobileClose}
                 sx={{
-                  borderRadius: 2,
-                  py: 1,
-                  px: 1.5,
-                  color: "text.secondary",
+                  borderRadius: 2.5,
+                  py: 1.1,
+                  px: 2,
+                  color: "#475569",
+                  transition: "all 0.2s ease-in-out",
                   "&.active": {
-                    bgcolor: "primary.50",
-                    color: "primary.main",
+                    background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
+                    color: "#ffffff",
                     fontWeight: 700,
+                    boxShadow: "0 4px 12px rgba(30, 64, 175, 0.25)",
+                    "& .MuiListItemIcon-root": {
+                      color: "#ffffff",
+                    },
+                  },
+                  "&:not(.active):hover": {
+                    bgcolor: "grey.100",
+                    color: "primary.main",
+                    transform: "translateX(4px)",
                     "& .MuiListItemIcon-root": {
                       color: "primary.main",
                     },
                   },
-                  "&:hover": {
-                    bgcolor: "grey.100",
-                  },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>{item.icon}</ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 36, color: "inherit", transition: "color 0.2s ease" }}>
+                  {item.icon}
+                </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontSize: 14, fontWeight: "inherit" }}
+                  primaryTypographyProps={{ fontSize: 13.5, fontWeight: "inherit" }}
                 />
               </ListItemButton>
             </ListItem>
@@ -153,24 +172,43 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </List>
       </Box>
 
-      <Divider />
+      <Divider sx={{ borderColor: "grey.100" }} />
 
-      {/* Footer Logout Action */}
+      {/* User Summary & Logout */}
       <Box sx={{ p: 2 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1.5, py: 1, mb: 1 }}>
+          <Avatar
+            src={user?.avatarUrl || user?.profileImage || ""}
+            alt={user?.name || "User"}
+            sx={{ width: 34, height: 34, bgcolor: "primary.main", fontSize: 14, fontWeight: 700 }}
+          >
+            {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </Avatar>
+          <Box sx={{ overflow: "hidden", lineHeight: 1.2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", noWrap: true }}>
+              {user?.name || "Logged User"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.72rem" }}>
+              {role || "User"} Account
+            </Typography>
+          </Box>
+        </Stack>
+
         <ListItemButton
           onClick={handleLogout}
           sx={{
-            borderRadius: 2,
+            borderRadius: 2.5,
             py: 1,
-            px: 1.5,
+            px: 2,
             color: "error.main",
-            "&:hover": { bgcolor: "error.50" },
+            transition: "all 0.2s ease-in-out",
+            "&:hover": { bgcolor: "error.50", transform: "translateX(4px)" },
           }}
         >
           <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+          <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: 13.5, fontWeight: 700 }} />
         </ListItemButton>
       </Box>
     </Box>

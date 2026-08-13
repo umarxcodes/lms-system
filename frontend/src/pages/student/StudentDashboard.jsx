@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
-  CardContent,
   Typography,
   Box,
   Stack,
@@ -21,6 +20,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CampaignIcon from "@mui/icons-material/Campaign";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 import Header from "../../components/layout/Header";
@@ -77,10 +77,10 @@ export default function StudentDashboard() {
       <PageContent>
         {/* Latest Announcement Banner */}
         {announcement && (
-          <Card sx={{ bgcolor: "primary.50", border: "1px solid", borderColor: "primary.200", p: 2.5 }}>
+          <Card sx={{ bgcolor: "primary.50", border: "1px solid", borderColor: "primary.200", p: 2.5, mb: 3 }}>
             <Stack direction="row" spacing={2} alignItems="flex-start">
               <Box sx={{ color: "primary.main", pt: 0.5 }}>
-                <EventAvailableIcon />
+                <CampaignIcon />
               </Box>
               <Box>
                 <Typography variant="subtitle1" fontWeight={700} color="primary.main">
@@ -95,8 +95,8 @@ export default function StudentDashboard() {
         )}
 
         {/* Stats Grid */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -106,12 +106,13 @@ export default function StudentDashboard() {
                 icon={EventAvailableIcon}
                 iconBgColor="#f0fdf4"
                 iconColor="#16a34a"
+                accentColor="#16a34a"
                 subtitle="Overall attendance score"
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -120,13 +121,14 @@ export default function StudentDashboard() {
                 value={summary.teamName || "Assigned"}
                 icon={GroupsIcon}
                 iconBgColor="#eff6ff"
-                iconColor="#1d4ed8"
+                iconColor="#1e40af"
+                accentColor="#1e40af"
                 subtitle="Current team assignment"
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -136,12 +138,13 @@ export default function StudentDashboard() {
                 icon={ChecklistIcon}
                 iconBgColor="#fff7ed"
                 iconColor="#ea580c"
+                accentColor="#ea580c"
                 subtitle="Assigned to you"
               />
             )}
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {loading ? (
               <Skeleton variant="rounded" height={130} />
             ) : (
@@ -151,6 +154,7 @@ export default function StudentDashboard() {
                 icon={TrendingUpIcon}
                 iconBgColor="#faf5ff"
                 iconColor="#9333ea"
+                accentColor="#9333ea"
                 subtitle="Team milestone rate"
               />
             )}
@@ -171,8 +175,8 @@ export default function StudentDashboard() {
           {loading ? (
             <Skeleton variant="rounded" height={180} />
           ) : myTasks.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-              No tasks currently assigned to you.
+            <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
+              No tasks currently assigned to you. Enjoy your study session!
             </Typography>
           ) : (
             <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
