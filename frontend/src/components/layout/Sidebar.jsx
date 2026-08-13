@@ -77,20 +77,8 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         bgcolor: "#ffffff",
       }}
     >
-      {/* Brand Logo */}
-      <Box sx={{ px: 2.5, pt: 3, pb: 2, textAlign: "center" }}>
-        <Box
-          component="img"
-          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
-          alt="SMIT Logo"
-          sx={{
-            height: 48,
-            width: "auto",
-            objectFit: "contain",
-            mx: "auto",
-            mb: 1,
-          }}
-        />
+      {/* Sidebar Header Section */}
+      <Box sx={{ px: 2.5, py: 2 }}>
         <Typography
           variant="caption"
           sx={{
@@ -99,17 +87,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             color: "text.disabled",
             letterSpacing: "0.08em",
             fontSize: "0.7rem",
+            textTransform: "uppercase",
           }}
         >
-          {role === "ADMIN" ? "ADMINISTRATION" : "STUDENT PORTAL"}
+          {role === "ADMIN" ? "ADMINISTRATION MENU" : "STUDENT MENU"}
         </Typography>
       </Box>
 
-      <Divider sx={{ borderColor: "grey.100" }} />
+      <Divider sx={{ borderColor: "divider" }} />
 
       {/* Navigation List */}
-      <Box sx={{ flex: 1, px: 2, py: 2.5, overflowY: "auto" }}>
-        <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+      <Box sx={{ flex: 1, px: 2, py: 2, overflowY: "auto" }}>
+        <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           {navItems.map((item) => (
             <ListItem key={item.to} disablePadding>
               <ListItemButton
@@ -120,13 +109,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                   borderRadius: 2.5,
                   py: 1.1,
                   px: 2,
-                  color: "#475569",
-                  transition: "all 0.2s ease-in-out",
+                  color: "text.secondary",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&.active": {
                     background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
                     color: "#ffffff",
                     fontWeight: 700,
-                    boxShadow: "0 4px 12px rgba(30, 64, 175, 0.25)",
+                    boxShadow: "0 4px 12px rgba(30, 64, 175, 0.22)",
                     "& .MuiListItemIcon-root": {
                       color: "#ffffff",
                     },
@@ -141,7 +130,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 36, color: "inherit", transition: "color 0.2s ease" }}>
+                <ListItemIcon sx={{ minWidth: 34, color: "inherit", transition: "color 0.2s ease" }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
@@ -154,7 +143,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </List>
       </Box>
 
-      <Divider sx={{ borderColor: "grey.100" }} />
+      <Divider sx={{ borderColor: "divider" }} />
 
       {/* User Summary & Logout */}
       <Box sx={{ p: 2 }}>
@@ -187,7 +176,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             "&:hover": { bgcolor: "error.50", transform: "translateX(4px)" },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 36, color: "error.main" }}>
+          <ListItemIcon sx={{ minWidth: 34, color: "error.main" }}>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: 13.5, fontWeight: 700 }} />

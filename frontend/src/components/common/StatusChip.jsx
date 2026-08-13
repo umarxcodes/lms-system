@@ -8,7 +8,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 export default function StatusChip({ status }) {
   if (!status) return null;
 
-  const normalized = String(status).toLowerCase().replace(/_/g, " ");
+  const normalized = String(status).toLowerCase().trim().replace(/_/g, " ");
 
   let color = "default";
   let icon = null;
@@ -18,6 +18,9 @@ export default function StatusChip({ status }) {
     case "present":
     case "completed":
     case "active":
+    case "submitted":
+    case "verified":
+    case "approved":
       color = "success";
       icon = <CheckCircleOutlinedIcon fontSize="small" />;
       break;
@@ -26,6 +29,8 @@ export default function StatusChip({ status }) {
     case "urgent":
     case "high":
     case "inactive":
+    case "rejected":
+    case "failed":
       color = "error";
       icon = <HighlightOffIcon fontSize="small" />;
       break;
@@ -34,6 +39,8 @@ export default function StatusChip({ status }) {
     case "medium":
     case "in progress":
     case "under review":
+    case "pending":
+    case "warning":
       color = "warning";
       icon = <AccessTimeIcon fontSize="small" />;
       break;
@@ -43,6 +50,7 @@ export default function StatusChip({ status }) {
     case "on hold":
     case "low":
     case "todo":
+    case "draft":
       color = "info";
       icon = <InfoOutlinedIcon fontSize="small" />;
       break;
@@ -59,9 +67,11 @@ export default function StatusChip({ status }) {
       icon={icon}
       label={label}
       sx={{
-        fontWeight: 600,
+        fontWeight: 700,
         textTransform: "capitalize",
         px: 0.5,
+        letterSpacing: "0.01em",
+        borderRadius: 2,
       }}
     />
   );

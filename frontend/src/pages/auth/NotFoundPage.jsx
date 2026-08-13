@@ -19,43 +19,57 @@ export default function NotFoundPage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 12 }}>
+    <Container maxWidth="sm" sx={{ py: 10 }}>
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: 5,
           textAlign: "center",
           borderRadius: 4,
-          border: "1px solid",
-          borderColor: "grey.200",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.04)",
           bgcolor: "background.paper",
         }}
       >
         <Box
+          component="img"
+          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
+          alt="SMIT Logo"
           sx={{
-            width: 72,
-            height: 72,
+            height: 52,
+            width: "auto",
+            objectFit: "contain",
+            mx: "auto",
+            display: "block",
+            mb: 3,
+          }}
+        />
+
+        <Box
+          sx={{
+            width: 64,
+            height: 64,
             borderRadius: "50%",
-            bgcolor: "primary.50",
+            bgcolor: "#eff6ff",
             color: "primary.main",
             display: "grid",
             placeItems: "center",
             mx: "auto",
-            mb: 3,
+            mb: 2.5,
           }}
         >
-          <MapOutlinedIcon sx={{ fontSize: 40 }} />
+          <MapOutlinedIcon sx={{ fontSize: 34 }} />
         </Box>
 
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, color: "text.primary" }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, color: "#1e293b", fontSize: "1.5rem" }}>
           404 — Page Not Found
         </Typography>
 
-        <Typography variant="body1" sx={{ color: "text.secondary", mb: 4 }}>
+        <Typography variant="body2" sx={{ color: "text.secondary", mb: 4, lineHeight: 1.6 }}>
           The page you are looking for does not exist or has been moved.
         </Typography>
 
-        <Button variant="contained" color="primary" onClick={handleHome} size="large">
+        <Button variant="contained" color="primary" onClick={handleHome} size="medium" sx={{ px: 4 }}>
           Go Back Home
         </Button>
       </Paper>
