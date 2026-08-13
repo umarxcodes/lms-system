@@ -10,7 +10,7 @@ import {
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { reportApi } from "../../services/reportApi";
 import { useToast } from "../../context/ToastContext";
@@ -32,14 +32,11 @@ export default function StudentReports() {
   }, [showToast]);
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="My Progress Report Card"
-        subtitle="Official summary of your attendance performance and milestone completions."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Official summary of your attendance performance and milestone completions."
       />
-
-      <PageContent>
         <Card sx={{ maxWidth: 640 }}>
           <CardContent sx={{ p: 4 }}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -92,6 +89,5 @@ export default function StudentReports() {
           </CardContent>
         </Card>
       </PageContent>
-    </>
   );
 }

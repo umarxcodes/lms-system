@@ -21,7 +21,7 @@ import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SecurityIcon from "@mui/icons-material/Security";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import CloudinaryAvatarUpload from "../../components/common/CloudinaryAvatarUpload";
 import { settingsApi } from "../../services/settingsApi";
@@ -143,14 +143,11 @@ export default function AdminSettings() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Admin Settings"
-        subtitle="Manage your personal profile, Cloudinary avatar, security, and global system configuration."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Manage your personal profile, Cloudinary avatar, security, and global system configuration."
       />
-
-      <PageContent>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs value={activeTab} onChange={(e, val) => setActiveTab(val)}>
             <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label="Profile" />
@@ -320,6 +317,5 @@ export default function AdminSettings() {
           </Card>
         )}
       </PageContent>
-    </>
   );
 }

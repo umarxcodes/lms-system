@@ -18,7 +18,7 @@ import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import EmptyState from "../../components/common/EmptyState";
 import { notificationApi } from "../../services/notificationApi";
@@ -79,11 +79,10 @@ export default function StudentNotifications() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Notifications & Announcements"
-        subtitle="System alerts, project updates, and bootcamp announcements."
-        onMobileNavOpen={onMobileNavOpen}
+        description="System alerts, project updates, and bootcamp announcements."
         actions={
           notifications.length > 0 && (
             <Button startIcon={<MarkEmailReadIcon />} onClick={handleMarkAllRead}>
@@ -92,8 +91,6 @@ export default function StudentNotifications() {
           )
         }
       />
-
-      <PageContent>
         <Card sx={{ p: 3, maxWidth: 800 }}>
           {loading ? (
             <Box sx={{ py: 6, textAlign: "center" }}>
@@ -155,6 +152,5 @@ export default function StudentNotifications() {
           )}
         </Card>
       </PageContent>
-    </>
   );
 }

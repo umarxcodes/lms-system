@@ -31,7 +31,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { teamApi } from "../../services/teamApi";
@@ -129,10 +129,10 @@ export default function AdminTeamDetail() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title={`Team: ${team?.name || "Team Detail"}`}
-        subtitle={team?.description || "Manage team roster, members, and project assignments."}
-        onMobileNavOpen={onMobileNavOpen}
+        description={team?.description || "Manage team roster, members, and project assignments."}
         actions={
           <Stack direction="row" spacing={1}>
             <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/teams")}>
@@ -144,8 +144,6 @@ export default function AdminTeamDetail() {
           </Stack>
         }
       />
-
-      <PageContent>
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 3 }}>

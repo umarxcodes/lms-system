@@ -28,7 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import EventCheckIcon from "@mui/icons-material/EventAvailable";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import EmptyState from "../../components/common/EmptyState";
@@ -145,18 +145,16 @@ export default function AdminAttendance() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title="Attendance Management"
-        subtitle="Track, mark, and audit student daily attendance records."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Track, mark, and audit student daily attendance records."
         actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenMark}>
             Mark Attendance
           </Button>
         }
       />
-
-      <PageContent>
         <Card sx={{ p: 3 }}>
           <Grid container spacing={2} sx={{ mb: 3, alignItems: "center" }}>
             <Grid item xs={12} sm={4}>

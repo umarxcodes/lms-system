@@ -19,7 +19,7 @@ import {
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { projectApi } from "../../services/projectApi";
 import { taskApi } from "../../services/taskApi";
@@ -63,14 +63,11 @@ export default function AdminProgress() {
   const overallTaskProgress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Bootcamp Progress Overview"
-        subtitle="Track team project completion rates and student deliverable milestones."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Track team project completion rates and student deliverable milestones."
       />
-
-      <PageContent>
         {/* Progress Summary Card */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -176,6 +173,5 @@ export default function AdminProgress() {
           )}
         </Card>
       </PageContent>
-    </>
   );
 }

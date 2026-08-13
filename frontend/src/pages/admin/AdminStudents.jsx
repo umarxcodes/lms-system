@@ -25,7 +25,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
@@ -228,10 +228,10 @@ export default function AdminStudents() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title="Student Management"
-        subtitle="Manage bootcamp student accounts, batch allocations, profiles, and teams."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Manage student profiles, accounts, and batch enrollments."
         actions={
           <Button
             variant="contained"
@@ -243,8 +243,6 @@ export default function AdminStudents() {
           </Button>
         }
       />
-
-      <PageContent>
         <Card sx={{ p: 3 }}>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 3 }} justifyContent="space-between">
             <TextField

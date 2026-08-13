@@ -12,7 +12,7 @@ import {
 import LockIcon from "@mui/icons-material/Lock";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { settingsApi } from "../../services/settingsApi";
 import { useToast } from "../../context/ToastContext";
@@ -42,14 +42,11 @@ export default function StudentSettings() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Student Settings"
-        subtitle="Manage your account security and authentication credentials."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Manage your account security and authentication credentials."
       />
-
-      <PageContent>
         <Card sx={{ maxWidth: 480 }}>
           <CardContent sx={{ p: 4 }}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -109,6 +106,5 @@ export default function StudentSettings() {
           </CardContent>
         </Card>
       </PageContent>
-    </>
   );
 }

@@ -25,7 +25,7 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import FolderIcon from "@mui/icons-material/Folder";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import { projectApi } from "../../services/projectApi";
@@ -79,19 +79,16 @@ export default function AdminProjectDetail() {
   const progress = project?.progress || 0;
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title={`Project: ${project?.name || "Project Detail"}`}
-        subtitle={`Assigned Team: ${teamName}`}
-        onMobileNavOpen={onMobileNavOpen}
+        description={`Assigned Team: ${teamName}`}
         actions={
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/projects")}>
             Back to Projects
           </Button>
         }
       />
-
-      <PageContent>
         {loading ? (
           <Skeleton variant="rounded" height={200} />
         ) : (
@@ -209,6 +206,5 @@ export default function AdminProjectDetail() {
           </Grid>
         )}
       </PageContent>
-    </>
   );
 }

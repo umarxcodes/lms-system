@@ -13,7 +13,7 @@ import CampaignIcon from "@mui/icons-material/Campaign";
 import SendIcon from "@mui/icons-material/Send";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { notificationApi } from "../../services/notificationApi";
 import { useToast } from "../../context/ToastContext";
@@ -44,14 +44,11 @@ export default function AdminNotifications() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Notifications & Announcements"
-        subtitle="Broadcast announcements and system updates to all enrolled students."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Broadcast announcements and system updates to all enrolled students."
       />
-
-      <PageContent>
         <Card sx={{ maxWidth: 640 }}>
           <CardContent sx={{ p: 4 }}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -115,6 +112,5 @@ export default function AdminNotifications() {
           </CardContent>
         </Card>
       </PageContent>
-    </>
   );
 }

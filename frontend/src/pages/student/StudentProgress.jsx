@@ -13,7 +13,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { reportApi } from "../../services/reportApi";
 import { useToast } from "../../context/ToastContext";
@@ -38,14 +38,11 @@ export default function StudentProgress() {
   const taskScore = report?.taskCompletionPercentage ?? 0;
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="My Progress & Performance"
-        subtitle="Review your overall attendance record and project deliverable metrics."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Review your overall attendance record and project deliverable metrics."
       />
-
-      <PageContent>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Card sx={{ p: 4 }}>
@@ -145,6 +142,5 @@ export default function StudentProgress() {
           </Grid>
         </Grid>
       </PageContent>
-    </>
   );
 }

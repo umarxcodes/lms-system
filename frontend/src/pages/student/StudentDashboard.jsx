@@ -23,7 +23,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatCard from "../../components/common/StatCard";
 import StatusChip from "../../components/common/StatusChip";
@@ -67,14 +67,11 @@ export default function StudentDashboard() {
   const announcement = data?.latestAnnouncement;
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title={`Welcome back, ${user?.name || "Student"}!`}
-        subtitle="Track your attendance, team tasks, and project milestones."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Track your attendance, team tasks, and project milestones."
       />
-
-      <PageContent>
         {/* Latest Announcement Banner */}
         {announcement && (
           <Card sx={{ bgcolor: "primary.50", border: "1px solid", borderColor: "primary.200", p: 2.5, mb: 3 }}>
@@ -208,6 +205,5 @@ export default function StudentDashboard() {
           )}
         </Card>
       </PageContent>
-    </>
   );
 }

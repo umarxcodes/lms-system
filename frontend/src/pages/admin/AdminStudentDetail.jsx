@@ -28,7 +28,7 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import DownloadIcon from "@mui/icons-material/Download";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import { studentApi } from "../../services/studentApi";
@@ -87,19 +87,16 @@ export default function AdminStudentDetail() {
   const studentEmail = student?.email || student?.user?.email || "N/A";
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title={`Student Profile: ${studentName}`}
-        subtitle={`Roll Number: ${student?.rollNumber || "N/A"} | Batch: ${student?.batch || "Batch 1"}`}
-        onMobileNavOpen={onMobileNavOpen}
+        description={`Roll Number: ${student?.rollNumber || "N/A"} | Batch: ${student?.batch || "Batch 1"}`}
         actions={
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/students")}>
             Back to List
           </Button>
         }
       />
-
-      <PageContent>
         {loading ? (
           <Skeleton variant="rounded" height={220} />
         ) : (
@@ -286,6 +283,5 @@ export default function AdminStudentDetail() {
           </Card>
         )}
       </PageContent>
-    </>
   );
 }

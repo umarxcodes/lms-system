@@ -29,7 +29,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
@@ -191,18 +191,16 @@ export default function AdminTasks() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title="Task Management"
-        subtitle="Assign, track, and review student deliverables across projects."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Assign, track, and review student deliverables across projects."
         actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
             Create Task
           </Button>
         }
       />
-
-      <PageContent>
         <Card sx={{ p: 3, mb: 3 }}>
           <Grid container spacing={2} sx={{ alignItems: "center" }}>
             <Grid item xs={12} sm={4}>

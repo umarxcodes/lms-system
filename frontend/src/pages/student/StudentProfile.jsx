@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import CloudinaryAvatarUpload from "../../components/common/CloudinaryAvatarUpload";
 import { studentApi } from "../../services/studentApi";
@@ -77,14 +77,11 @@ export default function StudentProfile() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Student Profile"
-        subtitle="Manage your profile information and Cloudinary profile photo."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Manage your profile information and Cloudinary profile photo."
       />
-
-      <PageContent>
         <Card sx={{ maxWidth: 640 }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
@@ -140,6 +137,5 @@ export default function StudentProfile() {
           </CardContent>
         </Card>
       </PageContent>
-    </>
   );
 }

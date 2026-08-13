@@ -18,7 +18,7 @@ import {
 import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import EmptyState from "../../components/common/EmptyState";
@@ -60,14 +60,11 @@ export default function StudentTasks() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="My Tasks & Deliverables"
-        subtitle="Update task statuses as you work through project requirements."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Update task statuses as you work through project requirements."
       />
-
-      <PageContent>
         <Card sx={{ p: 3 }}>
           {loading ? (
             <Box sx={{ py: 6, textAlign: "center" }}>
@@ -124,6 +121,5 @@ export default function StudentTasks() {
           )}
         </Card>
       </PageContent>
-    </>
   );
 }

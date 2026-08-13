@@ -14,7 +14,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import EmptyState from "../../components/common/EmptyState";
@@ -40,14 +40,11 @@ export default function StudentProjects() {
   const progress = project?.progress || 0;
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="My Team Project"
-        subtitle="Track project deliverables, repository links, and live deployments."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Track project deliverables, repository links, and live deployments."
       />
-
-      <PageContent>
         {loading ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress color="primary" />
@@ -118,6 +115,5 @@ export default function StudentProjects() {
           </Card>
         )}
       </PageContent>
-    </>
   );
 }

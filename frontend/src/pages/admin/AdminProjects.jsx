@@ -24,7 +24,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
@@ -140,18 +140,16 @@ export default function AdminProjects() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title="Project Management"
-        subtitle="Assign, track, and review team capstone & module projects."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Assign, track, and review team capstone & module projects."
         actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
             Create Project
           </Button>
         }
       />
-
-      <PageContent>
         {loading ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress color="primary" />

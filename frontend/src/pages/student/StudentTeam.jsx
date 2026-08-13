@@ -20,7 +20,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import FolderIcon from "@mui/icons-material/Folder";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import EmptyState from "../../components/common/EmptyState";
 import { teamApi } from "../../services/teamApi";
@@ -45,14 +45,11 @@ export default function StudentTeam() {
   const members = team?.members || [];
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title={`My Team: ${team?.name || "Team Overview"}`}
-        subtitle={team?.description || "Collaborate with your teammates on project deliverables."}
-        onMobileNavOpen={onMobileNavOpen}
+        description={team?.description || "Collaborate with your teammates on project deliverables."}
       />
-
-      <PageContent>
         {loading ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress color="primary" />
@@ -134,6 +131,5 @@ export default function StudentTeam() {
           </Grid>
         )}
       </PageContent>
-    </>
   );
 }

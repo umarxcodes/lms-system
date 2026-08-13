@@ -24,7 +24,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
@@ -107,22 +107,21 @@ export default function AdminTeams() {
 
   return (
     <>
-      <Header
+      <PageContent>
+      <PageHeader
         title="Team Management"
-        subtitle="Organize students into project development teams."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Organize bootcamp trainees into project development teams."
         actions={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenCreateModal(true)}
+            sx={{ fontWeight: 600 }}
           >
             Create Team
           </Button>
         }
       />
-
-      <PageContent>
         <Card sx={{ p: 3, mb: 3 }}>
           <TextField
             placeholder="Search teams by name..."

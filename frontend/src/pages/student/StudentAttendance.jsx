@@ -15,7 +15,7 @@ import {
 import EventCheckIcon from "@mui/icons-material/EventAvailable";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import EmptyState from "../../components/common/EmptyState";
@@ -41,14 +41,11 @@ export default function StudentAttendance() {
   }, [showToast]);
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="My Attendance Logs"
-        subtitle="Read-only record of your daily attendance and instructor notes."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Read-only record of your daily attendance and instructor notes."
       />
-
-      <PageContent>
         <Card sx={{ p: 3 }}>
           {loading ? (
             <Box sx={{ py: 6, textAlign: "center" }}>
@@ -86,6 +83,5 @@ export default function StudentAttendance() {
           )}
         </Card>
       </PageContent>
-    </>
   );
 }

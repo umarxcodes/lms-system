@@ -15,7 +15,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { useOutletContext } from "react-router-dom";
 
-import Header from "../../components/layout/Header";
+import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { reportApi } from "../../services/reportApi";
 import { useToast } from "../../context/ToastContext";
@@ -71,14 +71,11 @@ export default function AdminReports() {
   };
 
   return (
-    <>
-      <Header
+    <PageContent>
+      <PageHeader
         title="Reports & Analytics"
-        subtitle="Generate and export comprehensive attendance and assignment performance reports."
-        onMobileNavOpen={onMobileNavOpen}
+        description="Generate and export comprehensive attendance and assignment performance reports."
       />
-
-      <PageContent>
         <Grid container spacing={3}>
           {/* Attendance Report Card */}
           <Grid item xs={12} md={6}>
@@ -195,6 +192,5 @@ export default function AdminReports() {
           </Grid>
         </Grid>
       </PageContent>
-    </>
   );
 }
