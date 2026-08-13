@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -36,7 +36,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      setError("Please enter your CNIC / Email and Password.");
+      setError("Please enter your Email Address and Password.");
       return;
     }
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
     } catch (err) {
       setError(
         err?.message ||
-          "Invalid credentials. Please verify your CNIC / Email and password."
+          "Invalid credentials. Please verify your Email and password."
       );
     } finally {
       setLoading(false);
@@ -160,7 +160,7 @@ export default function LoginPage() {
                     lineHeight: 1.5,
                   }}
                 >
-                  Enter your CNIC number or Email and Password registered with SMIT.
+                  Enter your Email Address and Password registered with SMIT.
                 </Typography>
               </Box>
 
@@ -181,7 +181,7 @@ export default function LoginPage() {
 
               <Box component="form" onSubmit={handleSubmit} noValidate>
                 <Stack spacing={2.5}>
-                  {/* CNIC / Email Input */}
+                  {/* Email Input */}
                   <Box>
                     <Typography
                       variant="caption"
@@ -195,11 +195,12 @@ export default function LoginPage() {
                         letterSpacing: "0.03em",
                       }}
                     >
-                      CNIC / Email Address
+                      Email Address *
                     </Typography>
                     <TextField
                       fullWidth
-                      placeholder="e.g. 42101-1234567-1 or student@saylani.org"
+                      type="email"
+                      placeholder="e.g. student@saylani.org"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       variant="outlined"
@@ -207,7 +208,7 @@ export default function LoginPage() {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <BadgeOutlinedIcon fontSize="small" sx={{ color: "#94a3b8" }} />
+                            <EmailOutlinedIcon fontSize="small" sx={{ color: "#94a3b8" }} />
                           </InputAdornment>
                         ),
                       }}
@@ -245,7 +246,7 @@ export default function LoginPage() {
                         letterSpacing: "0.03em",
                       }}
                     >
-                      Password
+                      Password *
                     </Typography>
                     <TextField
                       fullWidth
