@@ -1,7 +1,7 @@
 import { apiClient } from "./api.client";
 
 export const notificationApi = {
-  createAnnouncement: (title, message) => apiClient.post("/notifications/announcements", { title, message }),
+  createAnnouncement: (payload) => apiClient.post("/notifications/announcements", payload),
   getMyNotifications: () => apiClient.get("/notifications/me"),
   getUnreadNotifications: () => apiClient.get("/notifications/unread"),
   getUnreadCount: () => apiClient.get("/notifications/unread/count"),

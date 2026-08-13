@@ -27,7 +27,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { useOutletContext } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
@@ -72,7 +71,6 @@ export default function AdminTasks() {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
   const { showToast } = useToast();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -84,7 +82,7 @@ export default function AdminTasks() {
           items = items.filter((t) => t.status === selectedStatus);
         }
         if (selectedProjectId) {
-          items = items.filter((t) => (t.project?._id || t.projectId) === selectedProjectId);
+          items = items.filter((t) => (t.project?._id || t.project || t.projectId) === selectedProjectId);
         }
         setTasks(items);
       }
@@ -103,7 +101,7 @@ export default function AdminTasks() {
     projectApi.getProjects().then((res) => {
       if (res.success && res.data) setProjects(Array.isArray(res.data) ? res.data : []);
     });
-    studentApi.getStudents({ limit: 100 }).then((res) => {
+    studentApi.getStudents({ limit: 500 }).then((res) => {
       if (res.success && res.data) {
         const items = Array.isArray(res.data) ? res.data : res.data.students || [];
         setStudents(items);
@@ -125,12 +123,22 @@ export default function AdminTasks() {
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.projectId) return;
+    if (!formData.title || !formData.projectId) {
+      showToast("Please enter a task title and select a project.", "warning");
+      return;
+    }
     setCreateSubmitting(true);
     try {
-      const payload = { ...formData };
-      if (!payload.assignedTo) delete payload.assignedTo;
-      if (!payload.dueDate) delete payload.dueDate;
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description?.trim(),
+        project: formData.projectId,
+        priority: formData.priority || "medium",
+        status: "todo",
+      };
+      if (formData.assignedTo) payload.assignedTo = formData.assignedTo;
+      if (formData.dueDate) payload.deadline = formData.dueDate;
+
       await taskApi.createTask(payload);
       showToast("Task created successfully!", "success");
       setOpenCreateModal(false);
@@ -192,18 +200,19 @@ export default function AdminTasks() {
   return (
     <>
       <PageContent>
-      <PageHeader
-        title="Task Management"
-        description="Assign, track, and review student deliverables across projects."
-        actions={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
-            Create Task
-          </Button>
-        }
-      />
+        <PageHeader
+          title="Task Management"
+          description="Assign, track, and review student deliverables across projects."
+          actions={
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
+              Create Task
+            </Button>
+          }
+        />
+
         <Card sx={{ p: 3, mb: 3 }}>
           <Grid container spacing={2} sx={{ alignItems: "center" }}>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 label="Filter by Status"
                 select
@@ -214,13 +223,12 @@ export default function AdminTasks() {
               >
                 <MenuItem value="">All Statuses</MenuItem>
                 <MenuItem value="todo">To Do</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="under_review">Under Review</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="in-progress">In Progress</MenuItem>
+                <MenuItem value="done">Completed / Done</MenuItem>
               </TextField>
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 label="Filter by Project"
                 select
@@ -232,7 +240,7 @@ export default function AdminTasks() {
                 <MenuItem value="">All Projects</MenuItem>
                 {projects.map((p) => (
                   <MenuItem key={p._id || p.id} value={p._id || p.id}>
-                    {p.name}
+                    {p.title || p.name}
                   </MenuItem>
                 ))}
               </TextField>
@@ -253,13 +261,13 @@ export default function AdminTasks() {
             onAction={handleOpenCreateModal}
           />
         ) : (
-          <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
+          <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 3, overflowX: "auto" }}>
             <Table>
               <TableHead sx={{ bgcolor: "grey.50" }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Task Title</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Assigned To</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Assigned Student</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Priority</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 700 }} align="right">
@@ -269,12 +277,14 @@ export default function AdminTasks() {
               </TableHead>
               <TableBody>
                 {tasks.map((t) => {
-                  const projName = t.project?.name || t.projectId?.name || "N/A";
+                  const projTitle = t.project?.title || t.project?.name || t.projectId?.name || "N/A";
                   const studentName = t.assignedTo?.name || t.assignedTo?.user?.name || "Unassigned";
+                  const currentStatus = t.status || "todo";
+
                   return (
                     <TableRow key={t._id || t.id} hover>
                       <TableCell sx={{ fontWeight: 600 }}>{t.title}</TableCell>
-                      <TableCell>{projName}</TableCell>
+                      <TableCell>{projTitle}</TableCell>
                       <TableCell>{studentName}</TableCell>
                       <TableCell>
                         <StatusChip status={t.priority || "medium"} />
@@ -283,14 +293,13 @@ export default function AdminTasks() {
                         <TextField
                           select
                           size="small"
-                          value={t.status || "todo"}
+                          value={currentStatus}
                           onChange={(e) => handleStatusChange(t._id || t.id, e.target.value)}
-                          sx={{ width: 130 }}
+                          sx={{ width: 140 }}
                         >
                           <MenuItem value="todo">To Do</MenuItem>
-                          <MenuItem value="in_progress">In Progress</MenuItem>
-                          <MenuItem value="under_review">Under Review</MenuItem>
-                          <MenuItem value="completed">Completed</MenuItem>
+                          <MenuItem value="in-progress">In Progress</MenuItem>
+                          <MenuItem value="done">Done</MenuItem>
                         </TextField>
                       </TableCell>
                       <TableCell align="right">
@@ -329,6 +338,7 @@ export default function AdminTasks() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. Build User Authentication Service"
                 />
               </Grid>
 
@@ -340,6 +350,7 @@ export default function AdminTasks() {
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Describe task objectives and technical requirements..."
                 />
               </Grid>
 
@@ -352,11 +363,17 @@ export default function AdminTasks() {
                   value={formData.projectId}
                   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
                 >
-                  {projects.map((p) => (
-                    <MenuItem key={p._id || p.id} value={p._id || p.id}>
-                      {p.name}
+                  {projects.length === 0 ? (
+                    <MenuItem value="" disabled>
+                      No projects available (Create a project first)
                     </MenuItem>
-                  ))}
+                  ) : (
+                    projects.map((p) => (
+                      <MenuItem key={p._id || p.id} value={p._id || p.id}>
+                        {p.title || p.name}
+                      </MenuItem>
+                    ))
+                  )}
                 </TextField>
               </Grid>
 
@@ -370,7 +387,7 @@ export default function AdminTasks() {
                 >
                   <MenuItem value="">Unassigned</MenuItem>
                   {students.map((s) => (
-                    <MenuItem key={s._id || s.id} value={s._id || s.id}>
+                    <MenuItem key={s.user?._id || s._id || s.id} value={s.user?._id || s._id || s.id}>
                       {s.name || s.user?.name}
                     </MenuItem>
                   ))}
@@ -388,7 +405,6 @@ export default function AdminTasks() {
                   <MenuItem value="low">Low</MenuItem>
                   <MenuItem value="medium">Medium</MenuItem>
                   <MenuItem value="high">High</MenuItem>
-                  <MenuItem value="urgent">Urgent</MenuItem>
                 </TextField>
               </Grid>
 
@@ -434,8 +450,8 @@ export default function AdminTasks() {
               onChange={(e) => setAssignStudentId(e.target.value)}
             >
               {students.map((s) => (
-                <MenuItem key={s._id || s.id} value={s._id || s.id}>
-                  {s.name || s.user?.name} ({s.rollNumber || "No Roll #"})
+                <MenuItem key={s.user?._id || s._id || s.id} value={s.user?._id || s._id || s.id}>
+                  {s.name || s.user?.name} ({s.rollNumber || "Student"})
                 </MenuItem>
               ))}
             </TextField>

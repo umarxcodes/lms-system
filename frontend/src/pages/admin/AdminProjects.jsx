@@ -22,7 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
@@ -42,11 +42,9 @@ export default function AdminProjects() {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    title: "",
     description: "",
     teamId: "",
-    repoUrl: "",
-    liveUrl: "",
     deadline: "",
   });
 
@@ -56,7 +54,6 @@ export default function AdminProjects() {
 
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -83,11 +80,9 @@ export default function AdminProjects() {
 
   const handleOpenCreateModal = () => {
     setFormData({
-      name: "",
+      title: "",
       description: "",
       teamId: teams.length > 0 ? teams[0]._id || teams[0].id : "",
-      repoUrl: "",
-      liveUrl: "",
       deadline: "",
     });
     setOpenCreateModal(true);
@@ -95,10 +90,22 @@ export default function AdminProjects() {
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.teamId) return;
+    if (!formData.title || !formData.teamId) {
+      showToast("Please enter a project title and select a team.", "warning");
+      return;
+    }
+
     setCreateSubmitting(true);
     try {
-      await projectApi.createProject(formData);
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description?.trim(),
+        team: formData.teamId,
+        status: "pending",
+      };
+      if (formData.deadline) payload.deadline = formData.deadline;
+
+      await projectApi.createProject(payload);
       showToast("Project created successfully!", "success");
       setOpenCreateModal(false);
       fetchProjects();
@@ -141,15 +148,16 @@ export default function AdminProjects() {
   return (
     <>
       <PageContent>
-      <PageHeader
-        title="Project Management"
-        description="Assign, track, and review team capstone & module projects."
-        actions={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
-            Create Project
-          </Button>
-        }
-      />
+        <PageHeader
+          title="Project Management"
+          description="Assign, track, and review team capstone & module projects."
+          actions={
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
+              Create Project
+            </Button>
+          }
+        />
+
         {loading ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress color="primary" />
@@ -165,15 +173,18 @@ export default function AdminProjects() {
         ) : (
           <Grid container spacing={3}>
             {projects.map((proj) => {
+              const projTitle = proj.title || proj.name || "Untitled Project";
               const teamName = proj.team?.name || proj.teamId?.name || "Unassigned";
               const progress = proj.progress || 0;
+              const currentStatus = proj.status || "pending";
+
               return (
                 <Grid item xs={12} sm={6} md={4} key={proj._id || proj.id}>
                   <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                     <CardContent sx={{ p: 3, flex: 1 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                          {proj.name}
+                          {projTitle}
                         </Typography>
                         <Tooltip title="Delete Project">
                           <IconButton
@@ -190,23 +201,22 @@ export default function AdminProjects() {
                         {proj.description || "No description available."}
                       </Typography>
 
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
                         Assigned Team: <strong>{teamName}</strong>
                       </Typography>
 
                       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                        <StatusChip status={proj.status || "planning"} />
+                        <StatusChip status={currentStatus} />
                         <TextField
                           select
                           size="small"
-                          value={proj.status || "planning"}
+                          value={currentStatus}
                           onChange={(e) => handleStatusChange(proj._id || proj.id, e.target.value)}
-                          sx={{ width: 130 }}
+                          sx={{ width: 140 }}
                         >
-                          <MenuItem value="planning">Planning</MenuItem>
-                          <MenuItem value="in_progress">In Progress</MenuItem>
+                          <MenuItem value="pending">Pending</MenuItem>
+                          <MenuItem value="in-progress">In Progress</MenuItem>
                           <MenuItem value="completed">Completed</MenuItem>
-                          <MenuItem value="on_hold">On Hold</MenuItem>
                         </TextField>
                       </Stack>
 
@@ -257,8 +267,9 @@ export default function AdminProjects() {
                   label="Project Title"
                   fullWidth
                   required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. Saylani LMS Full-Stack Web App"
                 />
               </Grid>
 
@@ -270,6 +281,7 @@ export default function AdminProjects() {
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter project goals and requirements..."
                 />
               </Grid>
 
@@ -282,11 +294,17 @@ export default function AdminProjects() {
                   value={formData.teamId}
                   onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
                 >
-                  {teams.map((t) => (
-                    <MenuItem key={t._id || t.id} value={t._id || t.id}>
-                      {t.name}
+                  {teams.length === 0 ? (
+                    <MenuItem value="" disabled>
+                      No teams available (Create a team first)
                     </MenuItem>
-                  ))}
+                  ) : (
+                    teams.map((t) => (
+                      <MenuItem key={t._id || t.id} value={t._id || t.id}>
+                        {t.name}
+                      </MenuItem>
+                    ))
+                  )}
                 </TextField>
               </Grid>
 
@@ -298,24 +316,6 @@ export default function AdminProjects() {
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                   InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Repository URL (GitHub)"
-                  fullWidth
-                  value={formData.repoUrl}
-                  onChange={(e) => setFormData({ ...formData, repoUrl: e.target.value })}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Live Deployment URL"
-                  fullWidth
-                  value={formData.liveUrl}
-                  onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
                 />
               </Grid>
             </Grid>
