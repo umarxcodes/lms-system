@@ -15,12 +15,16 @@
     "@mui/icons-material": "^9.3.1",
     "@mui/material": "^9.3.1",
     "@mui/x-data-grid": "^9.11.0",
+    "@mui/x-date-pickers": "^9.11.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-table": "^9.1.2",
+    "axios": "^1.19.0",
+    "dayjs": "^1.11.21",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

@@ -1,10 +1,9 @@
 import dotenv from "dotenv";
+dotenv.config();
+
 import connectDB from "./config/database.js";
 import { seedInitialAdmin } from "./services/adminSeed.service.js";
 import { env } from "./config/env.js";
-
-dotenv.config();
-
 import app from "./app.js";
 
 const PORT = env.PORT;
@@ -17,7 +16,7 @@ async function startServer() {
   });
 }
 
-startServer().catch(() => {
-  console.error("Server failed to start");
+startServer().catch((err) => {
+  console.error("Server failed to start:", err);
   process.exit(1);
 });
