@@ -7,15 +7,12 @@ import {
   Box,
   Skeleton,
   Button,
-  Divider,
   Avatar,
   Chip,
   Paper,
   Grid,
 } from "@mui/material";
-import AssessmentIcon from "@mui/icons-material/Assessment";
 import PrintIcon from "@mui/icons-material/Print";
-import SchoolIcon from "@mui/icons-material/School";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -71,7 +68,7 @@ export default function StudentReports() {
             color="primary"
             startIcon={<PrintIcon />}
             onClick={handlePrint}
-            sx={{ fontWeight: 700, borderRadius: 2 }}
+            sx={{ fontWeight: 800, borderRadius: 2.5, px: 2.5 }}
           >
             Print / Save PDF
           </Button>
@@ -80,31 +77,32 @@ export default function StudentReports() {
 
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         <Card
+          elevation={0}
           sx={{
             borderRadius: 3.5,
-            border: "2px solid",
-            borderColor: "divider",
-            boxShadow: "0 12px 32px rgba(0,0,0,0.06)",
+            bgcolor: "#ffffff",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 10px 30px -5px rgba(0,0,0,0.05), 0 4px 10px -2px rgba(0,0,0,0.02)",
             overflow: "hidden",
           }}
         >
           {/* Header Branding Banner */}
           <Box
             sx={{
-              p: 4,
+              p: { xs: 3, sm: 4 },
               background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
               color: "#fff",
             }}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} spacing={2}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar
                   src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
                   alt="SMIT Logo"
-                  sx={{ width: 56, height: 56, bgcolor: "#fff", p: 0.5 }}
+                  sx={{ width: 56, height: 56, bgcolor: "#ffffff", p: 0.5 }}
                 />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 0.5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: "-0.01em" }}>
                     SAYLANI MASS IT TRAINING (SMIT)
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, display: "block" }}>
@@ -114,19 +112,21 @@ export default function StudentReports() {
               </Stack>
 
               <Chip
-                icon={<VerifiedIcon style={{ color: "#fff" }} />}
+                icon={<VerifiedIcon style={{ color: "#ffffff" }} />}
                 label="OFFICIAL VERIFIED"
                 sx={{
                   bgcolor: "rgba(16, 185, 129, 0.2)",
                   color: "#34d399",
                   fontWeight: 800,
+                  fontSize: "0.725rem",
                   border: "1px solid rgba(52, 211, 153, 0.4)",
+                  borderRadius: 2,
                 }}
               />
             </Stack>
           </Box>
 
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
             {loading ? (
               <Skeleton variant="rounded" height={240} />
             ) : (
@@ -136,45 +136,44 @@ export default function StudentReports() {
                   elevation={0}
                   sx={{
                     p: 3,
-                    bgcolor: "grey.50",
+                    bgcolor: "#f8fafc",
                     borderRadius: 2.5,
-                    border: "1px solid",
-                    borderColor: "divider",
+                    border: "1px solid #e2e8f0",
                   }}
                 >
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                      <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                         TRAINEE NAME
                       </Typography>
-                      <Typography variant="subtitle1" fontWeight={800} color="text.primary">
+                      <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
                         {user?.name || "Student Trainee"}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                      <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                         EMAIL ADDRESS
                       </Typography>
-                      <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+                      <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
                         {user?.email || "N/A"}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                      <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                         ROLL NUMBER / ID
                       </Typography>
-                      <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+                      <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
                         {user?.rollNum || user?._id?.substring(0, 8).toUpperCase() || "SMIT-TRAINEE"}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                      <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                         REPORT ISSUE DATE
                       </Typography>
-                      <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+                      <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
                         {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                       </Typography>
                     </Grid>
@@ -182,7 +181,7 @@ export default function StudentReports() {
                 </Paper>
 
                 {/* Score Breakdown Cards */}
-                <Typography variant="h6" fontWeight={700} sx={{ mt: 1 }}>
+                <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ mt: 1 }}>
                   Evaluated Performance Metrics
                 </Typography>
 
@@ -193,21 +192,20 @@ export default function StudentReports() {
                       sx={{
                         p: 2.5,
                         borderRadius: 2.5,
-                        border: "1px solid",
-                        borderColor: "success.200",
-                        bgcolor: "success.50",
+                        border: "1px solid #bbf7d0",
+                        bgcolor: "#f0fdf4",
                       }}
                     >
                       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                        <EventAvailableIcon sx={{ color: "success.main" }} />
-                        <Typography variant="subtitle2" fontWeight={700} color="success.main">
+                        <EventAvailableIcon sx={{ color: "#16a34a" }} />
+                        <Typography variant="subtitle2" fontWeight={800} color="#16a34a">
                           Attendance Percentage
                         </Typography>
                       </Stack>
-                      <Typography variant="h4" fontWeight={800} color="success.main">
+                      <Typography variant="h4" fontWeight={800} color="#16a34a">
                         {attendanceScore}%
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
                         Logged attendance ratio
                       </Typography>
                     </Paper>
@@ -219,21 +217,20 @@ export default function StudentReports() {
                       sx={{
                         p: 2.5,
                         borderRadius: 2.5,
-                        border: "1px solid",
-                        borderColor: "primary.200",
-                        bgcolor: "primary.50",
+                        border: "1px solid #bfdbfe",
+                        bgcolor: "#eff6ff",
                       }}
                     >
                       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                        <TaskAltIcon sx={{ color: "primary.main" }} />
-                        <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+                        <TaskAltIcon sx={{ color: "#1e40af" }} />
+                        <Typography variant="subtitle2" fontWeight={800} color="#1e40af">
                           Deliverables Completion Rate
                         </Typography>
                       </Stack>
-                      <Typography variant="h4" fontWeight={800} color="primary.main">
+                      <Typography variant="h4" fontWeight={800} color="#1e40af">
                         {taskScore}%
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
                         Assigned tasks completed
                       </Typography>
                     </Paper>
@@ -245,13 +242,13 @@ export default function StudentReports() {
                   elevation={0}
                   sx={{
                     p: 3,
-                    borderRadius: 2.5,
-                    bgcolor: "grey.900",
-                    color: "#fff",
+                    borderRadius: 3,
+                    bgcolor: "#0f172a",
+                    color: "#ffffff",
                     textAlign: "center",
                   }}
                 >
-                  <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 700, letterSpacing: 1 }}>
+                  <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 700, letterSpacing: "0.06em" }}>
                     OVERALL EVALUATION GRADE
                   </Typography>
                   <Typography variant="h3" sx={{ fontWeight: 900, color: evaluation.color, my: 0.5 }}>
@@ -261,9 +258,10 @@ export default function StudentReports() {
                     label={evaluation.status}
                     sx={{
                       bgcolor: evaluation.color,
-                      color: "#fff",
+                      color: "#ffffff",
                       fontWeight: 800,
                       px: 2,
+                      borderRadius: 2,
                     }}
                   />
                 </Paper>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
-  CardContent,
   Typography,
   Box,
   Stack,
@@ -26,7 +25,6 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import FolderIcon from "@mui/icons-material/Folder";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import {
@@ -97,16 +95,19 @@ export default function AdminProgress() {
     };
   }, [showToast]);
 
-  const completedTasks = tasks.filter((t) => t.status === "completed").length;
-  const inProgressTasks = tasks.filter((t) => t.status === "in_progress").length;
+  const completedTasks = tasks.filter((t) => t.status === "done" || t.status === "completed").length;
+  const inProgressTasks = tasks.filter((t) => t.status === "in-progress" || t.status === "in_progress").length;
   const underReviewTasks = tasks.filter((t) => t.status === "under_review").length;
   const todoTasks = tasks.filter((t) => t.status === "todo" || !t.status).length;
   const overallTaskProgress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
 
-  const projectChartData = projects.slice(0, 8).map((p) => ({
-    name: p.name.length > 14 ? p.name.substring(0, 14) + "..." : p.name,
-    progress: Math.round(p.progress || 0),
-  }));
+  const projectChartData = projects.slice(0, 8).map((p) => {
+    const title = p.title || p.name || "Untitled Project";
+    return {
+      name: title.length > 14 ? title.substring(0, 14) + "..." : title,
+      progress: Math.round(p.progress || 0),
+    };
+  });
 
   const taskPieData = [
     { name: "Completed", value: completedTasks },
@@ -116,8 +117,9 @@ export default function AdminProgress() {
   ].filter((d) => d.value > 0);
 
   const filteredProjects = projects.filter((p) => {
+    const title = p.title || p.name || "";
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.team?.name || p.teamId?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -136,31 +138,34 @@ export default function AdminProgress() {
         description="Monitor team project milestones, deliverable completion velocity, and task statistics across all active batches."
       />
 
-      {/* Stats Cards Row */}
+      {/* Clean Stat Cards Row */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card
+            elevation={0}
             sx={{
               p: 2.5,
               background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
               color: "#fff",
-              borderRadius: 3,
-              boxShadow: "0 8px 24px rgba(15, 23, 42, 0.15)",
+              borderRadius: 3.5,
+              boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.15)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 14px 30px -5px rgba(15, 23, 42, 0.22)" },
             }}
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
-                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
+                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em" }}>
                   Task Completion Rate
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, letterSpacing: "-0.02em" }}>
                   {loading ? <Skeleton width={60} sx={{ bgcolor: "rgba(255,255,255,0.2)" }} /> : `${Math.round(overallTaskProgress)}%`}
                 </Typography>
-                <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "#34d399", fontWeight: 700, display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
                   <CheckCircleIcon fontSize="inherit" /> {completedTasks} / {tasks.length} Completed
                 </Typography>
               </Box>
-              <Avatar sx={{ bgcolor: "rgba(16, 185, 129, 0.15)", color: "#10b981", width: 48, height: 48 }}>
+              <Avatar sx={{ bgcolor: "rgba(16, 185, 129, 0.2)", color: "#34d399", width: 48, height: 48 }}>
                 <TrendingUpIcon />
               </Avatar>
             </Stack>
@@ -168,20 +173,31 @@ export default function AdminProgress() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 18px rgba(0, 0, 0, 0.03)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)" },
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                   Active Projects
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#0f172a" }}>
                   {loading ? <Skeleton width={40} /> : projects.length}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
                   Across capstone modules
                 </Typography>
               </Box>
-              <Avatar sx={{ bgcolor: "primary.50", color: "primary.main", width: 48, height: 48 }}>
+              <Avatar sx={{ bgcolor: "#eff6ff", color: "#1e40af", width: 48, height: 48 }}>
                 <FolderIcon />
               </Avatar>
             </Stack>
@@ -189,20 +205,31 @@ export default function AdminProgress() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 18px rgba(0, 0, 0, 0.03)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)" },
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                   Total Deliverables
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#0f172a" }}>
                   {loading ? <Skeleton width={40} /> : tasks.length}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
                   Assigned student tasks
                 </Typography>
               </Box>
-              <Avatar sx={{ bgcolor: "info.50", color: "info.main", width: 48, height: 48 }}>
+              <Avatar sx={{ bgcolor: "#f0fdf4", color: "#16a34a", width: 48, height: 48 }}>
                 <AssignmentTurnedInIcon />
               </Avatar>
             </Stack>
@@ -210,20 +237,31 @@ export default function AdminProgress() {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 18px rgba(0, 0, 0, 0.03)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)" },
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
                   Active Teams
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#0f172a" }}>
                   {loading ? <Skeleton width={40} /> : teams.length}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
                   Organized squads
                 </Typography>
               </Box>
-              <Avatar sx={{ bgcolor: "warning.50", color: "warning.main", width: 48, height: 48 }}>
+              <Avatar sx={{ bgcolor: "#fff7ed", color: "#ea580c", width: 48, height: 48 }}>
                 <GroupsIcon />
               </Avatar>
             </Stack>
@@ -234,10 +272,20 @@ export default function AdminProgress() {
       {/* Visual Analytics Charts Section */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} lg={7}>
-          <Card sx={{ p: 3, borderRadius: 3, height: "100%", border: "1px solid", borderColor: "divider" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+              height: "100%",
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                   Project Completion Rates
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -276,9 +324,19 @@ export default function AdminProgress() {
         </Grid>
 
         <Grid item xs={12} lg={5}>
-          <Card sx={{ p: 3, borderRadius: 3, height: "100%", border: "1px solid", borderColor: "divider" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+              height: "100%",
+            }}
+          >
             <Box sx={{ mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                 Task Status Distribution
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -316,12 +374,21 @@ export default function AdminProgress() {
         </Grid>
       </Grid>
 
-      {/* Project Progress Breakdown Table Section */}
-      <Card sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", overflow: "hidden" }}>
-        <Box sx={{ p: 3, bgcolor: "grey.50", borderBottom: "1px solid", borderColor: "divider" }}>
+      {/* Project Progress Breakdown Table Card */}
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 3.5,
+          bgcolor: "#ffffff",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ p: 3, bgcolor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between" alignItems={{ xs: "stretch", sm: "center" }}>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                 Detailed Project Progress Breakdown
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -342,19 +409,24 @@ export default function AdminProgress() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ bgcolor: "background.paper", borderRadius: 1.5, minWidth: 220 }}
+                sx={{
+                  bgcolor: "#ffffff",
+                  borderRadius: 2,
+                  minWidth: 220,
+                  "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                }}
               />
 
-              <Stack direction="row" spacing={0.5} sx={{ bgcolor: "background.paper", p: 0.5, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-                {["all", "planning", "in_progress", "completed"].map((st) => (
+              <Stack direction="row" spacing={0.5} sx={{ bgcolor: "#ffffff", p: 0.5, borderRadius: 2, border: "1px solid #e2e8f0" }}>
+                {["all", "pending", "in-progress", "completed"].map((st) => (
                   <Chip
                     key={st}
-                    label={st === "all" ? "All" : st.replace("_", " ").toUpperCase()}
+                    label={st === "all" ? "All" : st.replace("-", " ").toUpperCase()}
                     size="small"
                     color={statusFilter === st ? "primary" : "default"}
                     variant={statusFilter === st ? "filled" : "text"}
                     onClick={() => setStatusFilter(st)}
-                    sx={{ cursor: "pointer", fontWeight: 600, fontSize: 11 }}
+                    sx={{ cursor: "pointer", fontWeight: 700, fontSize: 11, borderRadius: 1.5 }}
                   />
                 ))}
               </Stack>
@@ -369,7 +441,7 @@ export default function AdminProgress() {
         ) : filteredProjects.length === 0 ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <HourglassTopIcon sx={{ fontSize: 40, color: "text.secondary", mb: 1 }} />
-            <Typography variant="h6" color="text.secondary">
+            <Typography variant="h6" color="text.secondary" fontWeight={700}>
               No matching projects found
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -379,23 +451,24 @@ export default function AdminProgress() {
         ) : (
           <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
             <Table>
-              <TableHead sx={{ bgcolor: "grey.100" }}>
+              <TableHead sx={{ bgcolor: "#f8fafc" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Project Title</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Assigned Team</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Progress Rate</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Project Title</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Assigned Team</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Progress Rate</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredProjects.map((p) => {
+                  const title = p.title || p.name || "Untitled Project";
                   const prog = Math.round(p.progress || 0);
                   const color = getProgressColor(prog);
                   return (
                     <TableRow key={p._id || p.id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={700}>
-                          {p.name}
+                        <Typography variant="body2" fontWeight={700} color="#0f172a">
+                          {title}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 280, display: "block" }}>
                           {p.description || "No project description provided."}
@@ -408,12 +481,12 @@ export default function AdminProgress() {
                           label={p.team?.name || p.teamId?.name || "Unassigned"}
                           size="small"
                           variant="outlined"
-                          sx={{ fontWeight: 600 }}
+                          sx={{ fontWeight: 600, borderRadius: 2 }}
                         />
                       </TableCell>
 
                       <TableCell>
-                        <StatusChip status={p.status || "planning"} />
+                        <StatusChip status={p.status || "pending"} />
                       </TableCell>
 
                       <TableCell sx={{ width: 280 }}>
@@ -423,7 +496,7 @@ export default function AdminProgress() {
                               variant="determinate"
                               value={Math.min(100, Math.max(0, prog))}
                               color={color}
-                              sx={{ height: 8, borderRadius: 4, bgcolor: "grey.100" }}
+                              sx={{ height: 8, borderRadius: 4, bgcolor: "#f1f5f9" }}
                             />
                           </Box>
                           <Typography variant="body2" fontWeight={800} color={`${color}.main`}>

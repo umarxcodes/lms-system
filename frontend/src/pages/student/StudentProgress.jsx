@@ -8,7 +8,6 @@ import {
   LinearProgress,
   Skeleton,
   Avatar,
-  Chip,
   Divider,
 } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -43,11 +42,11 @@ export default function StudentProgress() {
   const combinedScore = Math.round((attendanceScore * 0.4) + (taskScore * 0.6));
 
   const getGradeInfo = (score) => {
-    if (score >= 90) return { grade: "A+", label: "Exceptional", color: "#10b981", bg: "rgba(16, 185, 129, 0.1)" };
-    if (score >= 80) return { grade: "A", label: "Meritorious", color: "#0284c7", bg: "rgba(2, 132, 199, 0.1)" };
-    if (score >= 70) return { grade: "B", label: "Good Standing", color: "#6366f1", bg: "rgba(99, 102, 241, 0.1)" };
-    if (score >= 60) return { grade: "C", label: "Satisfactory", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.1)" };
-    return { grade: "D", label: "Needs Focus", color: "#ef4444", bg: "rgba(239, 68, 68, 0.1)" };
+    if (score >= 90) return { grade: "A+", label: "Exceptional", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)" };
+    if (score >= 80) return { grade: "A", label: "Meritorious", color: "#0284c7", bg: "rgba(2, 132, 199, 0.15)" };
+    if (score >= 70) return { grade: "B", label: "Good Standing", color: "#6366f1", bg: "rgba(99, 102, 241, 0.15)" };
+    if (score >= 60) return { grade: "C", label: "Satisfactory", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)" };
+    return { grade: "D", label: "Needs Focus", color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)" };
   };
 
   const gradeInfo = getGradeInfo(combinedScore);
@@ -61,8 +60,9 @@ export default function StudentProgress() {
 
       {/* Main Performance Showcase Card */}
       <Card
+        elevation={0}
         sx={{
-          p: 4,
+          p: { xs: 3, md: 4 },
           mb: 3,
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
           color: "#fff",
@@ -141,13 +141,23 @@ export default function StudentProgress() {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {/* Attendance Card */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3.5, borderRadius: 3, border: "1px solid", borderColor: "divider", height: "100%" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3.5,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+              height: "100%",
+            }}
+          >
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Avatar sx={{ width: 48, height: 48, bgcolor: "success.50", color: "success.main" }}>
+              <Avatar sx={{ width: 48, height: 48, bgcolor: "#f0fdf4", color: "#16a34a" }}>
                 <EventAvailableIcon fontSize="medium" />
               </Avatar>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                   Session Attendance Metric
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -173,11 +183,11 @@ export default function StudentProgress() {
                   variant="determinate"
                   value={Math.min(100, Math.max(0, attendanceScore))}
                   color="success"
-                  sx={{ height: 10, borderRadius: 5, bgcolor: "grey.100", mb: 2 }}
+                  sx={{ height: 10, borderRadius: 5, bgcolor: "#f1f5f9", mb: 2 }}
                 />
 
-                <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block">
                     Punctuality Standard:
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -191,13 +201,23 @@ export default function StudentProgress() {
 
         {/* Task Completion Card */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3.5, borderRadius: 3, border: "1px solid", borderColor: "divider", height: "100%" }}>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3.5,
+              borderRadius: 3.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+              height: "100%",
+            }}
+          >
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Avatar sx={{ width: 48, height: 48, bgcolor: "primary.50", color: "primary.main" }}>
+              <Avatar sx={{ width: 48, height: 48, bgcolor: "#eff6ff", color: "#1e40af" }}>
                 <TrendingUpIcon fontSize="medium" />
               </Avatar>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                   Task Milestone Completion
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -223,11 +243,11 @@ export default function StudentProgress() {
                   variant="determinate"
                   value={Math.min(100, Math.max(0, taskScore))}
                   color="primary"
-                  sx={{ height: 10, borderRadius: 5, bgcolor: "grey.100", mb: 2 }}
+                  sx={{ height: 10, borderRadius: 5, bgcolor: "#f1f5f9", mb: 2 }}
                 />
 
-                <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block">
                     Deliverable Velocity:
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -240,34 +260,43 @@ export default function StudentProgress() {
         </Grid>
       </Grid>
 
-      {/* Gamified Achievements Banner */}
-      <Card sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <EmojiEventsIcon sx={{ color: "warning.main" }} /> Bootcamp Trainee Milestones & Badges
+      {/* Gamified Achievements Banner Card */}
+      <Card
+        elevation={0}
+        sx={{
+          p: 3.5,
+          borderRadius: 3.5,
+          bgcolor: "#ffffff",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <EmojiEventsIcon sx={{ color: "#f59e0b" }} /> Bootcamp Trainee Milestones & Badges
         </Typography>
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <Box
               sx={{
-                p: 2,
-                borderRadius: 2.5,
-                bgcolor: attendanceScore >= 80 ? "success.50" : "grey.50",
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: attendanceScore >= 80 ? "#f0fdf4" : "#f8fafc",
                 border: "1px solid",
-                borderColor: attendanceScore >= 80 ? "success.200" : "divider",
+                borderColor: attendanceScore >= 80 ? "#bbf7d0" : "#e2e8f0",
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
               }}
             >
-              <Avatar sx={{ bgcolor: attendanceScore >= 80 ? "success.main" : "grey.300", color: "#fff", width: 40, height: 40 }}>
+              <Avatar sx={{ bgcolor: attendanceScore >= 80 ? "#16a34a" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
                 <VerifiedIcon fontSize="small" />
               </Avatar>
               <Box>
-                <Typography variant="subtitle2" fontWeight={700}>
+                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
                   Punctuality Star
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
                   {attendanceScore >= 80 ? "Unlocked (>80% Attendance)" : "Locked (Requires >80%)"}
                 </Typography>
               </Box>
@@ -277,24 +306,24 @@ export default function StudentProgress() {
           <Grid item xs={12} sm={4}>
             <Box
               sx={{
-                p: 2,
-                borderRadius: 2.5,
-                bgcolor: taskScore >= 50 ? "primary.50" : "grey.50",
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: taskScore >= 50 ? "#eff6ff" : "#f8fafc",
                 border: "1px solid",
-                borderColor: taskScore >= 50 ? "primary.200" : "divider",
+                borderColor: taskScore >= 50 ? "#bfdbfe" : "#e2e8f0",
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
               }}
             >
-              <Avatar sx={{ bgcolor: taskScore >= 50 ? "primary.main" : "grey.300", color: "#fff", width: 40, height: 40 }}>
+              <Avatar sx={{ bgcolor: taskScore >= 50 ? "#1e40af" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
                 <TaskAltIcon fontSize="small" />
               </Avatar>
               <Box>
-                <Typography variant="subtitle2" fontWeight={700}>
+                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
                   Milestone Crusher
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
                   {taskScore >= 50 ? "Unlocked (>50% Tasks Done)" : "Locked (Requires >50%)"}
                 </Typography>
               </Box>
@@ -304,24 +333,24 @@ export default function StudentProgress() {
           <Grid item xs={12} sm={4}>
             <Box
               sx={{
-                p: 2,
-                borderRadius: 2.5,
-                bgcolor: combinedScore >= 85 ? "warning.50" : "grey.50",
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: combinedScore >= 85 ? "#fff7ed" : "#f8fafc",
                 border: "1px solid",
-                borderColor: combinedScore >= 85 ? "warning.200" : "divider",
+                borderColor: combinedScore >= 85 ? "#ffedd5" : "#e2e8f0",
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
               }}
             >
-              <Avatar sx={{ bgcolor: combinedScore >= 85 ? "warning.main" : "grey.300", color: "#fff", width: 40, height: 40 }}>
+              <Avatar sx={{ bgcolor: combinedScore >= 85 ? "#ea580c" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
                 <AutoAwesomeIcon fontSize="small" />
               </Avatar>
               <Box>
-                <Typography variant="subtitle2" fontWeight={700}>
+                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
                   Top Performer
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
                   {combinedScore >= 85 ? "Unlocked (>85% Overall)" : "Locked (Requires >85%)"}
                 </Typography>
               </Box>
