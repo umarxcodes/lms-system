@@ -15,36 +15,74 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Chip,
+  TextField,
+  InputAdornment,
+  Avatar,
+  Divider,
 } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import { useOutletContext } from "react-router-dom";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import FolderIcon from "@mui/icons-material/Folder";
+import GroupsIcon from "@mui/icons-material/Groups";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
+import StatusChip from "../../components/common/StatusChip";
 import { projectApi } from "../../services/projectApi";
 import { taskApi } from "../../services/taskApi";
+import { teamApi } from "../../services/teamApi";
 import { useToast } from "../../context/ToastContext";
+
+const PIE_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#6B7280"];
 
 export default function AdminProgress() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const { showToast } = useToast();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   useEffect(() => {
     let isMounted = true;
     const fetchProgressData = async () => {
       try {
         setLoading(true);
-        const [projRes, tasksRes] = await Promise.all([
+        const [projRes, tasksRes, teamsRes] = await Promise.allSettled([
           projectApi.getProjects(),
           taskApi.getTasks(),
+          teamApi.getTeams(),
         ]);
 
         if (isMounted) {
-          if (projRes.success) setProjects(Array.isArray(projRes.data) ? projRes.data : []);
-          if (tasksRes.success) setTasks(Array.isArray(tasksRes.data) ? tasksRes.data : []);
+          if (projRes.status === "fulfilled" && projRes.value.success) {
+            setProjects(Array.isArray(projRes.value.data) ? projRes.value.data : []);
+          }
+          if (tasksRes.status === "fulfilled" && tasksRes.value.success) {
+            setTasks(Array.isArray(tasksRes.value.data) ? tasksRes.value.data : []);
+          }
+          if (teamsRes.status === "fulfilled" && teamsRes.value.success) {
+            setTeams(Array.isArray(teamsRes.value.data) ? teamsRes.value.data : []);
+          }
         }
       } catch (err) {
         if (isMounted) showToast(err?.message || "Failed to load progress data", "error");
@@ -60,118 +98,347 @@ export default function AdminProgress() {
   }, [showToast]);
 
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
+  const inProgressTasks = tasks.filter((t) => t.status === "in_progress").length;
+  const underReviewTasks = tasks.filter((t) => t.status === "under_review").length;
+  const todoTasks = tasks.filter((t) => t.status === "todo" || !t.status).length;
   const overallTaskProgress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+
+  const projectChartData = projects.slice(0, 8).map((p) => ({
+    name: p.name.length > 14 ? p.name.substring(0, 14) + "..." : p.name,
+    progress: Math.round(p.progress || 0),
+  }));
+
+  const taskPieData = [
+    { name: "Completed", value: completedTasks },
+    { name: "In Progress", value: inProgressTasks },
+    { name: "Under Review", value: underReviewTasks },
+    { name: "To Do", value: todoTasks },
+  ].filter((d) => d.value > 0);
+
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.team?.name || p.teamId?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getProgressColor = (prog) => {
+    if (prog >= 75) return "success";
+    if (prog >= 40) return "primary";
+    return "warning";
+  };
 
   return (
     <PageContent>
       <PageHeader
         title="Bootcamp Progress Overview"
-        description="Track team project completion rates and student deliverable milestones."
+        description="Monitor team project milestones, deliverable completion velocity, and task statistics across all active batches."
       />
-        {/* Progress Summary Card */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ p: 3 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 2.5,
-                    bgcolor: "primary.50",
-                    color: "primary.main",
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  <TrendingUpIcon fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Overall Task Completion Rate
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {completedTasks} of {tasks.length} tasks completed across all projects
-                  </Typography>
-                </Box>
-              </Stack>
 
-              {loading ? (
-                <Skeleton variant="rounded" height={40} />
-              ) : (
-                <Box sx={{ mt: 2 }}>
-                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
-                      Bootcamp Task Progress
-                    </Typography>
-                    <Typography variant="body2" fontWeight={700} color="primary.main">
-                      {Math.round(overallTaskProgress)}%
-                    </Typography>
-                  </Stack>
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.min(100, Math.max(0, overallTaskProgress))}
-                    sx={{ height: 10, borderRadius: 5, bgcolor: "grey.100" }}
-                  />
-                </Box>
-              )}
-            </Card>
-          </Grid>
+      {/* Stats Cards Row */}
+      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              p: 2.5,
+              background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+              color: "#fff",
+              borderRadius: 3,
+              boxShadow: "0 8px 24px rgba(15, 23, 42, 0.15)",
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>
+                  Task Completion Rate
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                  {loading ? <Skeleton width={60} sx={{ bgcolor: "rgba(255,255,255,0.2)" }} /> : `${Math.round(overallTaskProgress)}%`}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
+                  <CheckCircleIcon fontSize="inherit" /> {completedTasks} / {tasks.length} Completed
+                </Typography>
+              </Box>
+              <Avatar sx={{ bgcolor: "rgba(16, 185, 129, 0.15)", color: "#10b981", width: 48, height: 48 }}>
+                <TrendingUpIcon />
+              </Avatar>
+            </Stack>
+          </Card>
         </Grid>
 
-        {/* Project Breakdown Table */}
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-            Project Progress Breakdown
-          </Typography>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                  Active Projects
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                  {loading ? <Skeleton width={40} /> : projects.length}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
+                  Across capstone modules
+                </Typography>
+              </Box>
+              <Avatar sx={{ bgcolor: "primary.50", color: "primary.main", width: 48, height: 48 }}>
+                <FolderIcon />
+              </Avatar>
+            </Stack>
+          </Card>
+        </Grid>
 
-          {loading ? (
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                  Total Deliverables
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                  {loading ? <Skeleton width={40} /> : tasks.length}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
+                  Assigned student tasks
+                </Typography>
+              </Box>
+              <Avatar sx={{ bgcolor: "info.50", color: "info.main", width: 48, height: 48 }}>
+                <AssignmentTurnedInIcon />
+              </Avatar>
+            </Stack>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase" }}>
+                  Active Teams
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+                  {loading ? <Skeleton width={40} /> : teams.length}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
+                  Organized squads
+                </Typography>
+              </Box>
+              <Avatar sx={{ bgcolor: "warning.50", color: "warning.main", width: 48, height: 48 }}>
+                <GroupsIcon />
+              </Avatar>
+            </Stack>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Visual Analytics Charts Section */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} lg={7}>
+          <Card sx={{ p: 3, borderRadius: 3, height: "100%", border: "1px solid", borderColor: "divider" }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Project Completion Rates
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Percentage milestone progress for active capstone projects
+                </Typography>
+              </Box>
+              <Chip label="Live Metrics" color="success" size="small" variant="soft" sx={{ fontWeight: 700 }} />
+            </Stack>
+            <Divider sx={{ mb: 3 }} />
+
+            {loading ? (
+              <Skeleton variant="rounded" height={260} />
+            ) : projectChartData.length === 0 ? (
+              <Box sx={{ py: 8, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  No project data available to visualize.
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ width: "100%", height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={projectChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip
+                      formatter={(val) => [`${val}%`, "Completion"]}
+                      contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", borderRadius: 8, color: "#fff" }}
+                      itemStyle={{ color: "#38bdf8" }}
+                    />
+                    <Bar dataKey="progress" fill="#0284c7" radius={[6, 6, 0, 0]} barSize={36} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            )}
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} lg={5}>
+          <Card sx={{ p: 3, borderRadius: 3, height: "100%", border: "1px solid", borderColor: "divider" }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Task Status Distribution
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Breakdown of deliverables by execution status
+              </Typography>
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+
+            {loading ? (
+              <Skeleton variant="circular" width={180} height={180} sx={{ mx: "auto", my: 2 }} />
+            ) : taskPieData.length === 0 ? (
+              <Box sx={{ py: 8, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  No task status data logged.
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ width: "100%", height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={taskPieData} innerRadius={60} outerRadius={85} paddingAngle={4} dataKey="value">
+                      {taskPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip
+                      contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", borderRadius: 8, color: "#fff" }}
+                    />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+            )}
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Project Progress Breakdown Table Section */}
+      <Card sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", overflow: "hidden" }}>
+        <Box sx={{ p: 3, bgcolor: "grey.50", borderBottom: "1px solid", borderColor: "divider" }}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between" alignItems={{ xs: "stretch", sm: "center" }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Detailed Project Progress Breakdown
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Live team deliverables and progress tracking
+              </Typography>
+            </Box>
+
+            <Stack direction="row" spacing={1.5} flexWrap="wrap">
+              <TextField
+                size="small"
+                placeholder="Search project or team..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ bgcolor: "background.paper", borderRadius: 1.5, minWidth: 220 }}
+              />
+
+              <Stack direction="row" spacing={0.5} sx={{ bgcolor: "background.paper", p: 0.5, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                {["all", "planning", "in_progress", "completed"].map((st) => (
+                  <Chip
+                    key={st}
+                    label={st === "all" ? "All" : st.replace("_", " ").toUpperCase()}
+                    size="small"
+                    color={statusFilter === st ? "primary" : "default"}
+                    variant={statusFilter === st ? "filled" : "text"}
+                    onClick={() => setStatusFilter(st)}
+                    sx={{ cursor: "pointer", fontWeight: 600, fontSize: 11 }}
+                  />
+                ))}
+              </Stack>
+            </Stack>
+          </Stack>
+        </Box>
+
+        {loading ? (
+          <Box sx={{ p: 3 }}>
             <Skeleton variant="rounded" height={200} />
-          ) : projects.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
-              No projects created yet.
+          </Box>
+        ) : filteredProjects.length === 0 ? (
+          <Box sx={{ py: 6, textAlign: "center" }}>
+            <HourglassTopIcon sx={{ fontSize: 40, color: "text.secondary", mb: 1 }} />
+            <Typography variant="h6" color="text.secondary">
+              No matching projects found
             </Typography>
-          ) : (
-            <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
-              <Table>
-                <TableHead sx={{ bgcolor: "grey.50" }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Project Title</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Team</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Completion Rate</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {projects.map((p) => {
-                    const prog = p.progress || 0;
-                    return (
-                      <TableRow key={p._id || p.id} hover>
-                        <TableCell sx={{ fontWeight: 600 }}>{p.name}</TableCell>
-                        <TableCell>{p.team?.name || p.teamId?.name || "Unassigned"}</TableCell>
-                        <TableCell>{p.status?.replace("_", " ").toUpperCase()}</TableCell>
-                        <TableCell sx={{ width: 260 }}>
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Box sx={{ flex: 1 }}>
-                              <LinearProgress
-                                variant="determinate"
-                                value={Math.min(100, Math.max(0, prog))}
-                                sx={{ height: 8, borderRadius: 4, bgcolor: "grey.100" }}
-                              />
-                            </Box>
-                            <Typography variant="body2" fontWeight={700} color="primary.main">
-                              {Math.round(prog)}%
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Card>
-      </PageContent>
+            <Typography variant="body2" color="text.secondary">
+              Try adjusting your search query or status filter.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
+            <Table>
+              <TableHead sx={{ bgcolor: "grey.100" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Project Title</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Assigned Team</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Progress Rate</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredProjects.map((p) => {
+                  const prog = Math.round(p.progress || 0);
+                  const color = getProgressColor(prog);
+                  return (
+                    <TableRow key={p._id || p.id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={700}>
+                          {p.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 280, display: "block" }}>
+                          {p.description || "No project description provided."}
+                        </Typography>
+                      </TableCell>
+
+                      <TableCell>
+                        <Chip
+                          icon={<GroupsIcon fontSize="small" />}
+                          label={p.team?.name || p.teamId?.name || "Unassigned"}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        <StatusChip status={p.status || "planning"} />
+                      </TableCell>
+
+                      <TableCell sx={{ width: 280 }}>
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Box sx={{ flex: 1 }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={Math.min(100, Math.max(0, prog))}
+                              color={color}
+                              sx={{ height: 8, borderRadius: 4, bgcolor: "grey.100" }}
+                            />
+                          </Box>
+                          <Typography variant="body2" fontWeight={800} color={`${color}.main`}>
+                            {prog}%
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Card>
+    </PageContent>
   );
 }
