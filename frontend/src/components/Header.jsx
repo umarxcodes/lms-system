@@ -238,14 +238,14 @@ export const DateButton = ({ date, value, onClick }) => {
  *     bgcolor="grey.50"
  *   />
  */
-export const SearchField = ({
+export function SearchField({
   placeholder = "Search…",
   value,
   onChange,
   width = 256, // w-64
   bgcolor = "#fff",
   size = "medium", // "medium" (header) | "small" (filter bars)
-}) => {
+}) {
   const isSmall = size === "small";
 
   return (
@@ -265,6 +265,7 @@ export const SearchField = ({
           fontSize: isSmall ? 16 : 18,
           color: "grey.400",
           pointerEvents: "none",
+          zIndex: 1,
         }}
       />
       <InputBase
@@ -298,4 +299,4 @@ export const SearchField = ({
       />
     </Box>
   );
-};
+}
