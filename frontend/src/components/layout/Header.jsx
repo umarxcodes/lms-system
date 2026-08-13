@@ -15,6 +15,8 @@ import {
   ListItem,
   ListItemText,
   Button,
+  OutlinedInput,
+  InputAdornment,
 } from "@mui/material";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -22,6 +24,7 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import SearchIcon from "@mui/icons-material/Search";
 
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +40,7 @@ export default function Header({ title, subtitle, actions, onMobileNavOpen }) {
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch unread notifications for students
   useEffect(() => {
@@ -97,22 +101,20 @@ export default function Header({ title, subtitle, actions, onMobileNavOpen }) {
     <Box
       component="header"
       sx={{
-        px: { xs: 2.5, md: 4 },
-        py: 2.5,
-        bgcolor: "rgba(255, 255, 255, 0.95)",
-        backdropFilter: "blur(12px)",
+        width: "100%",
+        px: { xs: 2, md: 3 },
+        py: 1.5,
+        bgcolor: "#ffffff",
         borderBottom: "1px solid",
         borderColor: "divider",
-        position: "sticky",
-        top: 0,
-        zIndex: 1100,
-        boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.02)",
+        zIndex: 1200,
+        boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.04)",
         flexShrink: 0,
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-        {/* Left: Mobile Toggle + Logo + Title */}
-        <Stack direction="row" alignItems="center" spacing={1.5}>
+        {/* Left: Mobile Toggle + SMIT Logo & Title */}
+        <Stack direction="row" alignItems="center" spacing={2}>
           <IconButton
             onClick={onMobileNavOpen}
             sx={{
@@ -126,42 +128,64 @@ export default function Header({ title, subtitle, actions, onMobileNavOpen }) {
             <MenuIcon />
           </IconButton>
 
-          {/* Mobile Logo Indicator */}
-          <Box
-            component="img"
-            src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
-            alt="SMIT Logo"
-            sx={{
-              display: { xs: "block", md: "none" },
-              height: 32,
-              width: "auto",
-              objectFit: "contain",
-            }}
-          />
-
-          <Box>
-            <Typography
-              component="h1"
+          {/* SMIT Brand Logo & Heading */}
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box
+              component="img"
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
+              alt="SMIT Logo"
               sx={{
-                fontSize: { xs: 18, md: 22 },
-                fontWeight: 800,
-                color: "text.primary",
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
-                letterSpacing: "-0.02em",
-                lineHeight: 1.2,
+                height: 38,
+                width: "auto",
+                objectFit: "contain",
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.06))",
               }}
-            >
-              {title}
-            </Typography>
-            {subtitle && (
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.25, fontSize: "0.825rem" }}>
-                {subtitle}
+            />
+            <Box sx={{ display: { xs: title ? "block" : "none", sm: "block" } }}>
+              <Typography
+                component="h1"
+                sx={{
+                  fontSize: { xs: 16, md: 18 },
+                  fontWeight: 800,
+                  color: "text.primary",
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.1,
+                }}
+              >
+                {title || "SMIT LMS"}
               </Typography>
-            )}
-          </Box>
+              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, fontSize: "0.72rem" }}>
+                {subtitle || "Saylani Mass I.T. Training"}
+              </Typography>
+            </Box>
+          </Stack>
         </Stack>
 
-        {/* Right: Custom Actions, Notifications, & User Profile Pill */}
+        {/* Center: Quick Portal Search */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, width: { md: 280, lg: 360 } }}>
+          <OutlinedInput
+            size="small"
+            fullWidth
+            placeholder="Search portal records..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" sx={{ color: "text.disabled" }} />
+              </InputAdornment>
+            }
+            sx={{
+              borderRadius: 3,
+              bgcolor: "grey.50",
+              fontSize: "0.85rem",
+              "& fieldset": { borderColor: "divider" },
+              "&:hover fieldset": { borderColor: "primary.light" },
+            }}
+          />
+        </Box>
+
+        {/* Right: Actions, Notifications, & User Profile Pill */}
         <Stack direction="row" alignItems="center" spacing={1.5}>
           {actions}
 

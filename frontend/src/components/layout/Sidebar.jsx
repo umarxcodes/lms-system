@@ -29,7 +29,7 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 
 import { useAuth } from "../../context/AuthContext";
 
-const SIDEBAR_WIDTH = 260;
+const SIDEBAR_WIDTH = 250;
 
 const adminNavItems = [
   { label: "Dashboard", to: "/admin/dashboard", icon: <GridViewRoundedIcon fontSize="small" /> },
@@ -77,39 +77,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         bgcolor: "#ffffff",
       }}
     >
-      {/* Brand Header */}
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ px: 3, py: 2.5 }}>
-        <Box
-          component="img"
-          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
-          alt="SMIT Logo"
-          sx={{
-            height: 44,
-            width: "auto",
-            objectFit: "contain",
-            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.06))",
-          }}
-        />
-        <Box sx={{ lineHeight: 1.2 }}>
-          <Typography
-            sx={{
-              fontWeight: 800,
-              color: "text.primary",
-              fontSize: 17,
-              letterSpacing: "-0.02em",
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
-            }}
-          >
-            SMIT LMS
-          </Typography>
-          <Typography sx={{ fontSize: 11, color: "text.secondary", fontWeight: 600 }}>
-            Saylani Bootcamp Portal
-          </Typography>
-        </Box>
-      </Stack>
-
-      <Divider sx={{ borderColor: "grey.100" }} />
-
       {/* Navigation List */}
       <Box sx={{ flex: 1, px: 2, py: 2.5, overflowY: "auto" }}>
         <Typography
@@ -237,7 +204,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           width: SIDEBAR_WIDTH,
           flexShrink: 0,
           display: { xs: "none", md: "block" },
-          height: "100vh",
+          height: "100%",
           borderRight: "1px solid",
           borderColor: "divider",
         }}
