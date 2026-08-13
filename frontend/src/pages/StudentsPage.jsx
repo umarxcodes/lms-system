@@ -27,7 +27,7 @@ export default function StudentsPage() {
                   /* open notifications */
                 }}
               />
-              <UserProfile showDetails={true} />
+              <UserProfile />
             </Box>
           </>
         }
