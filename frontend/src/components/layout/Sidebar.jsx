@@ -78,27 +78,23 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       }}
     >
       {/* Brand Header */}
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ px: 3, py: 3 }}>
+      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ px: 3, py: 2.5 }}>
         <Box
+          component="img"
+          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
+          alt="SMIT Logo"
           sx={{
-            width: 38,
-            height: 38,
-            borderRadius: 2,
-            display: "grid",
-            placeItems: "center",
-            color: "#ffffff",
-            background: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            height: 42,
+            width: "auto",
+            objectFit: "contain",
           }}
-        >
-          <AutoAwesomeMosaicRoundedIcon fontSize="small" />
-        </Box>
+        />
         <Box sx={{ lineHeight: 1.2 }}>
-          <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 18 }}>
-            SMIT
+          <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 17, letterSpacing: "-0.02em" }}>
+            SMIT LMS
           </Typography>
-          <Typography sx={{ fontSize: 12, color: "text.secondary", fontWeight: 600 }}>
-            Bootcamp LMS
+          <Typography sx={{ fontSize: 11, color: "text.secondary", fontWeight: 600 }}>
+            Saylani Bootcamp Portal
           </Typography>
         </Box>
       </Stack>

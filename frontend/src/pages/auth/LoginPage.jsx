@@ -88,26 +88,23 @@ export default function LoginPage() {
       <Container maxWidth="xs">
         <Stack spacing={3} alignItems="center">
           {/* Brand Header */}
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={2} alignItems="center">
             <Box
+              component="img"
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
+              alt="SMIT Logo"
               sx={{
-                width: 44,
-                height: 44,
-                borderRadius: 2,
-                bgcolor: "primary.main",
-                color: "#ffffff",
-                display: "grid",
-                placeItems: "center",
-                boxShadow: 2,
+                height: 52,
+                width: "auto",
+                objectFit: "contain",
+                filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
               }}
-            >
-              <AutoAwesomeMosaicIcon sx={{ fontSize: 26 }} />
-            </Box>
+            />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.1 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
                 BOOTCAMP LMS
               </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, fontSize: "0.85rem" }}>
                 Saylani Mass I.T. Training
               </Typography>
             </Box>
