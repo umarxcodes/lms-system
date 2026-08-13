@@ -37,6 +37,7 @@ export default function AppLayout() {
           height: "100%",
           overflow: "hidden",
           position: "relative",
+          background: "#f2f4f7",
         }}
       >
         <Outlet />

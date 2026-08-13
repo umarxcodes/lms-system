@@ -2,14 +2,18 @@ import Header, {
   UserProfile,
   DateButton,
   NotificationButton,
+  SearchField,
 } from "../components/Header";
 import { PageContent } from "../components/AppLayout";
 import { Box } from "@mui/material";
-// import { useState } from "react";
+import { useState } from "react";
 
 export default function DashboardPage() {
   // Replace this with useContext variables
   // const [name, setName] = useState("Ali");
+
+  const [search, setSearch] = useState("");
+
   return (
     <>
       <Header
@@ -28,6 +32,11 @@ export default function DashboardPage() {
                 gap: 1.5,
               }}
             >
+              <SearchField
+                placeholder="Search…"
+                value={search}
+                onChange={setSearch}
+              />
               <NotificationButton
                 onClick={() => {
                   /* open notifications */
