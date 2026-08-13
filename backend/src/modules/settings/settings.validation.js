@@ -16,6 +16,9 @@ export const changePasswordSchema = z.object({
 }).strict().refine((data) => data.newPassword === data.confirmPassword, {
   message: "New password and confirm password must match",
   path: ["confirmPassword"]
+}).refine((data) => data.newPassword !== data.currentPassword, {
+  message: "New password must be different from current password",
+  path: ["newPassword"]
 });
 
 export const updateApplicationSettingsSchema = z.object({

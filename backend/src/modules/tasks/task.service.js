@@ -23,6 +23,9 @@ async function getProject(projectId) {
   return project;
 }
 
+// assertStudentBelongsToProjectTeam enforces the rule that a Student can only
+// be assigned to a Task if they are a member of the Task's Project Team.
+// This prevents cross-team task assignments.
 async function assertStudentBelongsToProjectTeam(userId, project) {
   if (!userId) return;
   await assertStudentUser(userId);
@@ -31,6 +34,9 @@ async function assertStudentBelongsToProjectTeam(userId, project) {
   }
 }
 
+// getStudentProjectIds returns all Project ObjectIds that belong to the
+// Student's Team. This is used to scope Student task queries so they can
+// only see tasks from Projects in their own Team.
 async function getStudentProjectIds(userId) {
   assertObjectId(userId, "User id");
   const team = await Team.findOne({ members: userId }).select("_id");
@@ -65,11 +71,15 @@ export const getTaskById = async (id) => {
   return await Task.findById(id).populate("project", "title team").populate("assignedTo", "name email");
 };
 
+// getMyTasks returns all tasks for Projects in the Student's Team. This
+// ensures Students only see tasks they are authorized to access.
 export const getMyTasks = async (userId) => {
   const projectIds = await getStudentProjectIds(userId);
   return Task.find({ project: { $in: projectIds } }).populate("project", "title").populate("assignedTo", "name email");
 };
 
+// getMyAssignedTasks filters getMyTasks to only those where the Student is
+// the assigned assignee.
 export const getMyAssignedTasks = async (userId) => {
   const projectIds = await getStudentProjectIds(userId);
   return Task.find({ assignedTo: userId, project: { $in: projectIds } })
@@ -77,6 +87,8 @@ export const getMyAssignedTasks = async (userId) => {
     .populate("assignedTo", "name email");
 };
 
+// userOwnsTask checks Team membership via the Project's Team. This is the
+// authorization gate for Student access to individual Tasks.
 export const userOwnsTask = async (task, userId) => {
   assertObjectId(userId, "User id");
   const projectTeamId = task.project?.team;
@@ -88,6 +100,8 @@ export const updateTaskStatus = async (id, status) => {
   return Task.findByIdAndUpdate(id, { status }, { returnDocument: "after", runValidators: true }).populate("project", "title").populate("assignedTo", "name email");
 };
 
+// assignTask validates that the target Student belongs to the Project's Team
+// before reassigning. It also sends a notification to the newly assigned Student.
 export const assignTask = async (id, userId) => {
   assertObjectId(id, "Task id");
   const task = await Task.findById(id).select("project");

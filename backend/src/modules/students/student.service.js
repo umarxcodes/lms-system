@@ -10,6 +10,10 @@ function assertObjectId(id, label = "Student id") {
   if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
 }
 
+// createStudent creates a User and Student profile inside a single MongoDB
+// transaction. The transaction guarantees that either both documents are
+// persisted or neither is, preventing orphaned User records without a
+// corresponding Student profile.
 export const createStudent = async (data) => {
   const { name, email, password, ...studentData } = data;
   const normalizedEmail = email.toLowerCase();
@@ -54,6 +58,9 @@ export const updateStudent = async (id, data) => {
   return await Student.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("user", "name email profileImage");
 };
 
+// deleteStudent removes a Student and their linked User inside a transaction.
+// It first checks for dependent Attendance, Task, and Team membership records
+// because those references would become dangling if the Student were removed.
 export const deleteStudent = async (id) => {
   assertObjectId(id);
   const session = await mongoose.startSession();

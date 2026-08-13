@@ -2,6 +2,10 @@ import { verifyToken } from "../utils/jwt.js";
 import { error } from "../utils/response.js";
 import User from "../modules/auth/auth.model.js";
 
+// authenticate verifies the Bearer JWT and attaches the resolved user identity
+// to req.user. It re-queries the database on every request so that role changes
+// (e.g. revocation or promotion) take effect immediately, even if an existing
+// token has not yet expired.
 export async function authenticate(req, res, next) {
   const authorization = req.get("authorization");
   if (!authorization || !authorization.startsWith("Bearer ")) return error(res, "Authentication required", 401);

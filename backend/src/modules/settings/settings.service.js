@@ -14,12 +14,18 @@ function toProfile(user) {
   };
 }
 
+// getAdmin verifies that the requested profile belongs to an ADMIN user.
+// This prevents a Student from accessing or modifying Admin settings by
+// guessing IDs.
 async function getAdmin(adminId, projection = "") {
   const admin = await User.findOne({ _id: adminId, role: ROLES.ADMIN }).select(projection);
   if (!admin) throw appError("Admin not found", 404);
   return admin;
 }
 
+// getOrCreateSettings returns the AdminSettings document for the given Admin,
+// creating it with defaults if it does not yet exist. Each Admin has exactly
+// one settings document (enforced by a unique index).
 async function getOrCreateSettings(adminId) {
   return AdminSettings.findOneAndUpdate(
     { admin: adminId },
@@ -58,6 +64,9 @@ export const getAdminProfile = async (adminId) => {
   return toProfile(admin);
 };
 
+// updateAdminProfile allows an Admin to update their own name and email.
+// The email uniqueness check excludes the current Admin to avoid false
+// conflicts when the email has not changed.
 export const updateAdminProfile = async (adminId, data) => {
   const update = {};
   if (data.name !== undefined) update.name = data.name;
@@ -77,6 +86,8 @@ export const updateAdminProfile = async (adminId, data) => {
   return toProfile(admin);
 };
 
+// changeAdminPassword verifies the current password before setting the new
+// one, and records the change timestamp in AdminSettings.security.
 export const changeAdminPassword = async (adminId, { currentPassword, newPassword }) => {
   const admin = await getAdmin(adminId, "+password");
   if (!await admin.comparePassword(currentPassword)) throw appError("Current password is incorrect", 401);

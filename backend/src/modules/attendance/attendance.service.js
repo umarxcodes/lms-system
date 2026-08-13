@@ -21,6 +21,10 @@ const studentPopulation = {
   populate: { path: "user", select: "name email" }
 };
 
+// markAttendance enforces the business rule that each Student can have only
+// one attendance record per calendar date. The compound unique index on
+// { student, date } provides database-level protection; the pre-check produces
+// a cleaner API error.
 export const markAttendance = async ({ studentId, ...data }) => {
   assertObjectId(studentId, "Student id");
   const student = await Student.exists({ _id: studentId });
@@ -75,6 +79,9 @@ export const getAttendanceById = async (id) => {
   return Attendance.findById(id).populate(studentPopulation);
 };
 
+// getMyAttendance resolves the Student profile from the authenticated User
+// and returns their attendance records. This guarantees that Students can
+// only access their own attendance data.
 export const getMyAttendance = async (userId) => {
   assertObjectId(userId, "Authenticated user id");
   const student = await Student.findOne({ user: userId }).select("_id");
@@ -82,6 +89,9 @@ export const getMyAttendance = async (userId) => {
   return getAttendanceByStudent(student._id);
 };
 
+// updateAttendance allows the date to be changed, but it re-checks for
+// duplicate same-student same-day records (excluding the current record) so
+// that moving an attendance entry does not violate the uniqueness constraint.
 export const updateAttendance = async (id, data) => {
   assertObjectId(id, "Attendance id");
   const update = { ...data };

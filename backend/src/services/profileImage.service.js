@@ -10,6 +10,9 @@ function toSafeProfileImage(profileImage) {
   return profileImage?.url ? { url: profileImage.url } : null;
 }
 
+// isValidImageSignature checks the magic bytes of the uploaded buffer rather
+// than trusting the file extension or MIME type alone. This prevents
+// disguised malicious uploads.
 function isValidImageSignature(file) {
   const buffer = file?.buffer;
   if (!buffer?.length) return false;
@@ -44,6 +47,8 @@ function assertProfileImageFile(file) {
   if (!isValidImageSignature(file)) throw appError("Profile image content is invalid", 400);
 }
 
+// safeDeleteOldImage removes a Cloudinary asset. Failures are logged but not
+// rethrown so that a failed cleanup does not block the primary operation.
 async function safeDeleteOldImage(publicId) {
   if (!publicId) return;
   try {
@@ -53,6 +58,9 @@ async function safeDeleteOldImage(publicId) {
   }
 }
 
+// uploadAuthenticatedProfileImage enforces role-scoped uploads. The caller
+// must provide both the userId and the expected role so that a Student cannot
+// upload an image to an Admin profile and vice versa.
 export async function uploadAuthenticatedProfileImage(userId, role, file) {
   assertProfileImageFile(file);
   const user = await User.findOne({ _id: userId, role }).select("profileImage.url +profileImage.publicId");
@@ -82,6 +90,8 @@ export async function uploadAuthenticatedProfileImage(userId, role, file) {
   return { profileImage: toSafeProfileImage(updatedUser.profileImage) };
 }
 
+// deleteAuthenticatedProfileImage removes the profile image metadata from the
+// User document and deletes the underlying Cloudinary asset.
 export async function deleteAuthenticatedProfileImage(userId, role) {
   const user = await User.findOne({ _id: userId, role }).select("profileImage.url +profileImage.publicId");
   if (!user) throw appError("User not found", 404);

@@ -9,6 +9,8 @@ function assertObjectId(id, label = "Id") {
   if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
 }
 
+// assertStudentMembers validates that every provided member identifier refers
+// to an existing STUDENT user and that no Student is included more than once.
 async function assertStudentMembers(memberIds = []) {
   for (const memberId of memberIds) assertObjectId(memberId, "Student user id");
   if (new Set(memberIds.map(String)).size !== memberIds.length) throw appError("A Student can only be included once in a Team", 409);
@@ -17,12 +19,18 @@ async function assertStudentMembers(memberIds = []) {
   if (count !== memberIds.length) throw appError("All team members must be Student users", 400);
 }
 
+// assertUsersAreUnassigned ensures that none of the provided Users already
+// belong to another Team. A Student can only be a member of one Team at a time.
 async function assertUsersAreUnassigned(memberIds) {
   if (!memberIds.length) return;
   const existingTeam = await Team.findOne({ members: { $in: memberIds } }).select("name");
   if (existingTeam) throw appError(`A Student is already assigned to Team ${existingTeam.name}`, 409);
 }
 
+// resolveStudentUser accepts either a Student ObjectId or a User ObjectId
+// and returns the corresponding User ObjectId. The legacyUserId flag controls
+// whether the identifier is treated as a User ID directly or looked up through
+// the Student document first.
 async function resolveStudentUser(identifier, legacyUserId = false) {
   assertObjectId(identifier, "Student id");
   if (!legacyUserId) {
@@ -95,6 +103,9 @@ export const updateTeam = async (id, data) => {
   }
 };
 
+// deleteTeam enforces cascade protection: a Team cannot be removed while it
+// has an associated Project or while it still has members. This prevents
+// accidental data loss and dangling foreign keys.
 export const deleteTeam = async (id) => {
   assertObjectId(id, "Team id");
   if (await Project.exists({ team: id })) throw appError("Team cannot be deleted while it has a project", 409);
