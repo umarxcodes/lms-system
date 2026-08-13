@@ -77,13 +77,23 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         bgcolor: "#ffffff",
       }}
     >
-      {/* Navigation List */}
-      <Box sx={{ flex: 1, px: 2, py: 2.5, overflowY: "auto" }}>
+      {/* Brand Logo */}
+      <Box sx={{ px: 2.5, pt: 3, pb: 2, textAlign: "center" }}>
+        <Box
+          component="img"
+          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
+          alt="SMIT Logo"
+          sx={{
+            height: 48,
+            width: "auto",
+            objectFit: "contain",
+            mx: "auto",
+            mb: 1,
+          }}
+        />
         <Typography
           variant="caption"
           sx={{
-            px: 1.5,
-            pb: 1.5,
             display: "block",
             fontWeight: 800,
             color: "text.disabled",
@@ -93,7 +103,12 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         >
           {role === "ADMIN" ? "ADMINISTRATION" : "STUDENT PORTAL"}
         </Typography>
+      </Box>
 
+      <Divider sx={{ borderColor: "grey.100" }} />
+
+      {/* Navigation List */}
+      <Box sx={{ flex: 1, px: 2, py: 2.5, overflowY: "auto" }}>
         <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
           {navItems.map((item) => (
             <ListItem key={item.to} disablePadding>
@@ -143,11 +158,11 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
 
       {/* User Summary & Logout */}
       <Box sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1.5, py: 1, mb: 1 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1.5, py: 1, mb: 1.5 }}>
           <Avatar
             src={user?.avatarUrl || user?.profileImage || ""}
             alt={user?.name || "User"}
-            sx={{ width: 34, height: 34, bgcolor: "primary.main", fontSize: 14, fontWeight: 700 }}
+            sx={{ width: 36, height: 36, bgcolor: "primary.main", fontSize: 15, fontWeight: 700 }}
           >
             {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
           </Avatar>

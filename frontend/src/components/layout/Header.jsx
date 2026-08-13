@@ -24,7 +24,6 @@ import {
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import SearchIcon from "@mui/icons-material/Search";
@@ -34,16 +33,17 @@ import { useNavigate } from "react-router-dom";
 import { notificationApi } from "../../services/notificationApi";
 
 export default function Header({ onMobileNavOpen }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Profile Menu State
-  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   // Notification Popover State
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Profile Menu State
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
 
   // Fetch unread notifications for students
   useEffect(() => {
@@ -89,12 +89,6 @@ export default function Header({ onMobileNavOpen }) {
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const handleLogout = () => {
-    setProfileAnchorEl(null);
-    logout();
-    navigate("/login");
   };
 
   const isProfileOpen = Boolean(profileAnchorEl);
@@ -368,17 +362,6 @@ export default function Header({ onMobileNavOpen }) {
           </ListItemIcon>
           <Typography variant="body2" fontWeight={600}>
             Profile & Settings
-          </Typography>
-        </MenuItem>
-
-        <Divider />
-
-        <MenuItem onClick={handleLogout} sx={{ color: "error.main", borderRadius: 2, my: 0.5 }}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" color="error" />
-          </ListItemIcon>
-          <Typography variant="body2" fontWeight={700}>
-            Logout
           </Typography>
         </MenuItem>
       </Menu>
