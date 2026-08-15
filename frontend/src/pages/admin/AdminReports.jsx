@@ -1,71 +1,124 @@
-import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Stack,
-  Skeleton,
-  Box,
-  Avatar,
-  Chip,
-  Divider,
-} from "@mui/material";
-import DownloadIcon from "@mui/icons-material/Download";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import SecurityIcon from "@mui/icons-material/Security";
-import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { reportApi } from "../../services/reportApi";
 import { useToast } from "../../context/ToastContext";
 
+import ReportSummaryCards from "../../components/reports/ReportSummaryCards";
+import ReportFilters from "../../components/reports/ReportFilters";
+import ReportTable from "../../components/reports/ReportTable";
+import ReportDetailsDialog from "../../components/reports/ReportDetailsDialog";
+
 export default function AdminReports() {
-  const [attendanceReport, setAttendanceReport] = useState(null);
-  const [assignmentReport, setAssignmentReport] = useState(null);
+  const [reportType, setReportType] = useState("attendance");
+  const [attendanceReport, setAttendanceReport] = useState([]);
+  const [assignmentReport, setAssignmentReport] = useState([]);
+
   const [loading, setLoading] = useState(true);
-  const [downloadingAtt, setDownloadingAtt] = useState(false);
-  const [downloadingAss, setDownloadingAss] = useState(false);
+  const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  // Filters
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Details Modal State
+  const [selectedReportItem, setSelectedReportItem] = useState(null);
+  const [openDetailsModal, setOpenDetailsModal] = useState(false);
+
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchReports = async () => {
-      try {
-        setLoading(true);
-        const [attRes, assRes] = await Promise.allSettled([
-          reportApi.getAttendanceReport(),
-          reportApi.getAssignmentReport(),
-        ]);
+  const fetchReportsData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [attRes, assRes] = await Promise.allSettled([
+        reportApi.getAttendanceReport(),
+        reportApi.getAssignmentReport(),
+      ]);
 
-        if (isMounted) {
-          if (attRes.status === "fulfilled" && attRes.value.success) {
-            setAttendanceReport(attRes.value.data);
-          }
-          if (assRes.status === "fulfilled" && assRes.value.success) {
-            setAssignmentReport(assRes.value.data);
-          }
-        }
-      } catch (err) {
-        if (isMounted) showToast(err?.message || "Failed to load reports", "error");
-      } finally {
-        if (isMounted) setLoading(false);
+      if (attRes.status === "fulfilled" && attRes.value.success) {
+        const rawAtt = attRes.value.data;
+        setAttendanceReport(Array.isArray(rawAtt) ? rawAtt : rawAtt?.records || rawAtt?.data || []);
       }
-    };
-
-    fetchReports();
-    return () => {
-      isMounted = false;
-    };
+      if (assRes.status === "fulfilled" && assRes.value.success) {
+        const rawAss = assRes.value.data;
+        setAssignmentReport(Array.isArray(rawAss) ? rawAss : rawAss?.tasks || rawAss?.data || []);
+      }
+    } catch (err) {
+      setError(err?.message || "Failed to load reports data");
+      showToast(err?.message || "Failed to load reports data", "error");
+    } finally {
+      setLoading(false);
+    }
   }, [showToast]);
 
-  const handleExportCsv = async (url, fileName, setDownloading) => {
+  useEffect(() => {
+    fetchReportsData();
+  }, [fetchReportsData]);
+
+  // Compute Summary KPI Values
+  const attendanceCount = attendanceReport.length;
+  const deliverablesCount = assignmentReport.length;
+
+  const attendanceRate = useMemo(() => {
+    if (attendanceCount === 0) return 100;
+    const presentCount = attendanceReport.filter((r) => (r.status || "").toLowerCase() === "present").length;
+    return (presentCount / attendanceCount) * 100;
+  }, [attendanceReport, attendanceCount]);
+
+  const deliverableCompletionRate = useMemo(() => {
+    if (deliverablesCount === 0) return 0;
+    const doneCount = assignmentReport.filter((t) => (t.status || "").toLowerCase() === "completed" || (t.status || "").toLowerCase() === "done").length;
+    return (doneCount / deliverablesCount) * 100;
+  }, [assignmentReport, deliverablesCount]);
+
+  // Active dataset filtering
+  const activeReportData = reportType === "attendance" ? attendanceReport : assignmentReport;
+
+  const filteredReportData = useMemo(() => {
+    return activeReportData.filter((item) => {
+      let matchesSearch = true;
+      if (search) {
+        const sQuery = search.toLowerCase();
+        if (reportType === "attendance") {
+          const name = item.student?.name || item.studentName || "";
+          const email = item.student?.email || item.studentEmail || "";
+          const notes = item.notes || item.remarks || "";
+          matchesSearch = name.toLowerCase().includes(sQuery) || email.toLowerCase().includes(sQuery) || notes.toLowerCase().includes(sQuery);
+        } else {
+          const title = item.title || item.name || "";
+          const assigned = item.assignedTo?.name || item.studentName || "";
+          const project = item.project?.name || item.team?.name || "";
+          matchesSearch = title.toLowerCase().includes(sQuery) || assigned.toLowerCase().includes(sQuery) || project.toLowerCase().includes(sQuery);
+        }
+      }
+
+      let matchesStatus = true;
+      if (statusFilter !== "all") {
+        const itemStatus = (item.status || "").toLowerCase();
+        matchesStatus = itemStatus === statusFilter.toLowerCase();
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [activeReportData, reportType, search, statusFilter]);
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+  };
+
+  // CSV Export Handler
+  const handleExportCsv = async () => {
+    const url = reportType === "attendance" ? reportApi.exportAttendanceCsvUrl : reportApi.exportAssignmentCsvUrl;
+    const fileName = reportType === "attendance" ? "attendance_report.csv" : "deliverables_report.csv";
+
     try {
-      setDownloading(true);
+      setExporting(true);
       const token = localStorage.getItem("token");
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -82,261 +135,70 @@ export default function AdminReports() {
     } catch (err) {
       showToast(err?.message || "Failed to download CSV export", "error");
     } finally {
-      setDownloading(false);
+      setExporting(false);
     }
   };
 
-  const attCount = attendanceReport?.totalRecords || attendanceReport?.length || 0;
-  const assCount = assignmentReport?.totalTasks || assignmentReport?.length || 0;
+  const handleViewDetails = (item) => {
+    setSelectedReportItem(item);
+    setOpenDetailsModal(true);
+  };
 
   return (
-    <PageContent>
+    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
+      {/* Page Header */}
       <PageHeader
-        title="Reports & Analytics Center"
-        description="Generate, audit, and export official CSV reports for student attendance logs, task deliverables, and bootcamp metrics."
+        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Reports" }]}
+        title="Reports Management"
+        description="View and analyze bootcamp performance, attendance, progress, and project deliverables information."
       />
 
-      {/* Top Banner KPI Summary Cards */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
-          <Card
-            elevation={0}
-            sx={{
-              p: 3,
-              background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
-              color: "#fff",
-              borderRadius: 3.5,
-              boxShadow: "0 10px 25px -5px rgba(2, 132, 199, 0.25)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 14px 30px -5px rgba(2, 132, 199, 0.35)" },
-            }}
-          >
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "#fff", width: 52, height: 52 }}>
-                <AssessmentIcon fontSize="large" />
-              </Avatar>
-              <Box>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                  Export Engine Status
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  Ready & Sanitized
-                </Typography>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.9)", display: "flex", alignItems: "center", gap: 0.5, mt: 0.5, fontWeight: 600 }}>
-                  <SecurityIcon fontSize="inherit" /> CSV Injection Prevention Active
-                </Typography>
-              </Box>
-            </Stack>
-          </Card>
-        </Grid>
+      {/* Summary KPI Cards */}
+      <ReportSummaryCards
+        loading={loading}
+        attendanceCount={attendanceCount}
+        deliverablesCount={deliverablesCount}
+        attendanceRate={attendanceRate}
+        deliverableCompletionRate={deliverableCompletionRate}
+      />
 
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            elevation={0}
-            sx={{
-              p: 3,
-              borderRadius: 3.5,
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 18px rgba(0, 0, 0, 0.03)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)" },
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                  Total Attendance Logs
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#16a34a" }}>
-                  {loading ? <Skeleton width={60} /> : attCount}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                  Audited daily session entries
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: "#f0fdf4", color: "#16a34a", width: 48, height: 48 }}>
-                <EventAvailableIcon />
-              </Avatar>
-            </Stack>
-          </Card>
-        </Grid>
+      {/* Filter / Search Toolbar */}
+      <ReportFilters
+        reportType={reportType}
+        onReportTypeChange={(val) => {
+          setReportType(val);
+          setStatusFilter("all");
+        }}
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onClearFilters={handleClearFilters}
+        onExportCsv={handleExportCsv}
+        exporting={exporting}
+      />
 
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            elevation={0}
-            sx={{
-              p: 3,
-              borderRadius: 3.5,
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 18px rgba(0, 0, 0, 0.03)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)" },
-            }}
-          >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                  Task Deliverable Logs
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#1e40af" }}>
-                  {loading ? <Skeleton width={60} /> : assCount}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                  Evaluated student assignments
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: "#eff6ff", color: "#1e40af", width: 48, height: 48 }}>
-                <AssignmentIcon />
-              </Avatar>
-            </Stack>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Primary Report Table */}
+      <ReportTable
+        loading={loading}
+        error={error}
+        reportType={reportType}
+        reportData={filteredReportData}
+        onRetry={fetchReportsData}
+        onViewDetails={handleViewDetails}
+        onViewStudent={(studentId) => navigate(`/admin/students`)}
+      />
 
-      {/* Main Export Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Attendance Export Card */}
-        <Grid item xs={12} md={6}>
-          <Card
-            elevation={0}
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 3.5,
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-            }}
-          >
-            <CardContent sx={{ p: 3.5, flex: 1 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: "#f0fdf4", color: "#16a34a", width: 50, height: 50 }}>
-                  <EventAvailableIcon fontSize="medium" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    Attendance Audit Export
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Official daily record logs per student & session
-                  </Typography>
-                </Box>
-              </Stack>
-              <Divider sx={{ mb: 2.5 }} />
-
-              {loading ? (
-                <Skeleton variant="rounded" height={100} />
-              ) : (
-                <Box sx={{ py: 1 }}>
-                  <Stack spacing={1.5}>
-                    <Box sx={{ p: 2.5, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                      <Typography variant="body2" color="#0f172a" fontWeight={700}>
-                        Included Data Fields:
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                        Date, Trainee Name, Email, Roll Number, Session Status (Present, Absent, Late, Leave), & Admin Notes.
-                      </Typography>
-                    </Box>
-
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Chip label="Sanitized Format" color="success" size="small" variant="soft" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
-                      <Chip label=".CSV Extension" size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: 1.5 }} />
-                    </Stack>
-                  </Stack>
-                </Box>
-              )}
-            </CardContent>
-
-            <Box sx={{ p: 3, bgcolor: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
-              <Button
-                fullWidth
-                size="large"
-                variant="contained"
-                color="success"
-                disabled={downloadingAtt}
-                startIcon={downloadingAtt ? <FileDownloadDoneIcon /> : <DownloadIcon />}
-                onClick={() => handleExportCsv(reportApi.exportAttendanceCsvUrl, "attendance_report.csv", setDownloadingAtt)}
-                sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.3, letterSpacing: "0.02em" }}
-              >
-                {downloadingAtt ? "Generating CSV..." : "Export Attendance Audit (.CSV)"}
-              </Button>
-            </Box>
-          </Card>
-        </Grid>
-
-        {/* Task & Deliverables Export Card */}
-        <Grid item xs={12} md={6}>
-          <Card
-            elevation={0}
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 3.5,
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-            }}
-          >
-            <CardContent sx={{ p: 3.5, flex: 1 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: "#eff6ff", color: "#1e40af", width: 50, height: 50 }}>
-                  <AssignmentIcon fontSize="medium" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    Task & Deliverables Export
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Full milestone task status and completion report
-                  </Typography>
-                </Box>
-              </Stack>
-              <Divider sx={{ mb: 2.5 }} />
-
-              {loading ? (
-                <Skeleton variant="rounded" height={100} />
-              ) : (
-                <Box sx={{ py: 1 }}>
-                  <Stack spacing={1.5}>
-                    <Box sx={{ p: 2.5, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                      <Typography variant="body2" color="#0f172a" fontWeight={700}>
-                        Included Data Fields:
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                        Task Title, Project Name, Priority Level, Due Date, Assigned Student, & Status (Completed, Under Review, etc.).
-                      </Typography>
-                    </Box>
-
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Chip label="Sanitized Format" color="primary" size="small" variant="soft" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
-                      <Chip label=".CSV Extension" size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: 1.5 }} />
-                    </Stack>
-                  </Stack>
-                </Box>
-              )}
-            </CardContent>
-
-            <Box sx={{ p: 3, bgcolor: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
-              <Button
-                fullWidth
-                size="large"
-                variant="contained"
-                color="primary"
-                disabled={downloadingAss}
-                startIcon={downloadingAss ? <FileDownloadDoneIcon /> : <DownloadIcon />}
-                onClick={() => handleExportCsv(reportApi.exportAssignmentCsvUrl, "assignment_report.csv", setDownloadingAss)}
-                sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.3, letterSpacing: "0.02em" }}
-              >
-                {downloadingAss ? "Generating CSV..." : "Export Deliverables Report (.CSV)"}
-              </Button>
-            </Box>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Record Details Modal */}
+      <ReportDetailsDialog
+        open={openDetailsModal}
+        onClose={() => {
+          setOpenDetailsModal(false);
+          setSelectedReportItem(null);
+        }}
+        reportItem={selectedReportItem}
+        reportType={reportType}
+      />
     </PageContent>
   );
 }
