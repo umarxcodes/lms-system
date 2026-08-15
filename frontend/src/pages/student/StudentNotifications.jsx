@@ -1,43 +1,45 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Card,
-  Typography,
-  Button,
-  Stack,
-  CircularProgress,
-  Box,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useOutletContext } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Stack, Button } from "@mui/material";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
-import EmptyState from "../../components/common/EmptyState";
 import { notificationApi } from "../../services/notificationApi";
 import { useToast } from "../../context/ToastContext";
+
+import NotificationSummaryCards from "../../components/notifications/NotificationSummaryCards";
+import NotificationFilters from "../../components/notifications/NotificationFilters";
+import NotificationList from "../../components/notifications/NotificationList";
+import NotificationDetailsDialog from "../../components/notifications/NotificationDetailsDialog";
+import DeleteNotificationDialog from "../../components/notifications/DeleteNotificationDialog";
 
 export default function StudentNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Filter State
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+
+  // Dialog State
+  const [selectedNotif, setSelectedNotif] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const { showToast } = useToast();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
+      setError("");
       const res = await notificationApi.getMyNotifications();
       if (res.success && res.data) {
         setNotifications(Array.isArray(res.data) ? res.data : []);
       }
     } catch (err) {
+      setError(err?.message || "Failed to load notifications.");
       showToast(err?.message || "Failed to load notifications", "error");
     } finally {
       setLoading(false);
@@ -68,89 +70,134 @@ export default function StudentNotifications() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+    setDeleteLoading(true);
     try {
-      await notificationApi.deleteNotification(id);
+      await notificationApi.deleteNotification(deleteId);
       showToast("Notification deleted!", "info");
+      setDeleteId(null);
       fetchNotifications();
     } catch (err) {
       showToast(err?.message || "Failed to delete notification", "error");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
+      const isRead = n.isRead || n.read;
+      if (statusFilter === "unread" && isRead) return false;
+      if (statusFilter === "read" && !isRead) return false;
+
+      if (typeFilter !== "all") {
+        const cat = (n.type || n.category || n.title || "").toLowerCase();
+        if (typeFilter === "task" && !cat.includes("task") && !cat.includes("assignment")) return false;
+        if (typeFilter === "project" && !cat.includes("project") && !cat.includes("team")) return false;
+        if (typeFilter === "attendance" && !cat.includes("attendance")) return false;
+        if (typeFilter === "system" && !cat.includes("announcement") && !cat.includes("broadcast") && !cat.includes("system")) return false;
+      }
+
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const t = (n.title || "").toLowerCase();
+        const m = (n.message || n.body || "").toLowerCase();
+        if (!t.includes(q) && !m.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }, [notifications, statusFilter, typeFilter, search]);
+
+  const unreadCount = useMemo(() => notifications.filter((n) => !(n.isRead || n.read)).length, [notifications]);
+  const announcementCount = useMemo(
+    () =>
+      notifications.filter((n) => {
+        const cat = (n.type || n.category || n.title || "").toLowerCase();
+        return cat.includes("announcement") || cat.includes("broadcast") || cat.includes("system");
+      }).length,
+    [notifications]
+  );
+
   return (
-    <PageContent>
+    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
+      {/* Page Header */}
       <PageHeader
-        title="Notifications & Announcements"
-        description="System alerts, project updates, and bootcamp announcements."
+        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "Notifications" }]}
+        title="Notifications & Alerts"
+        description="Stay updated with important bootcamp activities, deliverables, and official announcements."
         actions={
-          notifications.length > 0 && (
-            <Button startIcon={<MarkEmailReadIcon />} onClick={handleMarkAllRead}>
-              Mark All Read
+          unreadCount > 0 && (
+            <Button variant="outlined" color="primary" onClick={handleMarkAllRead} sx={{ fontWeight: 700, borderRadius: 2 }}>
+              Mark All as Read
             </Button>
           )
         }
       />
-        <Card sx={{ p: 3, maxWidth: 800 }}>
-          {loading ? (
-            <Box sx={{ py: 6, textAlign: "center" }}>
-              <CircularProgress color="primary" />
-            </Box>
-          ) : notifications.length === 0 ? (
-            <EmptyState
-              title="No notifications"
-              description="You have no unread or archived notifications at this time."
-              icon={NotificationsIcon}
-            />
-          ) : (
-            <List disablePadding>
-              {notifications.map((n) => {
-                const isRead = n.isRead || n.read;
-                return (
-                  <ListItem
-                    key={n._id || n.id}
-                    divider
-                    sx={{
-                      py: 2,
-                      bgcolor: isRead ? "transparent" : "primary.50",
-                      borderRadius: 1.5,
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemText
-                      primary={n.title}
-                      secondary={n.message}
-                      primaryTypographyProps={{ fontWeight: isRead ? 600 : 700, variant: "subtitle1" }}
-                      secondaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
-                    />
-                    <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
-                      {!isRead && (
-                        <Tooltip title="Mark as Read">
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => handleMarkAsRead(n._id || n.id)}
-                          >
-                            <CheckCircleOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <Tooltip title="Delete">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDelete(n._id || n.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                  </ListItem>
-                );
-              })}
-            </List>
-          )}
-        </Card>
-      </PageContent>
+
+      <Stack spacing={3} sx={{ width: "100%" }}>
+        {/* KPI Cards */}
+        <NotificationSummaryCards
+          loading={loading}
+          totalCount={notifications.length}
+          unreadCount={unreadCount}
+          announcementCount={announcementCount}
+        />
+
+        {/* Toolbar & Search */}
+        <NotificationFilters
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          onClearFilters={() => {
+            setSearch("");
+            setStatusFilter("all");
+            setTypeFilter("all");
+          }}
+          onMarkAllAsRead={handleMarkAllRead}
+          hasUnread={unreadCount > 0}
+        />
+
+        {/* Primary Notification List */}
+        <NotificationList
+          loading={loading}
+          error={error}
+          notifications={filteredNotifications}
+          onRetry={fetchNotifications}
+          onMarkAsRead={handleMarkAsRead}
+          onViewDetails={(n) => {
+            setSelectedNotif(n);
+            setDetailsOpen(true);
+            if (!(n.isRead || n.read)) {
+              handleMarkAsRead(n._id || n.id);
+            }
+          }}
+          onDelete={(id) => setDeleteId(id)}
+        />
+      </Stack>
+
+      {/* Details Dialog */}
+      <NotificationDetailsDialog
+        open={detailsOpen}
+        notification={selectedNotif}
+        onClose={() => {
+          setDetailsOpen(false);
+          setSelectedNotif(null);
+        }}
+        onMarkAsRead={handleMarkAsRead}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteNotificationDialog
+        open={Boolean(deleteId)}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
+      />
+    </PageContent>
   );
 }

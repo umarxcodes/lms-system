@@ -312,6 +312,18 @@ export default function Header({ onMobileNavOpen }) {
             ))}
           </List>
         )}
+        <Divider sx={{ my: 1 }} />
+        <Button
+          fullWidth
+          size="small"
+          onClick={() => {
+            setNotifAnchorEl(null);
+            navigate(user?.role === "ADMIN" ? "/admin/notifications" : "/student/notifications");
+          }}
+          sx={{ fontWeight: 800, textTransform: "none", color: "primary.main" }}
+        >
+          View all notifications →
+        </Button>
       </Popover>
 
       {/* User Profile Menu */}
