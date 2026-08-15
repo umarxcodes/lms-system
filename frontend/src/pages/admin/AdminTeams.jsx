@@ -1,63 +1,67 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Stack,
-  TextField,
-  InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  IconButton,
-  Chip,
-  Box,
-} from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Box, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
-import GroupsIcon from "@mui/icons-material/Groups";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
-import EmptyState from "../../components/common/EmptyState";
 import { teamApi } from "../../services/teamApi";
+import { projectApi } from "../../services/projectApi";
 import { useToast } from "../../context/ToastContext";
+
+import TeamSummaryCards from "../../components/teams/TeamSummaryCards";
+import TeamToolbar from "../../components/teams/TeamToolbar";
+import TeamTable from "../../components/teams/TeamTable";
+import TeamFormDialog from "../../components/teams/TeamFormDialog";
+import ManageMembersDialog from "../../components/teams/ManageMembersDialog";
 
 export default function AdminTeams() {
   const [teams, setTeams] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Search and Filters
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [projectFilter, setProjectFilter] = useState("all");
 
-  // Create Modal State
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  // Dialog States
+  const [openFormModal, setOpenFormModal] = useState(false);
+  const [teamToEdit, setTeamToEdit] = useState(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
 
-  // Delete State
+  const [openManageModal, setOpenManageModal] = useState(false);
+  const [teamToManage, setTeamToManage] = useState(null);
+
   const [deleteId, setDeleteId] = useState(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
-  const fetchTeams = useCallback(async () => {
+  // Fetch teams and projects data
+  const fetchTeamsAndProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await teamApi.getTeams({ search: search || undefined });
-      if (res.success && res.data) {
-        setTeams(Array.isArray(res.data) ? res.data : []);
+      setError(null);
+      const [teamsRes, projectsRes] = await Promise.allSettled([
+        teamApi.getTeams({ search: search || undefined }),
+        projectApi.getProjects(),
+      ]);
+
+      if (teamsRes.status === "fulfilled" && teamsRes.value.success) {
+        setTeams(Array.isArray(teamsRes.value.data) ? teamsRes.value.data : []);
+      } else if (teamsRes.status === "rejected") {
+        throw new Error(teamsRes.reason?.message || "Failed to load teams");
+      }
+
+      if (projectsRes.status === "fulfilled" && projectsRes.value.success) {
+        setProjects(Array.isArray(projectsRes.value.data) ? projectsRes.value.data : []);
       }
     } catch (err) {
+      setError(err?.message || "Failed to load teams");
       showToast(err?.message || "Failed to load teams", "error");
     } finally {
       setLoading(false);
@@ -65,27 +69,32 @@ export default function AdminTeams() {
   }, [search, showToast]);
 
   useEffect(() => {
-    fetchTeams();
-  }, [fetchTeams]);
+    fetchTeamsAndProjects();
+  }, [fetchTeamsAndProjects]);
 
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!name) return;
-    setCreateSubmitting(true);
+  // Handle Create or Update Team Submit
+  const handleFormSubmit = async (formData) => {
+    setFormSubmitting(true);
     try {
-      await teamApi.createTeam({ name, description });
-      showToast("Team created successfully!", "success");
-      setName("");
-      setDescription("");
-      setOpenCreateModal(false);
-      fetchTeams();
+      if (teamToEdit) {
+        const tId = teamToEdit._id || teamToEdit.id;
+        await teamApi.updateTeam(tId, formData);
+        showToast("Team updated successfully!", "success");
+      } else {
+        await teamApi.createTeam(formData);
+        showToast("Team created successfully!", "success");
+      }
+      setOpenFormModal(false);
+      setTeamToEdit(null);
+      fetchTeamsAndProjects();
     } catch (err) {
-      showToast(err?.message || "Failed to create team", "error");
+      showToast(err?.message || "Failed to save team", "error");
     } finally {
-      setCreateSubmitting(false);
+      setFormSubmitting(false);
     }
   };
 
+  // Handle Delete Team Confirm
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
     setDeleteSubmitting(true);
@@ -93,7 +102,7 @@ export default function AdminTeams() {
       await teamApi.deleteTeam(deleteId);
       showToast("Team deleted successfully!", "success");
       setDeleteId(null);
-      fetchTeams();
+      fetchTeamsAndProjects();
     } catch (err) {
       if (err?.status === 409 || err?.message?.includes("member") || err?.message?.includes("project")) {
         showToast("Cannot delete team that still contains active members or an assigned project.", "error");
@@ -105,156 +114,137 @@ export default function AdminTeams() {
     }
   };
 
+  // Compute project assignment mapping
+  const teamIdsWithProjects = useMemo(() => {
+    const set = new Set();
+    projects.forEach((p) => {
+      const tId = p.team?._id || p.team?.id || p.teamId?._id || p.teamId?.id || p.team || p.teamId;
+      if (tId) set.add(tId.toString());
+    });
+    return set;
+  }, [projects]);
+
+  // Filtered teams list based on search, status, and project filters
+  const filteredTeams = useMemo(() => {
+    return teams.filter((t) => {
+      const tId = (t._id || t.id)?.toString();
+      const memberCount = Array.isArray(t.members) ? t.members.length : 0;
+      const hasProject = Boolean(t.project || (tId && teamIdsWithProjects.has(tId)));
+
+      // Search Filter
+      const matchesSearch = !search || t.name.toLowerCase().includes(search.toLowerCase());
+
+      // Status Filter
+      let matchesStatus = true;
+      if (statusFilter === "active") matchesStatus = memberCount > 0;
+      if (statusFilter === "empty") matchesStatus = memberCount === 0;
+
+      // Project Filter
+      let matchesProject = true;
+      if (projectFilter === "assigned") matchesProject = hasProject;
+      if (projectFilter === "unassigned") matchesProject = !hasProject;
+
+      return matchesSearch && matchesStatus && matchesProject;
+    });
+  }, [teams, search, statusFilter, projectFilter, teamIdsWithProjects]);
+
   return (
-    <>
-      <PageContent>
+    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
+      {/* Page Header */}
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Teams" }]}
         title="Team Management"
-        description="Organize bootcamp trainees into project development teams."
+        description="Manage and organize bootcamp teams and their members."
         actions={
           <Button
             variant="contained"
+            color="primary"
             startIcon={<AddIcon />}
-            onClick={() => setOpenCreateModal(true)}
-            sx={{ fontWeight: 600 }}
+            onClick={() => {
+              setTeamToEdit(null);
+              setOpenFormModal(true);
+            }}
+            sx={{ fontWeight: 700, borderRadius: 2, px: 2.5, boxShadow: "none" }}
           >
             Create Team
           </Button>
         }
       />
-        <Card sx={{ p: 3, mb: 3 }}>
-          <TextField
-            placeholder="Search teams by name..."
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ width: { xs: "100%", sm: 360 } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" color="action" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </Card>
 
-        {loading ? (
-          <Box sx={{ py: 6, textAlign: "center" }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : teams.length === 0 ? (
-          <EmptyState
-            title="No teams found"
-            description="Create project teams to assign students and track development progress."
-            icon={GroupsIcon}
-            actionLabel="Create Team"
-            onAction={() => setOpenCreateModal(true)}
-          />
-        ) : (
-          <Grid container spacing={3}>
-            {teams.map((team) => {
-              const memberCount = team.members?.length || 0;
-              return (
-                <Grid item xs={12} sm={6} md={4} key={team._id || team.id}>
-                  <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                    <CardContent sx={{ p: 3, flex: 1 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                          {team.name}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => setDeleteId(team._id || team.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Stack>
+      {/* Summary Section KPIs */}
+      <TeamSummaryCards loading={loading} teams={teams} projects={projects} />
 
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: 40 }}>
-                        {team.description || "No description provided."}
-                      </Typography>
+      {/* Search & Filter Toolbar */}
+      <TeamToolbar
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        projectFilter={projectFilter}
+        onProjectFilterChange={setProjectFilter}
+        onCreateClick={() => {
+          setTeamToEdit(null);
+          setOpenFormModal(true);
+        }}
+      />
 
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip
-                          icon={<GroupsIcon fontSize="small" />}
-                          label={`${memberCount} Member${memberCount === 1 ? "" : "s"}`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </Stack>
-                    </CardContent>
+      {/* Full-Width Team Table */}
+      <TeamTable
+        loading={loading}
+        error={error}
+        teams={filteredTeams}
+        projects={projects}
+        onRetry={fetchTeamsAndProjects}
+        onViewTeam={(id) => navigate(`/admin/teams/${id}`)}
+        onEditTeam={(team) => {
+          setTeamToEdit(team);
+          setOpenFormModal(true);
+        }}
+        onManageMembers={(team) => {
+          setTeamToManage(team);
+          setOpenManageModal(true);
+        }}
+        onDeleteTeam={(id) => setDeleteId(id)}
+        onCreateTeam={() => {
+          setTeamToEdit(null);
+          setOpenFormModal(true);
+        }}
+      />
 
-                    <Box sx={{ p: 2, bgcolor: "grey.50", borderTop: "1px solid", borderColor: "divider" }}>
-                      <Button
-                        fullWidth
-                        size="small"
-                        endIcon={<ArrowForwardIcon />}
-                        onClick={() => navigate(`/admin/teams/${team._id || team.id}`)}
-                      >
-                        Manage Team
-                      </Button>
-                    </Box>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-        )}
-      </PageContent>
+      {/* Create / Edit Team Form Dialog */}
+      <TeamFormDialog
+        open={openFormModal}
+        onClose={() => {
+          setOpenFormModal(false);
+          setTeamToEdit(null);
+        }}
+        teamToEdit={teamToEdit}
+        onSubmit={handleFormSubmit}
+        submitting={formSubmitting}
+      />
 
-      {/* Create Team Dialog */}
-      <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Create New Team</DialogTitle>
-        <Box component="form" onSubmit={handleCreateSubmit}>
-          <DialogContent dividers>
-            <Stack spacing={2}>
-              <TextField
-                label="Team Name"
-                fullWidth
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <TextField
-                label="Description"
-                fullWidth
-                multiline
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions sx={{ p: 2.5 }}>
-            <Button onClick={() => setOpenCreateModal(false)} disabled={createSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={createSubmitting}
-              startIcon={createSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
-            >
-              {createSubmitting ? "Creating..." : "Create Team"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+      {/* Manage Team Members Dialog */}
+      <ManageMembersDialog
+        open={openManageModal}
+        onClose={() => {
+          setOpenManageModal(false);
+          setTeamToManage(null);
+        }}
+        team={teamToManage}
+        onRosterUpdated={fetchTeamsAndProjects}
+      />
 
-      {/* Delete Confirmation */}
+      {/* Delete Team Confirmation Dialog */}
       <ConfirmDialog
         open={Boolean(deleteId)}
-        title="Delete Team"
-        description="Are you sure you want to delete this team? Teams with active members or assigned projects cannot be deleted."
+        title="Delete Team?"
+        description="Are you sure you want to delete this team? This action cannot be undone. Teams with active members or assigned projects cannot be deleted."
+        confirmText="Delete Team"
+        confirmColor="error"
         loading={deleteSubmitting}
         onConfirm={handleDeleteConfirm}
         onClose={() => setDeleteId(null)}
       />
-    </>
+    </PageContent>
   );
 }
