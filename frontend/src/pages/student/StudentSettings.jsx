@@ -1,110 +1,155 @@
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Stack,
-  TextField,
-  Box,
-  CircularProgress,
-} from "@mui/material";
-import LockIcon from "@mui/icons-material/Lock";
-import { useOutletContext } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Stack, Box } from "@mui/material";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import { settingsApi } from "../../services/settingsApi";
+import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 
+import SettingsNavigation from "../../components/settings/SettingsNavigation";
+import ProfileSettings from "../../components/settings/ProfileSettings";
+import SecuritySettings from "../../components/settings/SecuritySettings";
+import NotificationSettings from "../../components/settings/NotificationSettings";
+import PreferenceSettings from "../../components/settings/PreferenceSettings";
+
 export default function StudentSettings() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { user, updateUser } = useAuth();
   const { showToast } = useToast();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!currentPassword || !newPassword) return;
+  const [activeSection, setActiveSection] = useState("profile");
 
-    setLoading(true);
+  // Loading States
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  const [notifPrefs, setNotifPrefs] = useState(null);
+
+  useEffect(() => {
+    settingsApi
+      .getNotificationPreferences()
+      .then((res) => {
+        if (res.success && res.data) setNotifPrefs(res.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveProfile = async (formData) => {
+    setProfileLoading(true);
     try {
-      await settingsApi.changePassword(currentPassword, newPassword);
-      showToast("Password updated successfully!", "success");
-      setCurrentPassword("");
-      setNewPassword("");
+      const res = await settingsApi.updateAdminProfile(formData);
+      if (res.success) {
+        showToast("Profile settings updated successfully!", "success");
+        updateUser({ name: formData.name, phone: formData.phone, bio: formData.bio });
+      }
     } catch (err) {
-      showToast(err?.message || "Failed to update password", "error");
+      showToast(err?.message || "Failed to update profile settings", "error");
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
   };
 
+  const handleUploadAvatar = async (formData) => {
+    try {
+      const res = await settingsApi.uploadAdminAvatar(formData);
+      if (res.success && res.data?.avatarUrl) {
+        updateUser({ avatarUrl: res.data.avatarUrl });
+        showToast("Profile picture updated successfully!", "success");
+      }
+    } catch (err) {
+      showToast(err?.message || "Failed to upload profile picture", "error");
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    try {
+      const res = await settingsApi.deleteAdminAvatar();
+      if (res.success) {
+        updateUser({ avatarUrl: "" });
+        showToast("Profile picture removed", "info");
+      }
+    } catch (err) {
+      showToast(err?.message || "Failed to remove profile picture", "error");
+    }
+  };
+
+  const handleUpdatePassword = async (currentPassword, newPassword, onSuccess) => {
+    setPasswordLoading(true);
+    try {
+      await settingsApi.changePassword(currentPassword, newPassword);
+      showToast("Password updated successfully!", "success");
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      showToast(err?.message || "Failed to update password", "error");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleSaveNotificationPreferences = async (data) => {
+    setNotifLoading(true);
+    try {
+      const res = await settingsApi.updateNotificationPreferences(data);
+      if (res.success) {
+        setNotifPrefs(data);
+        showToast("Notification preferences updated!", "success");
+      }
+    } catch (err) {
+      showToast(err?.message || "Failed to update notification preferences", "error");
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  const sections = [
+    { id: "profile", label: "Profile Settings" },
+    { id: "security", label: "Security & Password" },
+    { id: "notifications", label: "Notification Preferences" },
+    { id: "preferences", label: "Portal Preferences" },
+  ];
+
   return (
-    <PageContent>
+    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
+      {/* Page Header */}
       <PageHeader
-        title="Student Settings"
-        description="Manage your account security and authentication credentials."
+        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "Settings" }]}
+        title="Student Account Settings"
+        description="Manage your trainee profile details, password credentials, and notification preferences."
       />
-        <Card sx={{ maxWidth: 480 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2.5,
-                  bgcolor: "primary.50",
-                  color: "primary.main",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                <LockIcon fontSize="large" />
-              </Box>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Change Password
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Update your security password
-                </Typography>
-              </Box>
-            </Stack>
 
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={2.5}>
-                <TextField
-                  label="Current Password"
-                  type="password"
-                  fullWidth
-                  required
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
+      {/* Main Settings Two-Column Layout */}
+      <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="flex-start" sx={{ width: "100%" }}>
+        {/* Left Navigation */}
+        <SettingsNavigation sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
 
-                <TextField
-                  label="New Password"
-                  type="password"
-                  fullWidth
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
+        {/* Right Settings Content Area */}
+        <Box sx={{ flexGrow: 1, width: "100%" }}>
+          {activeSection === "profile" && (
+            <ProfileSettings
+              user={user}
+              onSaveProfile={handleSaveProfile}
+              onUploadAvatar={handleUploadAvatar}
+              onDeleteAvatar={handleDeleteAvatar}
+              loading={profileLoading}
+            />
+          )}
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
-                >
-                  {loading ? "Updating..." : "Update Password"}
-                </Button>
-              </Stack>
-            </Box>
-          </CardContent>
-        </Card>
-      </PageContent>
+          {activeSection === "security" && (
+            <SecuritySettings onUpdatePassword={handleUpdatePassword} loading={passwordLoading} />
+          )}
+
+          {activeSection === "notifications" && (
+            <NotificationSettings
+              preferences={notifPrefs}
+              onSavePreferences={handleSaveNotificationPreferences}
+              loading={notifLoading}
+            />
+          )}
+
+          {activeSection === "preferences" && <PreferenceSettings />}
+        </Box>
+      </Stack>
+    </PageContent>
   );
 }
