@@ -10,7 +10,7 @@ export default function StatusChip({ status }) {
 
   const normalized = String(status).toLowerCase().trim().replace(/_/g, " ");
 
-  let color = "default";
+  let color;
   let icon = null;
   let label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
