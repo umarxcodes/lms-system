@@ -1,363 +1,283 @@
 import React, { useState, useEffect } from "react";
 import {
   Grid,
-  Card,
+  Paper,
   Typography,
   Box,
   Stack,
-  LinearProgress,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
   Skeleton,
-  Avatar,
-  Divider,
 } from "@mui/material";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import VerifiedIcon from "@mui/icons-material/Verified";
+import FolderIcon from "@mui/icons-material/Folder";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
+import ProgressBar from "../../components/progress/ProgressBar";
+import EmptyState from "../../components/common/EmptyState";
 import { reportApi } from "../../services/reportApi";
+import { taskApi } from "../../services/taskApi";
+import { projectApi } from "../../services/projectApi";
 import { useToast } from "../../context/ToastContext";
 
 export default function StudentProgress() {
   const [report, setReport] = useState(null);
+  const [myProject, setMyProject] = useState(null);
+  const [myTasks, setMyTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
   useEffect(() => {
-    reportApi
-      .getMyReport()
-      .then((res) => {
-        if (res.success && res.data) setReport(res.data);
-      })
-      .catch((err) => showToast(err?.message || "Failed to load progress metrics", "error"))
-      .finally(() => setLoading(false));
+    let isMounted = true;
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        const [reportRes, projectRes, tasksRes] = await Promise.allSettled([
+          reportApi.getMyReport(),
+          projectApi.getMyProject(),
+          taskApi.getMyAssignedTasks(),
+        ]);
+
+        if (isMounted) {
+          if (reportRes.status === "fulfilled" && reportRes.value.success) {
+            setReport(reportRes.value.data);
+          }
+          if (projectRes.status === "fulfilled" && projectRes.value.success) {
+            setMyProject(projectRes.value.data);
+          }
+          if (tasksRes.status === "fulfilled" && tasksRes.value.success) {
+            setMyTasks(Array.isArray(tasksRes.value.data) ? tasksRes.value.data : []);
+          }
+        }
+      } catch (err) {
+        if (isMounted) showToast(err?.message || "Failed to load progress data", "error");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchStudentData();
+    return () => {
+      isMounted = false;
+    };
   }, [showToast]);
 
   const attendanceScore = report?.attendancePercentage ?? 100;
   const taskScore = report?.taskCompletionPercentage ?? 0;
-  const combinedScore = Math.round((attendanceScore * 0.4) + (taskScore * 0.6));
+  const overallProgress = Math.round(attendanceScore * 0.4 + taskScore * 0.6);
 
-  const getGradeInfo = (score) => {
-    if (score >= 90) return { grade: "A+", label: "Exceptional", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)" };
-    if (score >= 80) return { grade: "A", label: "Meritorious", color: "#0284c7", bg: "rgba(2, 132, 199, 0.15)" };
-    if (score >= 70) return { grade: "B", label: "Good Standing", color: "#6366f1", bg: "rgba(99, 102, 241, 0.15)" };
-    if (score >= 60) return { grade: "C", label: "Satisfactory", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)" };
-    return { grade: "D", label: "Needs Focus", color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)" };
-  };
-
-  const gradeInfo = getGradeInfo(combinedScore);
+  const completedTasks = myTasks.filter((t) => t.status === "completed" || t.status === "done").length;
+  const totalTasks = myTasks.length;
 
   return (
-    <PageContent>
+    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
+      {/* Page Header */}
       <PageHeader
-        title="My Progress & Trainee Dashboard"
-        description="Monitor your real-time attendance rate, task completion milestone velocity, and overall bootcamp academic standing."
+        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "My Progress" }]}
+        title="My Progress"
+        description="Monitor your overall standing, capstone project velocity, and deliverable completion status."
       />
 
-      {/* Main Performance Showcase Card */}
-      <Card
-        elevation={0}
-        sx={{
-          p: { xs: 3, md: 4 },
-          mb: 3,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-          color: "#fff",
-          borderRadius: 3.5,
-          boxShadow: "0 12px 32px rgba(15, 23, 42, 0.2)",
-        }}
-      >
-        {loading ? (
-          <Skeleton variant="rounded" height={100} sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
-        ) : (
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={7}>
-              <Stack direction="row" spacing={2.5} alignItems="center">
-                <Avatar
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    bgcolor: gradeInfo.bg,
-                    color: gradeInfo.color,
-                    border: `2px solid ${gradeInfo.color}`,
-                    fontSize: 28,
-                    fontWeight: 800,
-                  }}
-                >
-                  {gradeInfo.grade}
-                </Avatar>
-
-                <Box>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                      Overall Standing: {gradeInfo.label}
-                    </Typography>
-                    <VerifiedIcon sx={{ color: gradeInfo.color, fontSize: 22 }} />
-                  </Stack>
-                  <Typography variant="body2" sx={{ color: "#94a3b8", mt: 0.5 }}>
-                    Weighted metric based on 40% Attendance session log & 60% Task deliverables completion.
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-
-            <Grid item xs={12} md={5}>
-              <Box
-                sx={{
-                  p: 2.5,
-                  borderRadius: 3,
-                  bgcolor: "rgba(255, 255, 255, 0.06)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                }}
-              >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>
-                    Combined Score
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: gradeInfo.color }}>
-                    {combinedScore}%
-                  </Typography>
-                </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={combinedScore}
-                  sx={{
-                    height: 10,
-                    borderRadius: 5,
-                    bgcolor: "rgba(255,255,255,0.15)",
-                    "& .MuiLinearProgress-bar": { backgroundColor: gradeInfo.color },
-                  }}
-                />
-              </Box>
-            </Grid>
-          </Grid>
-        )}
-      </Card>
-
-      {/* Progress Breakdown Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Attendance Card */}
-        <Grid item xs={12} md={6}>
-          <Card
+      {loading ? (
+        <Box sx={{ py: 6, textAlign: "center" }}>
+          <CircularProgress color="primary" />
+        </Box>
+      ) : (
+        <Stack spacing={3}>
+          {/* My Overall Progress Card */}
+          <Paper
             elevation={0}
             sx={{
-              p: 3.5,
-              borderRadius: 3.5,
+              p: 3,
               bgcolor: "#ffffff",
               border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-              height: "100%",
+              borderRadius: 2.5,
             }}
           >
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Avatar sx={{ width: 48, height: 48, bgcolor: "#f0fdf4", color: "#16a34a" }}>
-                <EventAvailableIcon fontSize="medium" />
-              </Avatar>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Session Attendance Metric
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Based on official logged bootcamp session presence
-                </Typography>
-              </Box>
-            </Stack>
-            <Divider sx={{ mb: 3 }} />
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
+              My Overall Progress
+            </Typography>
 
-            {loading ? (
-              <Skeleton variant="rounded" height={60} />
-            ) : (
-              <Box>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="body2" fontWeight={600} color="text.secondary">
-                    Attendance Percentage
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Box sx={{ p: 2.5, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #e2e8f0" }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase" }}>
+                    Combined Academic Score
                   </Typography>
-                  <Typography variant="h5" fontWeight={800} color="success.main">
-                    {attendanceScore}%
-                  </Typography>
-                </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(100, Math.max(0, attendanceScore))}
-                  color="success"
-                  sx={{ height: 10, borderRadius: 5, bgcolor: "#f1f5f9", mb: 2 }}
-                />
-
-                <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block">
-                    Punctuality Standard:
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Maintain an attendance percentage above 75% to stay eligible for capstone certification.
+                  <ProgressBar value={overallProgress} height={12} labelPosition="top" />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                    Weighted metric based on 40% session attendance and 60% task deliverables completion.
                   </Typography>
                 </Box>
-              </Box>
-            )}
-          </Card>
-        </Grid>
+              </Grid>
 
-        {/* Task Completion Card */}
-        <Grid item xs={12} md={6}>
-          <Card
+              <Grid item xs={12} md={6}>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Paper elevation={0} sx={{ p: 2, border: "1px solid #e2e8f0", borderRadius: 2, bgcolor: "#f0fdf4" }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                        <EventAvailableIcon sx={{ color: "#16a34a", fontSize: 20 }} />
+                        <Typography variant="caption" fontWeight={700} color="#16a34a" sx={{ textTransform: "uppercase" }}>
+                          Attendance
+                        </Typography>
+                      </Stack>
+                      <Typography variant="h5" fontWeight={800} color="#16a34a">
+                        {attendanceScore}%
+                      </Typography>
+                    </Paper>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Paper elevation={0} sx={{ p: 2, border: "1px solid #e2e8f0", borderRadius: 2, bgcolor: "#eff6ff" }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                        <TaskAltIcon sx={{ color: "#1e40af", fontSize: 20 }} />
+                        <Typography variant="caption" fontWeight={700} color="#1e40af" sx={{ textTransform: "uppercase" }}>
+                          Tasks Done
+                        </Typography>
+                      </Stack>
+                      <Typography variant="h5" fontWeight={800} color="#1e40af">
+                        {Math.round(taskScore)}%
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Current Project Progress */}
+          <Paper
             elevation={0}
             sx={{
-              p: 3.5,
-              borderRadius: 3.5,
+              p: 3,
               bgcolor: "#ffffff",
               border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-              height: "100%",
+              borderRadius: 2.5,
             }}
           >
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Avatar sx={{ width: 48, height: 48, bgcolor: "#eff6ff", color: "#1e40af" }}>
-                <TrendingUpIcon fontSize="medium" />
-              </Avatar>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Task Milestone Completion
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Based on your assigned project deliverables
-                </Typography>
-              </Box>
-            </Stack>
-            <Divider sx={{ mb: 3 }} />
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
+              Current Project Progress
+            </Typography>
 
-            {loading ? (
-              <Skeleton variant="rounded" height={60} />
-            ) : (
-              <Box>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="body2" fontWeight={600} color="text.secondary">
-                    Completed Deliverables
+            {myProject ? (
+              <Box sx={{ p: 2.5, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #e2e8f0" }}>
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+                  <FolderIcon sx={{ color: "#1e40af" }} />
+                  <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
+                    {myProject.name || myProject.title}
                   </Typography>
-                  <Typography variant="h5" fontWeight={800} color="primary.main">
-                    {Math.round(taskScore)}%
-                  </Typography>
+                  <Chip
+                    label={myProject.status ? myProject.status.replace("-", " ").toUpperCase() : "IN PROGRESS"}
+                    size="small"
+                    sx={{ bgcolor: "#eff6ff", color: "#1e40af", fontWeight: 700, borderRadius: 1.5, ml: "auto" }}
+                  />
                 </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(100, Math.max(0, taskScore))}
-                  color="primary"
-                  sx={{ height: 10, borderRadius: 5, bgcolor: "#f1f5f9", mb: 2 }}
-                />
 
-                <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block">
-                    Deliverable Velocity:
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Complete all assigned project requirements on time to boost your final evaluation.
-                  </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {myProject.description || "Active bootcamp development project."}
+                </Typography>
+
+                <Box sx={{ maxWidth: 450 }}>
+                  <ProgressBar value={myProject.progress || 0} height={10} labelPosition="top" />
                 </Box>
               </Box>
+            ) : (
+              <Box sx={{ p: 3, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #e2e8f0", textAlign: "center" }}>
+                <FolderIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  No active project assigned to your account yet.
+                </Typography>
+              </Box>
             )}
-          </Card>
-        </Grid>
-      </Grid>
+          </Paper>
 
-      {/* Gamified Achievements Banner Card */}
-      <Card
-        elevation={0}
-        sx={{
-          p: 3.5,
-          borderRadius: 3.5,
-          bgcolor: "#ffffff",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <EmojiEventsIcon sx={{ color: "#f59e0b" }} /> Bootcamp Trainee Milestones & Badges
-        </Typography>
+          {/* Assigned Tasks Deliverables */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 2.5,
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                My Assigned Tasks ({totalTasks})
+              </Typography>
+              <Chip
+                label={`${completedTasks} / ${totalTasks} Completed`}
+                size="small"
+                sx={{ bgcolor: "#f0fdf4", color: "#16a34a", fontWeight: 700, borderRadius: 1.5 }}
+              />
+            </Stack>
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Box
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                bgcolor: attendanceScore >= 80 ? "#f0fdf4" : "#f8fafc",
-                border: "1px solid",
-                borderColor: attendanceScore >= 80 ? "#bbf7d0" : "#e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <Avatar sx={{ bgcolor: attendanceScore >= 80 ? "#16a34a" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
-                <VerifiedIcon fontSize="small" />
-              </Avatar>
-              <Box>
-                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                  Punctuality Star
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {attendanceScore >= 80 ? "Unlocked (>80% Attendance)" : "Locked (Requires >80%)"}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <Box
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                bgcolor: taskScore >= 50 ? "#eff6ff" : "#f8fafc",
-                border: "1px solid",
-                borderColor: taskScore >= 50 ? "#bfdbfe" : "#e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <Avatar sx={{ bgcolor: taskScore >= 50 ? "#1e40af" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
-                <TaskAltIcon fontSize="small" />
-              </Avatar>
-              <Box>
-                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                  Milestone Crusher
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {taskScore >= 50 ? "Unlocked (>50% Tasks Done)" : "Locked (Requires >50%)"}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <Box
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                bgcolor: combinedScore >= 85 ? "#fff7ed" : "#f8fafc",
-                border: "1px solid",
-                borderColor: combinedScore >= 85 ? "#ffedd5" : "#e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <Avatar sx={{ bgcolor: combinedScore >= 85 ? "#ea580c" : "#94a3b8", color: "#fff", width: 42, height: 42 }}>
-                <AutoAwesomeIcon fontSize="small" />
-              </Avatar>
-              <Box>
-                <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                  Top Performer
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {combinedScore >= 85 ? "Unlocked (>85% Overall)" : "Locked (Requires >85%)"}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Card>
+            {myTasks.length === 0 ? (
+              <EmptyState
+                title="No Tasks Assigned"
+                description="You currently have no tasks assigned to your profile."
+                icon={HourglassTopIcon}
+              />
+            ) : (
+              <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2 }}>
+                <Table size="small">
+                  <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Task Title</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#475569" }} align="right">
+                        Status Rate
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {myTasks.map((t) => {
+                      const tStatus = t.status || "todo";
+                      const isDone = tStatus === "completed" || tStatus === "done";
+                      return (
+                        <TableRow key={t._id || t.id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={700} color="#0f172a">
+                              {t.title || t.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={isDone ? "Completed" : tStatus === "in_progress" || tStatus === "in-progress" ? "In Progress" : "Pending"}
+                              size="small"
+                              sx={{
+                                fontWeight: 700,
+                                fontSize: "0.725rem",
+                                bgcolor: isDone ? "#f0fdf4" : tStatus.includes("progress") ? "#eff6ff" : "#f8fafc",
+                                color: isDone ? "#16a34a" : tStatus.includes("progress") ? "#1e40af" : "#64748b",
+                                borderRadius: 1.5,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" fontWeight={700} color={isDone ? "success.main" : "text.secondary"}>
+                              {isDone ? "100%" : tStatus.includes("progress") ? "50%" : "0%"}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Paper>
+        </Stack>
+      )}
     </PageContent>
   );
 }
