@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import PageTransition from "../common/PageTransition";
 
 export default function AppLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const location = useLocation();
 
   const handleMobileNavToggle = () => {
     setMobileNavOpen((prev) => !prev);
@@ -43,24 +43,9 @@ export default function AppLayout() {
             position: "relative",
           }}
         >
-          <Box
-            key={location.pathname}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              animation: "fadeInUp 250ms cubic-bezier(0.16, 1, 0.3, 1)",
-              "@keyframes fadeInUp": {
-                "0%": { opacity: 0, transform: "translateY(8px)" },
-                "100%": { opacity: 1, transform: "translateY(0)" },
-              },
-              "@media (prefers-reduced-motion: reduce)": {
-                animation: "none",
-              },
-            }}
-          >
+          <PageTransition>
             <Outlet context={{ onMobileNavOpen: handleMobileNavToggle }} />
-          </Box>
+          </PageTransition>
         </Box>
       </Box>
     </Box>

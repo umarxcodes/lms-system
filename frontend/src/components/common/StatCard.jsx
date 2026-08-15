@@ -22,11 +22,14 @@ export default function StatCard({
         overflow: "hidden",
         border: "1px solid",
         borderColor: "divider",
-        transition: "all 0.25s ease-in-out",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 12px 24px -8px rgba(0, 0, 0, 0.08)",
+          transform: "translateY(-2px)",
+          boxShadow: "0 8px 18px -4px rgba(0, 0, 0, 0.06)",
           borderColor: accentColor,
+        },
+        "&:active": {
+          transform: "translateY(0) scale(0.99)",
         },
       }}
     >
