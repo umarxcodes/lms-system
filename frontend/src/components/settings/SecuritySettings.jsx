@@ -50,7 +50,7 @@ export default function SecuritySettings({ securityInfo, onUpdatePassword, loadi
       return;
     }
 
-    onUpdatePassword(currentPassword, newPassword, () => {
+    onUpdatePassword(currentPassword, newPassword, confirmPassword, () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");

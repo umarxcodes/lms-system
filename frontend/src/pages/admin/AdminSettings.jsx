@@ -109,10 +109,10 @@ export default function AdminSettings() {
     }
   };
 
-  const handleUpdatePassword = async (currentPassword, newPassword, onSuccess) => {
+  const handleUpdatePassword = async (currentPassword, newPassword, confirmPassword, onSuccess) => {
     setPasswordLoading(true);
     try {
-      await settingsApi.changePassword(currentPassword, newPassword);
+      await settingsApi.changePassword(currentPassword, newPassword, confirmPassword);
       showToast("Password updated successfully!", "success");
       if (onSuccess) onSuccess();
       // Refresh security info

@@ -8,8 +8,8 @@ export const settingsApi = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   deleteAdminAvatar: () => apiClient.delete("/settings/profile/avatar"),
-  changePassword: (currentPassword, newPassword) =>
-    apiClient.patch("/settings/password", { currentPassword, newPassword }),
+  changePassword: (currentPassword, newPassword, confirmPassword) =>
+    apiClient.patch("/settings/password", { currentPassword, newPassword, confirmPassword }),
   getApplicationSettings: () => apiClient.get("/settings/application"),
   updateApplicationSettings: (data) => apiClient.patch("/settings/application", data),
   getNotificationPreferences: () => apiClient.get("/settings/notifications"),
