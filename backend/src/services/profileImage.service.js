@@ -97,7 +97,7 @@ export async function deleteAuthenticatedProfileImage(userId, role) {
   if (!user) throw appError("User not found", 404);
 
   const oldPublicId = user.profileImage?.publicId;
-  if (oldPublicId) await deleteProfileImage(oldPublicId);
+  if (oldPublicId) await safeDeleteOldImage(oldPublicId);
 
   await User.findOneAndUpdate(
     { _id: userId, role },

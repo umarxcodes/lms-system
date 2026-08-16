@@ -16,22 +16,21 @@ function summarizeAttendance(records) {
 export const getStudentDashboard = async (userId) => {
   const [profile, attendanceRecords, team, projects, tasks, assignedTasks] = await Promise.all([
     getAuthenticatedStudent(userId),
-    getMyAttendance(userId),
-    getMyTeam(userId),
-    getMyProjects(userId),
-    getMyTasks(userId),
-    getMyAssignedTasks(userId)
+    getMyAttendance(userId).catch(() => []),
+    getMyTeam(userId).catch(() => null),
+    getMyProjects(userId).catch(() => []),
+    getMyTasks(userId).catch(() => []),
+    getMyAssignedTasks(userId).catch(() => [])
   ]);
 
   if (!profile) throw appError("Student profile not found", 404);
-  if (!team) throw appError("You are not assigned to a team", 404);
 
   return {
     profile,
-    attendance: summarizeAttendance(attendanceRecords),
-    team,
-    projects,
-    tasks,
-    assignedTasks
+    attendance: summarizeAttendance(attendanceRecords || []),
+    team: team || null,
+    projects: projects || [],
+    tasks: tasks || [],
+    assignedTasks: assignedTasks || []
   };
 };
