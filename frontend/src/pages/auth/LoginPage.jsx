@@ -28,10 +28,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      const userRole = (user?.role || "").toUpperCase();
+      if (userRole === "ADMIN") {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (userRole === "STUDENT") {
+        navigate("/student/dashboard", { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,17 +59,17 @@ export default function LoginPage() {
       showToast("Welcome back! Login successful.", "success");
 
       const loggedUser = res?.data?.user || res?.user;
-      const userRole = loggedUser?.role;
+      const userRole = (loggedUser?.role || "").toUpperCase();
       const from = location.state?.from?.pathname;
 
-      if (from) {
+      if (from && from !== "/403" && from !== "/login") {
         navigate(from, { replace: true });
       } else if (userRole === "ADMIN") {
         navigate("/admin/dashboard", { replace: true });
       } else if (userRole === "STUDENT") {
         navigate("/student/dashboard", { replace: true });
       } else {
-        navigate("/admin/dashboard", { replace: true });
+        navigate("/login", { replace: true });
       }
     } catch (err) {
       setError(

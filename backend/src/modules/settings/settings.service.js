@@ -17,21 +17,20 @@ function toProfile(user) {
 // getAdmin verifies that the requested profile belongs to an ADMIN user.
 // This prevents a Student from accessing or modifying Admin settings by
 // guessing IDs.
-async function getAdmin(adminId, projection = "") {
-  const admin = await User.findOne({ _id: adminId, role: ROLES.ADMIN }).select(projection);
-  if (!admin) throw appError("Admin not found", 404);
-  return admin;
+async function getUser(userId, projection = "") {
+  const user = await User.findById(userId).select(projection);
+  if (!user) throw appError("User not found", 404);
+  return user;
 }
 
-// getOrCreateSettings returns the AdminSettings document for the given Admin,
-// creating it with defaults if it does not yet exist. Each Admin has exactly
-// one settings document (enforced by a unique index).
-async function getOrCreateSettings(adminId) {
+// getOrCreateSettings returns the AdminSettings document for the given user,
+// creating it with defaults if it does not yet exist.
+async function getOrCreateSettings(userId) {
   return AdminSettings.findOneAndUpdate(
-    { admin: adminId },
+    { admin: userId },
     {
       $setOnInsert: {
-        admin: adminId,
+        admin: userId,
         application: DEFAULT_APPLICATION_SETTINGS,
         notifications: DEFAULT_NOTIFICATION_PREFERENCES
       }
@@ -59,45 +58,40 @@ function toNotificationPreferences(settings) {
   };
 }
 
-export const getAdminProfile = async (adminId) => {
-  const admin = await getAdmin(adminId);
-  return toProfile(admin);
+export const getAdminProfile = async (userId) => {
+  const user = await getUser(userId);
+  return toProfile(user);
 };
 
-// updateAdminProfile allows an Admin to update their own name and email.
-// The email uniqueness check excludes the current Admin to avoid false
-// conflicts when the email has not changed.
-export const updateAdminProfile = async (adminId, data) => {
+export const updateAdminProfile = async (userId, data) => {
   const update = {};
   if (data.name !== undefined) update.name = data.name;
   if (data.email !== undefined) {
     const normalizedEmail = data.email.toLowerCase();
-    const existingUser = await User.exists({ _id: { $ne: adminId }, email: normalizedEmail });
+    const existingUser = await User.exists({ _id: { $ne: userId }, email: normalizedEmail });
     if (existingUser) throw appError("A user already exists with this email", 409);
     update.email = normalizedEmail;
   }
 
-  const admin = await User.findOneAndUpdate(
-    { _id: adminId, role: ROLES.ADMIN },
+  const user = await User.findOneAndUpdate(
+    { _id: userId },
     update,
     { returnDocument: "after", runValidators: true }
   );
-  if (!admin) throw appError("Admin not found", 404);
-  return toProfile(admin);
+  if (!user) throw appError("User not found", 404);
+  return toProfile(user);
 };
 
-// changeAdminPassword verifies the current password before setting the new
-// one, and records the change timestamp in AdminSettings.security.
-export const changeAdminPassword = async (adminId, { currentPassword, newPassword }) => {
-  const admin = await getAdmin(adminId, "+password");
-  if (!await admin.comparePassword(currentPassword)) throw appError("Current password is incorrect", 401);
-  admin.password = newPassword;
-  await admin.save();
+export const changeAdminPassword = async (userId, { currentPassword, newPassword }) => {
+  const user = await getUser(userId, "+password");
+  if (!await user.comparePassword(currentPassword)) throw appError("Current password is incorrect", 401);
+  user.password = newPassword;
+  await user.save();
   await AdminSettings.findOneAndUpdate(
-    { admin: adminId },
+    { admin: userId },
     {
       $setOnInsert: {
-        admin: adminId,
+        admin: userId,
         application: DEFAULT_APPLICATION_SETTINGS,
         notifications: DEFAULT_NOTIFICATION_PREFERENCES
       },
@@ -109,13 +103,13 @@ export const changeAdminPassword = async (adminId, { currentPassword, newPasswor
 };
 
 export const getApplicationSettings = async (adminId) => {
-  await getAdmin(adminId);
+  await getUser(adminId);
   const settings = await getOrCreateSettings(adminId);
   return toApplicationSettings(settings);
 };
 
 export const updateApplicationSettings = async (adminId, data) => {
-  await getAdmin(adminId);
+  await getUser(adminId);
   const update = {};
   for (const [key, value] of Object.entries(data)) update[`application.${key}`] = value;
   const settings = await AdminSettings.findOneAndUpdate(
@@ -132,21 +126,21 @@ export const updateApplicationSettings = async (adminId, data) => {
   return toApplicationSettings(settings);
 };
 
-export const getNotificationPreferences = async (adminId) => {
-  await getAdmin(adminId);
-  const settings = await getOrCreateSettings(adminId);
+export const getNotificationPreferences = async (userId) => {
+  await getUser(userId);
+  const settings = await getOrCreateSettings(userId);
   return toNotificationPreferences(settings);
 };
 
-export const updateNotificationPreferences = async (adminId, data) => {
-  await getAdmin(adminId);
+export const updateNotificationPreferences = async (userId, data) => {
+  await getUser(userId);
   const update = {};
   for (const [key, value] of Object.entries(data)) update[`notifications.${key}`] = value;
   const settings = await AdminSettings.findOneAndUpdate(
-    { admin: adminId },
+    { admin: userId },
     {
       $setOnInsert: {
-        admin: adminId,
+        admin: userId,
         application: DEFAULT_APPLICATION_SETTINGS
       },
       $set: update
@@ -157,13 +151,13 @@ export const updateNotificationPreferences = async (adminId, data) => {
 };
 
 export const getSecuritySettings = async (adminId) => {
-  const admin = await getAdmin(adminId);
+  const user = await getUser(adminId);
   const settings = await getOrCreateSettings(adminId);
   return {
     accountStatus: "active",
     lastLogin: null,
     passwordChangedAt: settings.security?.passwordChangedAt || null,
-    createdAt: admin.createdAt,
-    updatedAt: admin.updatedAt
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
   };
 };

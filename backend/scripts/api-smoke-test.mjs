@@ -143,21 +143,16 @@ try {
   expectStatus("POST", "/students", 403, { token: studentAToken, body: studentPayload("Blocked", "blocked@example.test", "AUDIT-X") });
 
   await expectStatus("GET", "/settings/profile", 401);
-  const settingsEndpoints = [
-    ["GET", "/settings/profile"],
-    ["PATCH", "/settings/profile", { name: "Blocked" }],
-    ["POST", "/settings/profile/avatar"],
-    ["DELETE", "/settings/profile/avatar"],
-    ["PATCH", "/settings/password", { currentPassword: "StudentPass123!", newPassword: "StudentPass456!", confirmPassword: "StudentPass456!" }],
+  const studentForbiddenSettings = [
     ["GET", "/settings/application"],
     ["PATCH", "/settings/application", { applicationName: "Blocked" }],
-    ["GET", "/settings/notifications"],
-    ["PATCH", "/settings/notifications", { emailNotifications: false }],
     ["GET", "/settings/security"]
   ];
-  for (const [method, path, body] of settingsEndpoints) {
+  for (const [method, path, body] of studentForbiddenSettings) {
     expectStatus(method, path, 403, { token: studentAToken, ...(body ? { body } : {}) });
   }
+  expectStatus("GET", "/settings/profile", 200, { token: studentAToken });
+  expectStatus("GET", "/settings/notifications", 200, { token: studentAToken });
 
   const adminProfile = await expectStatus("GET", "/settings/profile", 200, { token: adminToken });
   expect(adminProfile.data.data.role === ROLES.ADMIN, "Settings profile must return Admin role");

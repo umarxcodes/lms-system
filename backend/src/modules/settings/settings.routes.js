@@ -15,17 +15,17 @@ const validate = (schema) => (req, res, next) => {
 
 const router = express.Router();
 
-router.use(authenticate, requireRole(ROLES.ADMIN));
+router.use(authenticate);
 
-router.get("/profile", getProfileController);
-router.patch("/profile", validate(updateProfileSchema), updateProfileController);
-router.post("/profile/avatar", uploadSingleProfileImage, uploadAdminProfileImageController);
-router.delete("/profile/avatar", deleteAdminProfileImageController);
-router.patch("/password", validate(changePasswordSchema), changePasswordController);
-router.get("/application", getApplicationSettingsController);
-router.patch("/application", validate(updateApplicationSettingsSchema), updateApplicationSettingsController);
-router.get("/notifications", getNotificationPreferencesController);
-router.patch("/notifications", validate(updateNotificationPreferencesSchema), updateNotificationPreferencesController);
-router.get("/security", getSecuritySettingsController);
+router.get("/profile", requireRole(ROLES.ADMIN, ROLES.STUDENT), getProfileController);
+router.patch("/profile", requireRole(ROLES.ADMIN, ROLES.STUDENT), validate(updateProfileSchema), updateProfileController);
+router.post("/profile/avatar", requireRole(ROLES.ADMIN, ROLES.STUDENT), uploadSingleProfileImage, uploadAdminProfileImageController);
+router.delete("/profile/avatar", requireRole(ROLES.ADMIN, ROLES.STUDENT), deleteAdminProfileImageController);
+router.patch("/password", requireRole(ROLES.ADMIN, ROLES.STUDENT), validate(changePasswordSchema), changePasswordController);
+router.get("/application", requireRole(ROLES.ADMIN), getApplicationSettingsController);
+router.patch("/application", requireRole(ROLES.ADMIN), validate(updateApplicationSettingsSchema), updateApplicationSettingsController);
+router.get("/notifications", requireRole(ROLES.ADMIN, ROLES.STUDENT), getNotificationPreferencesController);
+router.patch("/notifications", requireRole(ROLES.ADMIN, ROLES.STUDENT), validate(updateNotificationPreferencesSchema), updateNotificationPreferencesController);
+router.get("/security", requireRole(ROLES.ADMIN), getSecuritySettingsController);
 
 export default router;
