@@ -99,11 +99,14 @@ export default function AdminProjects() {
     try {
       const payload = {
         title: formData.title.trim(),
-        description: formData.description?.trim(),
-        team: formData.teamId,
-        status: "pending",
+        teamId: formData.teamId,
       };
-      if (formData.deadline) payload.deadline = formData.deadline;
+      if (formData.description?.trim()) {
+        payload.description = formData.description.trim();
+      }
+      if (formData.deadline) {
+        payload.deadline = new Date(formData.deadline).toISOString();
+      }
 
       await projectApi.createProject(payload);
       showToast("Project created successfully!", "success");

@@ -81,7 +81,7 @@ export default function AdminProjectDetail() {
   return (
     <PageContent>
       <PageHeader
-        title={`Project: ${project?.name || "Project Detail"}`}
+        title={`Project: ${project?.title || project?.name || "Project Detail"}`}
         description={`Assigned Team: ${teamName}`}
         actions={
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/admin/projects")}>
@@ -98,7 +98,7 @@ export default function AdminProjectDetail() {
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                      {project?.name}
+                      {project?.title || project?.name}
                     </Typography>
                     <StatusChip status={project?.status || "planning"} />
                   </Box>
