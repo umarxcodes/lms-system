@@ -79,13 +79,7 @@ export default function AdminProjects() {
   }, [fetchProjects]);
 
   const handleOpenCreateModal = () => {
-    setFormData({
-      title: "",
-      description: "",
-      teamId: teams.length > 0 ? teams[0]._id || teams[0].id : "",
-      deadline: "",
-    });
-    setOpenCreateModal(true);
+    navigate("/admin/projects/create");
   };
 
   const handleCreateSubmit = async (e) => {

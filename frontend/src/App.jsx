@@ -23,6 +23,7 @@ import AdminAttendance from "./pages/admin/AdminAttendance";
 import AdminTeams from "./pages/admin/AdminTeams";
 import AdminTeamDetail from "./pages/admin/AdminTeamDetail";
 import AdminProjects from "./pages/admin/AdminProjects";
+import AdminCreateProject from "./pages/admin/AdminCreateProject";
 import AdminProjectDetail from "./pages/admin/AdminProjectDetail";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminProgress from "./pages/admin/AdminProgress";
@@ -70,6 +71,7 @@ export default function App() {
                       <Route path="/admin/teams" element={<AdminTeams />} />
                       <Route path="/admin/teams/:id" element={<AdminTeamDetail />} />
                       <Route path="/admin/projects" element={<AdminProjects />} />
+                      <Route path="/admin/projects/create" element={<AdminCreateProject />} />
                       <Route path="/admin/projects/:id" element={<AdminProjectDetail />} />
                       <Route path="/admin/tasks" element={<AdminTasks />} />
                       <Route path="/admin/progress" element={<AdminProgress />} />
