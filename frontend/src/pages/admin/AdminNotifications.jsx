@@ -57,7 +57,7 @@ export default function AdminNotifications() {
       setError("");
       const res = await notificationApi.getMyNotifications();
       if (res.success && res.data) {
-        setNotifications(Array.isArray(res.data) ? res.data : []);
+        setNotifications(Array.isArray(res.data) ? res.data : res.data.items || []);
       }
     } catch (err) {
       setError(err?.message || "Failed to load notifications.");
