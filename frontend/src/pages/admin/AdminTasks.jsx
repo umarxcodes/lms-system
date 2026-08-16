@@ -123,7 +123,7 @@ export default function AdminTasks() {
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.projectId) {
+    if (!formData.title.trim() || !formData.projectId) {
       showToast("Please enter a task title and select a project.", "warning");
       return;
     }
@@ -131,13 +131,24 @@ export default function AdminTasks() {
     try {
       const payload = {
         title: formData.title.trim(),
-        description: formData.description?.trim(),
-        project: formData.projectId,
-        priority: formData.priority || "medium",
-        status: "todo",
+        projectId: formData.projectId,
       };
-      if (formData.assignedTo) payload.assignedTo = formData.assignedTo;
-      if (formData.dueDate) payload.deadline = formData.dueDate;
+
+      if (formData.description?.trim()) {
+        payload.description = formData.description.trim();
+      }
+
+      if (formData.assignedTo) {
+        payload.assignedTo = formData.assignedTo;
+      }
+
+      if (formData.priority) {
+        payload.priority = formData.priority;
+      }
+
+      if (formData.dueDate) {
+        payload.deadline = new Date(formData.dueDate).toISOString();
+      }
 
       await taskApi.createTask(payload);
       showToast("Task created successfully!", "success");
