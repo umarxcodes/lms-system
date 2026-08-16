@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true, select: false },
     role: { type: String, enum: Object.values(ROLES), required: true },
+    phone: { type: String, trim: true, default: "" },
+    bio: { type: String, trim: true, default: "" },
     student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
     profileImage: {
       url: { type: String, trim: true },

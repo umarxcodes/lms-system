@@ -8,6 +8,8 @@ function toProfile(user) {
     name: user.name,
     email: user.email,
     role: user.role,
+    phone: user.phone || "",
+    bio: user.bio || "",
     profileImage: user.profileImage?.url ? { url: user.profileImage.url } : null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
@@ -66,6 +68,8 @@ export const getAdminProfile = async (userId) => {
 export const updateAdminProfile = async (userId, data) => {
   const update = {};
   if (data.name !== undefined) update.name = data.name;
+  if (data.phone !== undefined) update.phone = data.phone;
+  if (data.bio !== undefined) update.bio = data.bio;
   if (data.email !== undefined) {
     const normalizedEmail = data.email.toLowerCase();
     const existingUser = await User.exists({ _id: { $ne: userId }, email: normalizedEmail });

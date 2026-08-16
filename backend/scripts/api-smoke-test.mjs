@@ -161,8 +161,10 @@ try {
   expectStatus("PATCH", "/settings/profile", 400, { token: adminToken, body: { email: "not-an-email" } });
   expectStatus("PATCH", "/settings/profile", 400, { token: adminToken, body: { name: "" } });
   expectStatus("PATCH", "/settings/profile", 409, { token: adminToken, body: { email: "student.a@example.test" } });
-  const updatedAdminProfile = await expectStatus("PATCH", "/settings/profile", 200, { token: adminToken, body: { name: "Audit Admin Updated", email: "audit.admin.updated@example.test" } });
+  const updatedAdminProfile = await expectStatus("PATCH", "/settings/profile", 200, { token: adminToken, body: { name: "Audit Admin Updated", email: "audit.admin.updated@example.test", phone: "+92 300 1234567", bio: "LMS Senior System Administrator" } });
   expect(updatedAdminProfile.data.data.email === "audit.admin.updated@example.test", "Updated Admin email must persist in response");
+  expect(updatedAdminProfile.data.data.phone === "+92 300 1234567", "Updated Admin phone must persist in response");
+  expect(updatedAdminProfile.data.data.bio === "LMS Senior System Administrator", "Updated Admin bio must persist in response");
   expect(updatedAdminProfile.data.data.role === ROLES.ADMIN, "Profile update must not change Admin role");
 
   const appSettings = await expectStatus("GET", "/settings/application", 200, { token: adminToken });

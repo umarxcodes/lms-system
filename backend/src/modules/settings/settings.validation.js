@@ -2,11 +2,15 @@ import { z } from "zod";
 
 const name = z.string({ error: "Name is required" }).trim().min(1, "Name is required").max(80, "Name is too long");
 const email = z.string({ error: "Email is required" }).trim().min(1, "Email is required").email("Invalid email address");
+const phone = z.string().trim().max(30, "Phone number is too long");
+const bio = z.string().trim().max(500, "Bio is too long");
 const password = z.string({ error: "Password is required" }).min(8, "Password must be at least 8 characters");
 
 export const updateProfileSchema = z.object({
   name: name.optional(),
-  email: email.optional()
+  email: email.optional(),
+  phone: phone.optional(),
+  bio: bio.optional()
 }).strict().refine((data) => Object.keys(data).length > 0, "At least one profile field is required");
 
 export const changePasswordSchema = z.object({
