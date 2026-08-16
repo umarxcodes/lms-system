@@ -106,31 +106,50 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 to={item.to}
                 onClick={onMobileClose}
                 sx={{
+                  position: "relative",
                   borderRadius: 2.5,
                   py: 1.1,
                   px: 2,
                   color: "text.secondary",
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:active": {
+                    transform: "scale(0.98)",
+                  },
                   "&.active": {
                     background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
                     color: "#ffffff",
                     fontWeight: 700,
-                    boxShadow: "0 4px 12px rgba(30, 64, 175, 0.22)",
+                    boxShadow: "0 4px 14px rgba(30, 64, 175, 0.25)",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      left: -8,
+                      top: 8,
+                      bottom: 8,
+                      width: 4,
+                      borderRadius: "0 4px 4px 0",
+                      backgroundColor: "#1e40af",
+                    },
                     "& .MuiListItemIcon-root": {
                       color: "#ffffff",
+                      transform: "scale(1.05)",
+                    },
+                    "&:hover": {
+                      boxShadow: "0 6px 16px rgba(30, 64, 175, 0.32)",
                     },
                   },
                   "&:not(.active):hover": {
-                    bgcolor: "grey.100",
+                    bgcolor: "rgba(30, 64, 175, 0.05)",
                     color: "primary.main",
-                    transform: "translateX(4px)",
+                    transform: "translateX(2px)",
                     "& .MuiListItemIcon-root": {
                       color: "primary.main",
+                      transform: "scale(1.05)",
                     },
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 34, color: "inherit", transition: "color 0.2s ease" }}>
+                <ListItemIcon sx={{ minWidth: 34, color: "inherit", transition: "transform 0.18s ease, color 0.18s ease" }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
