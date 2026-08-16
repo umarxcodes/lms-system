@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Paper,
   Typography,
@@ -13,9 +13,9 @@ import SaveIcon from "@mui/icons-material/Save";
 import { useToast } from "../../context/ToastContext";
 
 export default function PreferenceSettings() {
-  const [language, setLanguage] = useState("en-US");
-  const [timezone, setTimezone] = useState("Asia/Karachi");
-  const [dateFormat, setDateFormat] = useState("MMM DD, YYYY");
+  const [language, setLanguage] = useState(() => localStorage.getItem("portal_language") || "en-US");
+  const [timezone, setTimezone] = useState(() => localStorage.getItem("portal_timezone") || "Asia/Karachi");
+  const [dateFormat, setDateFormat] = useState(() => localStorage.getItem("portal_date_format") || "YYYY-MM-DD");
   const [saving, setSaving] = useState(false);
 
   const { showToast } = useToast();
@@ -23,10 +23,16 @@ export default function PreferenceSettings() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
+    try {
+      localStorage.setItem("portal_language", language);
+      localStorage.setItem("portal_timezone", timezone);
+      localStorage.setItem("portal_date_format", dateFormat);
+      showToast("Portal preferences saved successfully!", "success");
+    } catch (err) {
+      showToast("Failed to save portal preferences", "error");
+    } finally {
       setSaving(false);
-      showToast("Portal preferences saved!", "success");
-    }, 400);
+    }
   };
 
   return (
@@ -46,7 +52,7 @@ export default function PreferenceSettings() {
           Portal Preferences
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Configure regional settings, language preferences, and date formats.
+          Configure personal regional settings, portal language preferences, and date formats.
         </Typography>
       </Box>
 
@@ -76,6 +82,7 @@ export default function PreferenceSettings() {
           >
             <MenuItem value="Asia/Karachi">Asia/Karachi (PKT +05:00)</MenuItem>
             <MenuItem value="UTC">Coordinated Universal Time (UTC)</MenuItem>
+            <MenuItem value="America/New_York">America/New_York (EST -05:00)</MenuItem>
           </TextField>
 
           <TextField
@@ -87,9 +94,9 @@ export default function PreferenceSettings() {
             onChange={(e) => setDateFormat(e.target.value)}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
           >
-            <MenuItem value="MMM DD, YYYY">Aug 15, 2026 (MMM DD, YYYY)</MenuItem>
-            <MenuItem value="DD/MM/YYYY">15/08/2026 (DD/MM/YYYY)</MenuItem>
-            <MenuItem value="YYYY-MM-DD">2026-08-15 (YYYY-MM-DD)</MenuItem>
+            <MenuItem value="YYYY-MM-DD">2026-08-16 (YYYY-MM-DD)</MenuItem>
+            <MenuItem value="DD-MM-YYYY">16-08-2026 (DD-MM-YYYY)</MenuItem>
+            <MenuItem value="MM-DD-YYYY">08-16-2026 (MM-DD-YYYY)</MenuItem>
           </TextField>
 
           <Stack direction="row" justifyContent="flex-end" sx={{ pt: 1 }}>

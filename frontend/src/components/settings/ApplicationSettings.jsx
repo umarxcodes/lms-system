@@ -5,31 +5,27 @@ import {
   Box,
   Stack,
   TextField,
-  Switch,
-  FormControlLabel,
+  MenuItem,
   Button,
-  Divider,
   CircularProgress,
-  Alert,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 export default function ApplicationSettings({ appSettings, onSaveAppSettings, loading }) {
   const [formData, setFormData] = useState({
-    appName: "Saylani Bootcamp LMS",
-    defaultBatch: "Batch 2026",
-    allowStudentRegistration: true,
-    maintenanceMode: false,
+    applicationName: "Saylani Bootcamp LMS",
+    timezone: "Asia/Karachi",
+    dateFormat: "YYYY-MM-DD",
+    defaultPageSize: 20,
   });
 
   useEffect(() => {
     if (appSettings) {
       setFormData({
-        appName: appSettings.appName || "Saylani Bootcamp LMS",
-        defaultBatch: appSettings.defaultBatch || "Batch 2026",
-        allowStudentRegistration: appSettings.allowStudentRegistration ?? true,
-        maintenanceMode: appSettings.maintenanceMode ?? false,
+        applicationName: appSettings.applicationName || "Saylani Bootcamp LMS",
+        timezone: appSettings.timezone || "Asia/Karachi",
+        dateFormat: appSettings.dateFormat || "YYYY-MM-DD",
+        defaultPageSize: appSettings.defaultPageSize || 20,
       });
     }
   }, [appSettings]);
@@ -53,18 +49,12 @@ export default function ApplicationSettings({ appSettings, onSaveAppSettings, lo
     >
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" fontWeight={800} color="#0f172a">
-          Application Configuration
+          Application Configuration (Admin Only)
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Global institutional settings and system-wide maintenance controls.
+          Global institutional settings and system-wide default configuration parameters.
         </Typography>
       </Box>
-
-      {formData.maintenanceMode && (
-        <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 3, borderRadius: 2 }}>
-          System Maintenance Mode is currently enabled. Trainee self-service portals may have limited accessibility.
-        </Alert>
-      )}
 
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={2.5}>
@@ -73,65 +63,54 @@ export default function ApplicationSettings({ appSettings, onSaveAppSettings, lo
             fullWidth
             required
             size="small"
-            value={formData.appName}
-            onChange={(e) => setFormData({ ...formData, appName: e.target.value })}
+            value={formData.applicationName}
+            onChange={(e) => setFormData({ ...formData, applicationName: e.target.value })}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
           />
 
           <TextField
-            label="Default Active Batch Identifier"
+            select
+            label="Default System Timezone"
             fullWidth
             size="small"
-            value={formData.defaultBatch}
-            onChange={(e) => setFormData({ ...formData, defaultBatch: e.target.value })}
+            value={formData.timezone}
+            onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-          />
+          >
+            <MenuItem value="Asia/Karachi">Asia/Karachi (PKT +05:00)</MenuItem>
+            <MenuItem value="UTC">Coordinated Universal Time (UTC)</MenuItem>
+            <MenuItem value="America/New_York">America/New_York (EST -05:00)</MenuItem>
+            <MenuItem value="Europe/London">Europe/London (GMT +00:00)</MenuItem>
+          </TextField>
 
-          <Divider sx={{ my: 1 }} />
+          <TextField
+            select
+            label="Default System Date Display Format"
+            fullWidth
+            size="small"
+            value={formData.dateFormat}
+            onChange={(e) => setFormData({ ...formData, dateFormat: e.target.value })}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+          >
+            <MenuItem value="YYYY-MM-DD">2026-08-16 (YYYY-MM-DD)</MenuItem>
+            <MenuItem value="DD-MM-YYYY">16-08-2026 (DD-MM-YYYY)</MenuItem>
+            <MenuItem value="MM-DD-YYYY">08-16-2026 (MM-DD-YYYY)</MenuItem>
+          </TextField>
 
-          <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #e2e8f0" }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.allowStudentRegistration}
-                  onChange={(e) => setFormData({ ...formData, allowStudentRegistration: e.target.checked })}
-                  color="primary"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
-                    Allow Trainee Self-Registration
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Permit new students to register profiles without manual admin pre-authorization.
-                  </Typography>
-                </Box>
-              }
-            />
-          </Box>
-
-          <Box sx={{ p: 2, bgcolor: "#fff5f5", borderRadius: 2, border: "1px solid #fee2e2" }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.maintenanceMode}
-                  onChange={(e) => setFormData({ ...formData, maintenanceMode: e.target.checked })}
-                  color="error"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="subtitle2" fontWeight={700} color="#991b1b">
-                    Enable System Maintenance Mode
-                  </Typography>
-                  <Typography variant="caption" color="#b91c1c">
-                    Restrict non-administrator portal operations during scheduled database audits.
-                  </Typography>
-                </Box>
-              }
-            />
-          </Box>
+          <TextField
+            select
+            label="Default Table Items Per Page"
+            fullWidth
+            size="small"
+            value={formData.defaultPageSize}
+            onChange={(e) => setFormData({ ...formData, defaultPageSize: Number(e.target.value) })}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+          >
+            <MenuItem value={10}>10 items per page</MenuItem>
+            <MenuItem value={20}>20 items per page (Recommended)</MenuItem>
+            <MenuItem value={50}>50 items per page</MenuItem>
+            <MenuItem value={100}>100 items per page</MenuItem>
+          </TextField>
 
           <Stack direction="row" justifyContent="flex-end" sx={{ pt: 1 }}>
             <Button
@@ -142,7 +121,7 @@ export default function ApplicationSettings({ appSettings, onSaveAppSettings, lo
               startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
               sx={{ fontWeight: 800, borderRadius: 2, px: 3.5 }}
             >
-              {loading ? "Saving System Configuration..." : "Save System Settings"}
+              {loading ? "Saving Application Configuration..." : "Save System Settings"}
             </Button>
           </Stack>
         </Stack>

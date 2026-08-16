@@ -77,7 +77,7 @@ export const getSecuritySettingsController = async (req, res, next) => {
 
 export const uploadAdminProfileImageController = async (req, res, next) => {
   try {
-    const result = await uploadAuthenticatedProfileImage(req.user.userId, ROLES.ADMIN, req.file);
+    const result = await uploadAuthenticatedProfileImage(req.user.userId, req.user.role, req.file);
     return success(res, result, "Profile image uploaded successfully");
   } catch (err) {
     next(err);
@@ -86,7 +86,7 @@ export const uploadAdminProfileImageController = async (req, res, next) => {
 
 export const deleteAdminProfileImageController = async (req, res, next) => {
   try {
-    const result = await deleteAuthenticatedProfileImage(req.user.userId, ROLES.ADMIN);
+    const result = await deleteAuthenticatedProfileImage(req.user.userId, req.user.role);
     return success(res, result, "Profile image deleted successfully");
   } catch (err) {
     next(err);

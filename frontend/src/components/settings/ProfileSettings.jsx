@@ -8,6 +8,7 @@ import {
   Button,
   Divider,
   CircularProgress,
+  Chip,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import CloudinaryAvatarUpload from "../common/CloudinaryAvatarUpload";
@@ -40,6 +41,8 @@ export default function ProfileSettings({
     onSaveProfile(formData);
   };
 
+  const userRole = (user?.role || "").toUpperCase();
+
   return (
     <Paper
       elevation={0}
@@ -52,22 +55,30 @@ export default function ProfileSettings({
         maxWidth: 720,
       }}
     >
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" fontWeight={800} color="#0f172a">
-          Profile Settings
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Update your personal information and profile picture.
-        </Typography>
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Box>
+          <Typography variant="h6" fontWeight={800} color="#0f172a">
+            Profile Information
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage your public profile details, contact information, and avatar picture.
+          </Typography>
+        </Box>
+        <Chip
+          label={userRole || "USER"}
+          color={userRole === "ADMIN" ? "primary" : "info"}
+          size="small"
+          sx={{ fontWeight: 800, fontSize: "0.75rem" }}
+        />
       </Box>
 
       {/* Cloudinary Profile Photo Section */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" fontWeight={700} color="#334155" sx={{ mb: 1.5 }}>
-          Profile Photo
+          Profile Avatar Picture
         </Typography>
         <CloudinaryAvatarUpload
-          currentAvatarUrl={user?.avatarUrl || user?.profileImage}
+          currentAvatarUrl={user?.avatarUrl || user?.profileImage?.url || user?.profileImage}
           userName={user?.name}
           onUpload={onUploadAvatar}
           onDelete={onDeleteAvatar}
@@ -94,7 +105,7 @@ export default function ProfileSettings({
             disabled
             size="small"
             value={user?.email || ""}
-            helperText="Account email address cannot be changed."
+            helperText="Account email address is your login identity and cannot be edited."
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
           />
 
@@ -109,14 +120,14 @@ export default function ProfileSettings({
           />
 
           <TextField
-            label="Bio / Professional Summary"
+            label="Bio / Summary"
             fullWidth
             multiline
             rows={3}
             size="small"
             value={formData.bio}
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            placeholder="Brief description about your background or specialization..."
+            placeholder="Brief profile summary..."
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
           />
 
@@ -145,7 +156,7 @@ export default function ProfileSettings({
               startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
               sx={{ fontWeight: 800, borderRadius: 2, px: 3.5 }}
             >
-              {loading ? "Saving Changes..." : "Save Changes"}
+              {loading ? "Saving Changes..." : "Save Profile Changes"}
             </Button>
           </Stack>
         </Stack>

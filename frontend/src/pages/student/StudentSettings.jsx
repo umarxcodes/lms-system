@@ -25,12 +25,34 @@ export default function StudentSettings() {
   const [notifLoading, setNotifLoading] = useState(false);
 
   const [notifPrefs, setNotifPrefs] = useState(null);
+  const [securityInfo, setSecurityInfo] = useState(null);
 
   useEffect(() => {
+    settingsApi
+      .getAdminProfile()
+      .then((res) => {
+        if (res.success && res.data) {
+          updateUser({
+            name: res.data.name || user?.name,
+            phone: res.data.phone || user?.phone,
+            bio: res.data.bio || user?.bio,
+            avatarUrl: res.data.profileImage?.url || user?.avatarUrl,
+          });
+        }
+      })
+      .catch(() => {});
+
     settingsApi
       .getNotificationPreferences()
       .then((res) => {
         if (res.success && res.data) setNotifPrefs(res.data);
+      })
+      .catch(() => {});
+
+    settingsApi
+      .getSecurityInfo()
+      .then((res) => {
+        if (res.success && res.data) setSecurityInfo(res.data);
       })
       .catch(() => {});
   }, []);
@@ -53,8 +75,8 @@ export default function StudentSettings() {
   const handleUploadAvatar = async (formData) => {
     try {
       const res = await settingsApi.uploadAdminAvatar(formData);
-      if (res.success && res.data?.avatarUrl) {
-        updateUser({ avatarUrl: res.data.avatarUrl });
+      if (res.success && res.data?.profileImage?.url) {
+        updateUser({ avatarUrl: res.data.profileImage.url });
         showToast("Profile picture updated successfully!", "success");
       }
     } catch (err) {
@@ -80,6 +102,8 @@ export default function StudentSettings() {
       await settingsApi.changePassword(currentPassword, newPassword);
       showToast("Password updated successfully!", "success");
       if (onSuccess) onSuccess();
+      const secRes = await settingsApi.getSecurityInfo();
+      if (secRes.success && secRes.data) setSecurityInfo(secRes.data);
     } catch (err) {
       showToast(err?.message || "Failed to update password", "error");
     } finally {
@@ -136,7 +160,11 @@ export default function StudentSettings() {
           )}
 
           {activeSection === "security" && (
-            <SecuritySettings onUpdatePassword={handleUpdatePassword} loading={passwordLoading} />
+            <SecuritySettings
+              securityInfo={securityInfo}
+              onUpdatePassword={handleUpdatePassword}
+              loading={passwordLoading}
+            />
           )}
 
           {activeSection === "notifications" && (

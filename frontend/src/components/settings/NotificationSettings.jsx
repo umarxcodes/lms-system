@@ -5,7 +5,6 @@ import {
   Box,
   Stack,
   Switch,
-  FormControlLabel,
   Divider,
   Button,
   CircularProgress,
@@ -15,18 +14,20 @@ import SaveIcon from "@mui/icons-material/Save";
 export default function NotificationSettings({ preferences, onSavePreferences, loading }) {
   const [prefs, setPrefs] = useState({
     emailNotifications: true,
-    taskReminders: true,
-    systemAnnouncements: true,
-    weeklyReportDigest: false,
+    taskNotifications: true,
+    attendanceNotifications: true,
+    projectNotifications: true,
+    systemNotifications: true,
   });
 
   useEffect(() => {
     if (preferences) {
       setPrefs({
         emailNotifications: preferences.emailNotifications ?? true,
-        taskReminders: preferences.taskReminders ?? true,
-        systemAnnouncements: preferences.systemAnnouncements ?? true,
-        weeklyReportDigest: preferences.weeklyReportDigest ?? false,
+        taskNotifications: preferences.taskNotifications ?? true,
+        attendanceNotifications: preferences.attendanceNotifications ?? true,
+        projectNotifications: preferences.projectNotifications ?? true,
+        systemNotifications: preferences.systemNotifications ?? true,
       });
     }
   }, [preferences]);
@@ -65,7 +66,7 @@ export default function NotificationSettings({ preferences, onSavePreferences, l
                 Email Notifications
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Receive important account and assignment updates directly in your inbox.
+                Receive important account and assignment updates directly in your email inbox.
               </Typography>
             </Box>
             <Switch
@@ -78,15 +79,47 @@ export default function NotificationSettings({ preferences, onSavePreferences, l
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1 }}>
             <Box>
               <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
-                Task & Milestone Reminders
+                Task & Milestone Alerts
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Get notified when tasks are assigned, updated, or nearing due dates.
               </Typography>
             </Box>
             <Switch
-              checked={prefs.taskReminders}
-              onChange={(e) => setPrefs({ ...prefs, taskReminders: e.target.checked })}
+              checked={prefs.taskNotifications}
+              onChange={(e) => setPrefs({ ...prefs, taskNotifications: e.target.checked })}
+              color="primary"
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
+                Attendance Notifications
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Receive alerts when attendance records are published or updated.
+              </Typography>
+            </Box>
+            <Switch
+              checked={prefs.attendanceNotifications}
+              onChange={(e) => setPrefs({ ...prefs, attendanceNotifications: e.target.checked })}
+              color="primary"
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
+                Project & Team Notifications
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Stay updated on team project assignments, milestone progress, and roster changes.
+              </Typography>
+            </Box>
+            <Switch
+              checked={prefs.projectNotifications}
+              onChange={(e) => setPrefs({ ...prefs, projectNotifications: e.target.checked })}
               color="primary"
             />
           </Box>
@@ -97,28 +130,12 @@ export default function NotificationSettings({ preferences, onSavePreferences, l
                 System Announcements
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Receive official SMIT portal maintenance and schedule announcements.
+                Receive official SMIT portal maintenance and schedule broadcasts.
               </Typography>
             </Box>
             <Switch
-              checked={prefs.systemAnnouncements}
-              onChange={(e) => setPrefs({ ...prefs, systemAnnouncements: e.target.checked })}
-              color="primary"
-            />
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1 }}>
-            <Box>
-              <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
-                Weekly Performance Summary Digest
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Receive a weekly summary email of student progress and team milestones.
-              </Typography>
-            </Box>
-            <Switch
-              checked={prefs.weeklyReportDigest}
-              onChange={(e) => setPrefs({ ...prefs, weeklyReportDigest: e.target.checked })}
+              checked={prefs.systemNotifications}
+              onChange={(e) => setPrefs({ ...prefs, systemNotifications: e.target.checked })}
               color="primary"
             />
           </Box>

@@ -29,8 +29,9 @@ export default function AdminSettings() {
   // Settings Data States
   const [appSettings, setAppSettings] = useState(null);
   const [notifPrefs, setNotifPrefs] = useState(null);
+  const [securityInfo, setSecurityInfo] = useState(null);
 
-  // Fetch initial profile & app settings
+  // Fetch initial profile, security, & app settings
   useEffect(() => {
     settingsApi
       .getAdminProfile()
@@ -40,26 +41,30 @@ export default function AdminSettings() {
             name: res.data.name || user?.name,
             phone: res.data.phone || user?.phone,
             bio: res.data.bio || user?.bio,
+            avatarUrl: res.data.profileImage?.url || user?.avatarUrl,
           });
         }
       })
       .catch(() => {});
 
     settingsApi
+      .getSecurityInfo()
+      .then((res) => {
+        if (res.success && res.data) setSecurityInfo(res.data);
+      })
+      .catch(() => {});
+
+    settingsApi
       .getApplicationSettings()
       .then((res) => {
-        if (res.success && res.data) {
-          setAppSettings(res.data);
-        }
+        if (res.success && res.data) setAppSettings(res.data);
       })
       .catch(() => {});
 
     settingsApi
       .getNotificationPreferences()
       .then((res) => {
-        if (res.success && res.data) {
-          setNotifPrefs(res.data);
-        }
+        if (res.success && res.data) setNotifPrefs(res.data);
       })
       .catch(() => {});
   }, []);
@@ -83,8 +88,8 @@ export default function AdminSettings() {
   const handleUploadAvatar = async (formData) => {
     try {
       const res = await settingsApi.uploadAdminAvatar(formData);
-      if (res.success && res.data?.avatarUrl) {
-        updateUser({ avatarUrl: res.data.avatarUrl });
+      if (res.success && res.data?.profileImage?.url) {
+        updateUser({ avatarUrl: res.data.profileImage.url });
         showToast("Profile picture updated successfully!", "success");
       }
     } catch (err) {
@@ -110,6 +115,9 @@ export default function AdminSettings() {
       await settingsApi.changePassword(currentPassword, newPassword);
       showToast("Password updated successfully!", "success");
       if (onSuccess) onSuccess();
+      // Refresh security info
+      const secRes = await settingsApi.getSecurityInfo();
+      if (secRes.success && secRes.data) setSecurityInfo(secRes.data);
     } catch (err) {
       showToast(err?.message || "Failed to change password", "error");
     } finally {
@@ -138,7 +146,7 @@ export default function AdminSettings() {
       const res = await settingsApi.updateApplicationSettings(data);
       if (res.success) {
         setAppSettings(data);
-        showToast("Application settings updated successfully!", "success");
+        showToast("Application configuration updated successfully!", "success");
       }
     } catch (err) {
       showToast(err?.message || "Failed to update application settings", "error");
@@ -182,7 +190,11 @@ export default function AdminSettings() {
           )}
 
           {activeSection === "security" && (
-            <SecuritySettings onUpdatePassword={handleUpdatePassword} loading={passwordLoading} />
+            <SecuritySettings
+              securityInfo={securityInfo}
+              onUpdatePassword={handleUpdatePassword}
+              loading={passwordLoading}
+            />
           )}
 
           {activeSection === "notifications" && (
