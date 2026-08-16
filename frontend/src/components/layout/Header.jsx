@@ -17,8 +17,6 @@ import {
   ListItem,
   ListItemText,
   Button,
-  OutlinedInput,
-  InputAdornment,
   Tooltip,
 } from "@mui/material";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
@@ -26,7 +24,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import SearchIcon from "@mui/icons-material/Search";
 
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +37,6 @@ export default function Header({ onMobileNavOpen }) {
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Profile Menu State
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
@@ -163,29 +159,6 @@ export default function Header({ onMobileNavOpen }) {
             </Box>
           </Stack>
         </Stack>
-
-        {/* Center: Search Bar */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, flex: 1, maxWidth: 360 }}>
-          <OutlinedInput
-            size="small"
-            fullWidth
-            placeholder="Search portal..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            startAdornment={
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" sx={{ color: "text.disabled" }} />
-              </InputAdornment>
-            }
-            sx={{
-              borderRadius: 3,
-              bgcolor: "grey.50",
-              fontSize: "0.85rem",
-              "& fieldset": { borderColor: "divider" },
-              "&:hover fieldset": { borderColor: "primary.light" },
-            }}
-          />
-        </Box>
 
         {/* Right: Notifications & User Profile Menu */}
         <Stack direction="row" alignItems="center" spacing={1.5}>

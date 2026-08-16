@@ -1,53 +1,64 @@
 import React from "react";
 import { Card, CardContent, Typography, Box, Stack, LinearProgress } from "@mui/material";
 
+/**
+ * StatCard — A clean, minimal metric card for Dashboard KPIs.
+ *
+ * Design principles:
+ * - The VALUE dominates (largest, heaviest element)
+ * - The LABEL is small and muted (explains the value)
+ * - The ICON supports but does not compete
+ * - Hover is subtle (1px lift, soft shadow)
+ * - No accent lines or heavy decorative borders
+ */
 export default function StatCard({
   title,
   value,
   subtitle,
   icon: IconComponent,
-  iconBgColor = "#eff6ff",
-  iconColor = "#1e40af",
+  iconBgColor = "grey.100",
+  iconColor = "primary.main",
   progress,
-  accentColor = "#1e40af",
+  accentColor,
   action,
 }) {
   return (
     <Card
+      elevation={0}
       sx={{
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        position: "relative",
-        overflow: "hidden",
         border: "1px solid",
         borderColor: "divider",
-        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition: "transform 0.15s ease, box-shadow 0.15s ease",
         "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: "0 8px 18px -4px rgba(0, 0, 0, 0.06)",
-          borderColor: accentColor,
-        },
-        "&:active": {
-          transform: "translateY(0) scale(0.99)",
+          transform: "translateY(-1px)",
+          boxShadow: 2,
         },
       }}
     >
-      {/* Top Accent Line */}
-      <Box sx={{ height: 4, width: "100%", bgcolor: accentColor }} />
-
       <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 }, flex: 1, display: "flex", flexDirection: "column" }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-          <Box>
-            <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600, mb: 0.5, fontSize: "0.82rem" }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                fontWeight: 600,
+                fontSize: "0.8rem",
+                mb: 0.75,
+                letterSpacing: "0.01em",
+              }}
+            >
               {title}
             </Typography>
             <Typography
-              variant="h2"
+              variant="h4"
               sx={{
                 fontWeight: 800,
                 color: "text.primary",
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                lineHeight: 1.2,
                 letterSpacing: "-0.02em",
               }}
             >
@@ -58,57 +69,49 @@ export default function StatCard({
           {IconComponent && (
             <Box
               sx={{
-                width: 46,
-                height: 46,
-                borderRadius: 3,
+                width: 40,
+                height: 40,
+                borderRadius: 2.5,
                 bgcolor: iconBgColor,
                 color: iconColor,
                 display: "grid",
                 placeItems: "center",
                 flexShrink: 0,
-                boxShadow: `0 4px 10px ${iconBgColor}`,
               }}
             >
-              {React.isValidElement(IconComponent) ? IconComponent : <IconComponent />}
+              {React.isValidElement(IconComponent) ? IconComponent : <IconComponent fontSize="small" />}
             </Box>
           )}
         </Stack>
 
         {progress !== undefined && (
-          <Box sx={{ mt: 2 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
-                Progress
-              </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: accentColor }}>
-                {Math.round(progress)}%
-              </Typography>
-            </Stack>
+          <Box sx={{ mt: 1.5 }}>
             <LinearProgress
               variant="determinate"
               value={Math.min(100, Math.max(0, progress))}
               sx={{
-                height: 6,
-                borderRadius: 3,
+                height: 4,
+                borderRadius: 2,
                 bgcolor: "grey.100",
                 "& .MuiLinearProgress-bar": {
-                  bgcolor: accentColor,
-                  borderRadius: 3,
+                  bgcolor: accentColor || "primary.main",
+                  borderRadius: 2,
                 },
               }}
             />
           </Box>
         )}
 
-        <Box sx={{ mt: "auto", pt: subtitle || action ? 1.5 : 0 }}>
-          {subtitle && (
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500, display: "block" }}>
-              {subtitle}
-            </Typography>
-          )}
-
-          {action && <Box sx={{ mt: 1 }}>{action}</Box>}
-        </Box>
+        {(subtitle || action) && (
+          <Box sx={{ mt: "auto", pt: 1.5 }}>
+            {subtitle && (
+              <Typography variant="caption" sx={{ color: "text.disabled", fontWeight: 500, display: "block" }}>
+                {subtitle}
+              </Typography>
+            )}
+            {action && <Box sx={{ mt: 1 }}>{action}</Box>}
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
