@@ -137,6 +137,8 @@ export default function Header({ onMobileNavOpen }) {
                 width: "auto",
                 objectFit: "contain",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.06))",
+                transition: "transform 0.2s ease",
+                "&:hover": { transform: "scale(1.02)" },
               }}
             />
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
@@ -173,13 +175,26 @@ export default function Header({ onMobileNavOpen }) {
                 color: "grey.700",
                 width: 40,
                 height: 40,
-                transition: "all 0.2s ease",
-                "&:hover": { bgcolor: "grey.100", transform: "scale(1.04)" },
+                transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": { bgcolor: "grey.100", transform: "scale(1.06)" },
+                "&:active": { transform: "scale(0.95)" },
               }}
               aria-label="open notifications"
             >
               {unreadCount > 0 ? (
-                <Badge badgeContent={unreadCount} color="error">
+                <Badge
+                  badgeContent={unreadCount}
+                  color="error"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      animation: "badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                      "@keyframes badgePop": {
+                        "0%": { transform: "scale(0)" },
+                        "100%": { transform: "scale(1)" },
+                      },
+                    },
+                  }}
+                >
                   <NotificationsNoneOutlinedIcon fontSize="small" />
                 </Badge>
               ) : (
@@ -200,8 +215,9 @@ export default function Header({ onMobileNavOpen }) {
                 borderColor: "divider",
                 borderRadius: 3,
                 color: "text.primary",
-                transition: "all 0.2s ease",
-                "&:hover": { bgcolor: "grey.100", borderColor: "grey.300" },
+                transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": { bgcolor: "grey.100", borderColor: "grey.300", transform: "translateY(-1px)" },
+                "&:active": { transform: "scale(0.98)" },
               }}
               aria-label="open user profile menu"
             >
@@ -240,7 +256,15 @@ export default function Header({ onMobileNavOpen }) {
                   </Typography>
                 </Box>
 
-                <KeyboardArrowDownIcon fontSize="small" sx={{ color: "text.secondary", display: { xs: "none", sm: "block" } }} />
+                <KeyboardArrowDownIcon
+                  fontSize="small"
+                  sx={{
+                    color: "text.secondary",
+                    display: { xs: "none", sm: "block" },
+                    transition: "transform 0.18s ease",
+                    transform: isProfileOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
+                />
               </Stack>
             </Button>
           </Tooltip>
@@ -254,7 +278,22 @@ export default function Header({ onMobileNavOpen }) {
         onClose={() => setNotifAnchorEl(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{ sx: { width: 340, p: 2, borderRadius: 4, mt: 1 } }}
+        PaperProps={{
+          sx: {
+            width: 340,
+            p: 2,
+            borderRadius: 4,
+            mt: 1,
+            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.1)",
+            border: "1px solid #e2e8f0",
+            animation: "menuEntrance 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+            willChange: "opacity, transform",
+            "@keyframes menuEntrance": {
+              "0%": { opacity: 0, transform: "translateY(-4px) scale(0.98)" },
+              "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+            },
+          },
+        }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1rem" }}>
@@ -306,7 +345,22 @@ export default function Header({ onMobileNavOpen }) {
         onClose={() => setProfileAnchorEl(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{ sx: { width: 230, borderRadius: 3, mt: 1, p: 0.5 } }}
+        PaperProps={{
+          sx: {
+            width: 230,
+            borderRadius: 3,
+            mt: 1,
+            p: 0.5,
+            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.1)",
+            border: "1px solid #e2e8f0",
+            animation: "menuEntrance 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+            willChange: "opacity, transform",
+            "@keyframes menuEntrance": {
+              "0%": { opacity: 0, transform: "translateY(-4px) scale(0.98)" },
+              "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+            },
+          },
+        }}
       >
         <Box sx={{ px: 2, py: 1.5 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary" }}>
@@ -340,7 +394,7 @@ export default function Header({ onMobileNavOpen }) {
             setProfileAnchorEl(null);
             navigate(user?.role === "ADMIN" ? "/admin/settings" : "/student/profile");
           }}
-          sx={{ borderRadius: 2, my: 0.5 }}
+          sx={{ borderRadius: 2, my: 0.5, transition: "all 0.15s ease" }}
         >
           <ListItemIcon>
             <PersonOutlinedIcon fontSize="small" color="action" />

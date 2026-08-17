@@ -23,6 +23,21 @@ export default function EmptyState({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        animation: "emptyStateFade 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        willChange: "opacity, transform",
+        "@keyframes emptyStateFade": {
+          "0%": {
+            opacity: 0,
+            transform: "translateY(6px)",
+          },
+          "100%": {
+            opacity: 1,
+            transform: "translateY(0)",
+          },
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          animation: "none",
+        },
       }}
     >
       <Box
@@ -35,6 +50,11 @@ export default function EmptyState({
           display: "grid",
           placeItems: "center",
           mb: 2,
+          transition: "transform 0.2s ease, bgcolor 0.2s ease",
+          "&:hover": {
+            transform: "scale(1.05)",
+            bgcolor: "grey.200",
+          },
         }}
       >
         <Icon sx={{ fontSize: 32 }} />

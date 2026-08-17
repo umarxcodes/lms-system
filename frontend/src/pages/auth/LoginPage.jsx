@@ -95,7 +95,27 @@ export default function LoginPage() {
         px: 2,
       }}
     >
-      <Container maxWidth="xs" sx={{ maxWidth: 420 }}>
+      <Container
+        maxWidth="xs"
+        sx={{
+          maxWidth: 420,
+          animation: "loginCardFade 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          willChange: "opacity, transform",
+          "@keyframes loginCardFade": {
+            "0%": {
+              opacity: 0,
+              transform: "translateY(8px)",
+            },
+            "100%": {
+              opacity: 1,
+              transform: "translateY(0)",
+            },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
+        }}
+      >
         <Stack spacing={3.5} alignItems="center">
           {/* Centralized SMIT Branding */}
           <Box sx={{ textAlign: "center", width: "100%" }}>

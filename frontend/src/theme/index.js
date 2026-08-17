@@ -101,6 +101,14 @@ const theme = createTheme({
             borderRadius: "4px",
           },
         },
+        "@media (prefers-reduced-motion: reduce)": {
+          "*, *::before, *::after": {
+            animationDuration: "0.01ms !important",
+            animationIterationCount: "1 !important",
+            transitionDuration: "0.01ms !important",
+            scrollBehavior: "auto !important",
+          },
+        },
       },
     },
     MuiButton: {
@@ -109,11 +117,16 @@ const theme = createTheme({
           borderRadius: 10,
           padding: "8px 18px",
           fontWeight: 700,
-          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+          transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
           boxShadow: "none",
+          willChange: "transform, opacity, box-shadow",
           "&:hover": {
-            boxShadow: "0 4px 12px rgba(30, 64, 175, 0.18)",
+            boxShadow: "0 4px 14px rgba(30, 64, 175, 0.18)",
             transform: "translateY(-1px)",
+          },
+          "&:active": {
+            transform: "scale(0.98)",
+            boxShadow: "none",
           },
         },
         containedPrimary: {
@@ -132,14 +145,29 @@ const theme = createTheme({
         },
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          transition: "transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.18s ease, color 0.18s ease",
+          willChange: "transform",
+          "&:hover": {
+            transform: "scale(1.06)",
+          },
+          "&:active": {
+            transform: "scale(0.95)",
+          },
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: 16,
           border: "1px solid #e2e8f0",
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
-          transition: "box-shadow 0.2s ease, transform 0.2s ease",
+          transition: "box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease",
           backgroundImage: "none",
+          willChange: "transform, box-shadow",
         },
       },
     },
@@ -147,6 +175,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: "none",
+          transition: "box-shadow 0.2s ease, border-color 0.2s ease",
         },
       },
     },
@@ -188,8 +217,10 @@ const theme = createTheme({
         root: {
           borderRadius: 10,
           backgroundColor: "#ffffff",
+          transition: "border-color 0.18s ease, box-shadow 0.18s ease",
           "& fieldset": {
             borderColor: "#cbd5e1",
+            transition: "border-color 0.18s ease, border-width 0.18s ease",
           },
           "&:hover fieldset": {
             borderColor: "#94a3b8",
@@ -197,6 +228,7 @@ const theme = createTheme({
           "&.Mui-focused fieldset": {
             borderColor: "#1e40af",
             borderWidth: "1.5px",
+            boxShadow: "0 0 0 3px rgba(30, 64, 175, 0.12)",
           },
         },
       },
@@ -207,6 +239,7 @@ const theme = createTheme({
           fontWeight: 700,
           borderRadius: 8,
           fontSize: "0.75rem",
+          transition: "background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease",
         },
       },
     },
@@ -215,6 +248,21 @@ const theme = createTheme({
         paper: {
           borderRadius: 20,
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+          animation: "dialogEntrance 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          willChange: "opacity, transform",
+          "@keyframes dialogEntrance": {
+            "0%": {
+              opacity: 0,
+              transform: "scale(0.96) translateY(6px)",
+            },
+            "100%": {
+              opacity: 1,
+              transform: "scale(1) translateY(0)",
+            },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
+          },
         },
       },
     },
@@ -226,6 +274,7 @@ const theme = createTheme({
           fontSize: "0.75rem",
           fontWeight: 600,
           padding: "6px 10px",
+          transition: "opacity 0.15s ease",
         },
       },
     },
