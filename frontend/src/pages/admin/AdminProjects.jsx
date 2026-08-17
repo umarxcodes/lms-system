@@ -1,18 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Grid,
-  Button,
-  TextField,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Box,
-} from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Grid, Button, Box } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
@@ -20,6 +10,9 @@ import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
 import { ProjectCard, ProjectCardSkeleton } from "../../components/projects/ProjectCard";
+import { ProjectSummaryCards } from "../../components/projects/ProjectSummaryCards";
+import { ProjectToolbar } from "../../components/projects/ProjectToolbar";
+import { EditProjectDialog } from "../../components/projects/EditProjectDialog";
 import { projectApi } from "../../services/projectApi";
 import { teamApi } from "../../services/teamApi";
 import { useToast } from "../../context/ToastContext";
@@ -29,15 +22,14 @@ export default function AdminProjects() {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Create Project Modal State
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    teamId: "",
-    deadline: "",
-  });
+  // Filter & Search Controls
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [teamFilter, setTeamFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
+
+  // Edit Modal State
+  const [editingProject, setEditingProject] = useState(null);
 
   // Delete State
   const [deleteId, setDeleteId] = useState(null);
@@ -73,37 +65,6 @@ export default function AdminProjects() {
     navigate("/admin/projects/create");
   };
 
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.teamId) {
-      showToast("Please enter a project title and select a team.", "warning");
-      return;
-    }
-
-    setCreateSubmitting(true);
-    try {
-      const payload = {
-        title: formData.title.trim(),
-        teamId: formData.teamId,
-      };
-      if (formData.description?.trim()) {
-        payload.description = formData.description.trim();
-      }
-      if (formData.deadline) {
-        payload.deadline = new Date(formData.deadline).toISOString();
-      }
-
-      await projectApi.createProject(payload);
-      showToast("Project created successfully!", "success");
-      setOpenCreateModal(false);
-      fetchProjects();
-    } catch (err) {
-      showToast(err?.message || "Failed to create project", "error");
-    } finally {
-      setCreateSubmitting(false);
-    }
-  };
-
   const handleStatusChange = async (projectId, newStatus) => {
     try {
       await projectApi.updateProjectStatus(projectId, newStatus);
@@ -111,6 +72,17 @@ export default function AdminProjects() {
       fetchProjects();
     } catch (err) {
       showToast(err?.message || "Failed to update project status", "error");
+    }
+  };
+
+  const handleSaveEdit = async (projectId, payload) => {
+    try {
+      await projectApi.updateProject(projectId, payload);
+      showToast("Project details updated successfully!", "success");
+      fetchProjects();
+    } catch (err) {
+      showToast(err?.message || "Failed to update project", "error");
+      throw err;
     }
   };
 
@@ -133,42 +105,133 @@ export default function AdminProjects() {
     }
   };
 
+  // Derived Filtered & Sorted Projects
+  const filteredProjects = useMemo(() => {
+    let result = [...projects];
+
+    // Search filter
+    if (search.trim()) {
+      const query = search.toLowerCase().trim();
+      result = result.filter((p) => {
+        const title = (p.title || p.name || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        const teamName = (p.team?.name || p.teamId?.name || "").toLowerCase();
+        return title.includes(query) || desc.includes(query) || teamName.includes(query);
+      });
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter((p) => (p.status || "pending") === statusFilter);
+    }
+
+    // Team filter
+    if (teamFilter !== "all") {
+      result = result.filter((p) => {
+        const tId = p.team?._id || p.team || p.teamId?._id || p.teamId;
+        return tId === teamFilter;
+      });
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      if (sortBy === "recent") {
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      }
+      if (sortBy === "deadline") {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline) - new Date(b.deadline);
+      }
+      if (sortBy === "title") {
+        return (a.title || a.name || "").localeCompare(b.title || b.name || "");
+      }
+      if (sortBy === "progress") {
+        return (b.progress || 0) - (a.progress || 0);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [projects, search, statusFilter, teamFilter, sortBy]);
+
   return (
     <>
       <PageContent>
+        {/* Page Header */}
         <PageHeader
+          breadcrumbs={[
+            { label: "Dashboard", to: "/admin/dashboard" },
+            { label: "Projects" },
+          ]}
           title="Project Management"
-          description="Assign, track, and review team capstone & module projects."
+          description="Assign, track, and review capstone and module projects across student teams."
           actions={
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreateModal}
+              sx={{ fontWeight: 700, borderRadius: 2 }}
+            >
               Create Project
             </Button>
           }
         />
 
+        {/* Project Summary Metric Row */}
+        <ProjectSummaryCards projects={projects} loading={loading} />
+
+        {/* Project Toolbar Controls */}
+        <ProjectToolbar
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          teamFilter={teamFilter}
+          onTeamFilterChange={setTeamFilter}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          teams={teams}
+        />
+
+        {/* Cards Grid / Empty State */}
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((idx) => (
-              <Grid item xs={12} sm={6} md={4} key={idx}>
+              <Grid item xs={12} sm={6} lg={4} key={idx}>
                 <ProjectCardSkeleton />
               </Grid>
             ))}
           </Grid>
         ) : projects.length === 0 ? (
           <EmptyState
-            title="No projects found"
+            title="No projects yet"
             description="Create projects and assign them to teams to manage student deliverables."
             icon={FolderOpenIcon}
             actionLabel="Create Project"
             onAction={handleOpenCreateModal}
           />
+        ) : filteredProjects.length === 0 ? (
+          <EmptyState
+            title="No matching projects found"
+            description="No projects match your current search query or active filter selections."
+            icon={SearchOffIcon}
+            actionLabel="Clear Filters"
+            onAction={() => {
+              setSearch("");
+              setStatusFilter("all");
+              setTeamFilter("all");
+            }}
+          />
         ) : (
           <Grid container spacing={3}>
-            {projects.map((proj) => (
-              <Grid item xs={12} sm={6} md={4} key={proj._id || proj.id}>
+            {filteredProjects.map((proj) => (
+              <Grid item xs={12} sm={6} lg={4} key={proj._id || proj.id}>
                 <ProjectCard
                   project={proj}
                   onDelete={(id) => setDeleteId(id)}
+                  onEdit={(p) => setEditingProject(p)}
                   onStatusChange={handleStatusChange}
                   onNavigateDetails={(id) => navigate(`/admin/projects/${id}`)}
                 />
@@ -178,91 +241,22 @@ export default function AdminProjects() {
         )}
       </PageContent>
 
-      {/* Create Project Modal */}
-      <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Create New Project</DialogTitle>
-        <Box component="form" onSubmit={handleCreateSubmit}>
-          <DialogContent dividers>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  label="Project Title"
-                  fullWidth
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Saylani LMS Full-Stack Web App"
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="Description"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter project goals and requirements..."
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Assign Team"
-                  select
-                  fullWidth
-                  required
-                  value={formData.teamId}
-                  onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
-                >
-                  {teams.length === 0 ? (
-                    <MenuItem value="" disabled>
-                      No teams available (Create a team first)
-                    </MenuItem>
-                  ) : (
-                    teams.map((t) => (
-                      <MenuItem key={t._id || t.id} value={t._id || t.id}>
-                        {t.name}
-                      </MenuItem>
-                    ))
-                  )}
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Deadline"
-                  type="date"
-                  fullWidth
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 2.5 }}>
-            <Button onClick={() => setOpenCreateModal(false)} disabled={createSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={createSubmitting}
-              startIcon={createSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
-            >
-              {createSubmitting ? "Creating..." : "Create Project"}
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+      {/* Edit Project Dialog */}
+      <EditProjectDialog
+        open={Boolean(editingProject)}
+        project={editingProject}
+        teams={teams}
+        onClose={() => setEditingProject(null)}
+        onSave={handleSaveEdit}
+      />
 
       {/* Delete Confirmation */}
       <ConfirmDialog
         open={Boolean(deleteId)}
-        title="Delete Project"
-        description="Are you sure you want to delete this project? Projects containing tasks cannot be deleted."
+        title="Delete Project?"
+        description="Are you sure you want to delete this project? Projects containing attached tasks cannot be deleted."
+        confirmText="Delete Project"
+        confirmColor="error"
         loading={deleteSubmitting}
         onConfirm={handleDeleteConfirm}
         onClose={() => setDeleteId(null)}

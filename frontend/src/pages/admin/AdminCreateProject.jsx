@@ -51,7 +51,6 @@ export default function AdminCreateProject() {
         const res = await teamApi.getTeams();
         if (isMounted && res.success && Array.isArray(res.data)) {
           setTeams(res.data);
-          // Auto-select first team if available
           if (res.data.length > 0) {
             setFormData((prev) => ({
               ...prev,
@@ -128,7 +127,7 @@ export default function AdminCreateProject() {
     <PageContent>
       <PageHeader
         title="Create Project"
-        description="Create and assign a new capstone or module project to a student team."
+        description="Assign a new capstone or module project to a student team."
         breadcrumbs={[
           { label: "Dashboard", to: "/admin/dashboard" },
           { label: "Projects", to: "/admin/projects" },
@@ -137,24 +136,22 @@ export default function AdminCreateProject() {
         actions={
           <Button
             variant="outlined"
-            color="inherit"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate("/admin/projects")}
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 2, bgcolor: "#ffffff" }}
           >
             Back to Projects
           </Button>
         }
       />
 
-      <Box sx={{ maxWidth: 880, mx: "auto", mt: 1 }}>
+      <Box sx={{ maxWidth: 840, mx: "auto", mt: 1 }}>
         <Card
           elevation={0}
           sx={{
             borderRadius: 3,
-            border: "1px solid",
-            borderColor: "divider",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+            border: "1px solid #e2e8f0",
+            bgcolor: "#ffffff",
           }}
         >
           <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -166,8 +163,8 @@ export default function AdminCreateProject() {
                     width: 40,
                     height: 40,
                     borderRadius: 2,
-                    bgcolor: "primary.50",
-                    color: "primary.main",
+                    bgcolor: "#eff6ff",
+                    color: "#1e40af",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -176,11 +173,11 @@ export default function AdminCreateProject() {
                   <FolderIcon />
                 </Box>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                    Project Information
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+                    Project Deliverable Details
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Essential details and scope for the assigned project.
+                    Essential title, scope, and objectives for the assigned team.
                   </Typography>
                 </Box>
               </Stack>
@@ -189,7 +186,7 @@ export default function AdminCreateProject() {
                 <Grid item xs={12}>
                   <TextField
                     label="Project Title"
-                    placeholder="e.g. Saylani LMS Full-Stack Web Application"
+                    placeholder="e.g. Saylani LMS Enterprise Web Portal"
                     fullWidth
                     required
                     value={formData.title}
@@ -198,7 +195,7 @@ export default function AdminCreateProject() {
                       if (errors.title) setErrors({ ...errors, title: null });
                     }}
                     error={Boolean(errors.title)}
-                    helperText={errors.title || "Provide a descriptive title for this project deliverable."}
+                    helperText={errors.title || "Provide a descriptive title for this capstone project."}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                   />
                 </Grid>
@@ -206,13 +203,13 @@ export default function AdminCreateProject() {
                 <Grid item xs={12}>
                   <TextField
                     label="Description"
-                    placeholder="Provide a detailed overview of project goals, features, and evaluation criteria..."
+                    placeholder="Provide a detailed overview of project requirements, features, and tech stack..."
                     fullWidth
                     multiline
                     rows={4}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    helperText="Describe technical requirements and objectives for the team."
+                    helperText="Outline scope and expectations for the assigned student team."
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                   />
                 </Grid>
@@ -220,21 +217,21 @@ export default function AdminCreateProject() {
                 <Grid item xs={12}>
                   <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
                     <GroupIcon fontSize="small" color="action" />
-                    <Typography variant="subtitle2" fontWeight={700}>
+                    <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
                       Assigned Team *
                     </Typography>
                   </Stack>
 
                   {loadingTeams ? (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1 }}>
-                      <CircularProgress size={20} />
+                      <CircularProgress size={20} color="primary" />
                       <Typography variant="body2" color="text.secondary">
-                        Loading teams...
+                        Loading teams list...
                       </Typography>
                     </Box>
                   ) : teams.length === 0 ? (
                     <Alert severity="warning" sx={{ borderRadius: 2 }}>
-                      No teams available in the system. Please create a team first before assigning a project.
+                      No teams available in the system. Create a team first before assigning a project.
                     </Alert>
                   ) : (
                     <TextField
@@ -253,7 +250,7 @@ export default function AdminCreateProject() {
                       {teams.map((t) => (
                         <MenuItem key={t._id || t.id} value={t._id || t.id}>
                           <Stack direction="row" justifyContent="space-between" width="100%" alignItems="center">
-                            <Typography variant="body2" fontWeight={600}>
+                            <Typography variant="body2" fontWeight={700}>
                               {t.name}
                             </Typography>
                             {t.members && (
@@ -272,7 +269,7 @@ export default function AdminCreateProject() {
 
             <Divider />
 
-            {/* Section 2: Project Schedule & Deadline */}
+            {/* Section 2: Schedule & Deadline */}
             <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
                 <Box
@@ -280,8 +277,8 @@ export default function AdminCreateProject() {
                     width: 40,
                     height: 40,
                     borderRadius: 2,
-                    bgcolor: "info.50",
-                    color: "info.main",
+                    bgcolor: "#f0fdf4",
+                    color: "#16a34a",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -290,11 +287,11 @@ export default function AdminCreateProject() {
                   <EventIcon />
                 </Box>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                    Schedule & Deadline
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+                    Schedule & Submission Deadline
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Optional submission deadline for team evaluation.
+                    Optional target deadline for evaluation.
                   </Typography>
                 </Box>
               </Stack>
@@ -308,7 +305,7 @@ export default function AdminCreateProject() {
                     value={formData.deadline}
                     onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                     InputLabelProps={{ shrink: true }}
-                    helperText="Set target completion date for the project."
+                    helperText="Set expected completion date."
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                   />
                 </Grid>
@@ -317,11 +314,11 @@ export default function AdminCreateProject() {
 
             <Divider />
 
-            {/* Section 3: Form Actions */}
+            {/* Form Actions */}
             <Box
               sx={{
                 p: { xs: 2.5, sm: 3 },
-                bgcolor: "grey.50",
+                bgcolor: "#f8fafc",
                 display: "flex",
                 justifyContent: "flex-end",
                 gap: 2,
@@ -329,10 +326,9 @@ export default function AdminCreateProject() {
             >
               <Button
                 variant="outlined"
-                color="inherit"
                 disabled={submitting}
                 onClick={() => navigate("/admin/projects")}
-                sx={{ borderRadius: 2, px: 3 }}
+                sx={{ borderRadius: 2, px: 3, bgcolor: "#ffffff" }}
               >
                 Cancel
               </Button>
@@ -351,11 +347,6 @@ export default function AdminCreateProject() {
                   borderRadius: 2,
                   px: 4,
                   fontWeight: 700,
-                  boxShadow: "0 4px 12px rgba(30, 64, 175, 0.2)",
-                  transition: "all 0.18s ease",
-                  "&:active": {
-                    transform: "scale(0.98)",
-                  },
                 }}
               >
                 {submitting ? "Creating Project..." : "Create Project"}
