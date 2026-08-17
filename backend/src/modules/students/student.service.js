@@ -10,6 +10,45 @@ function assertObjectId(id, label = "Student id") {
   if (!mongoose.isValidObjectId(id)) throw appError(`${label} is invalid`, 400);
 }
 
+// Helper to resolve and attach team info for students based on Team.members
+async function attachTeamsToStudents(students) {
+  if (!students) return students;
+
+  const isArray = Array.isArray(students);
+  const studentList = isArray ? students : [students];
+  if (!studentList.length) return students;
+
+  const userIds = studentList
+    .map((s) => {
+      const u = s.toObject ? s.toObject().user : s.user;
+      return u && u._id ? u._id : u;
+    })
+    .filter(Boolean);
+
+  if (!userIds.length) return students;
+
+  const teams = await Team.find({ members: { $in: userIds } })
+    .select("_id name members")
+    .lean();
+
+  const userTeamMap = new Map();
+  teams.forEach((team) => {
+    (team.members || []).forEach((mId) => {
+      userTeamMap.set(mId.toString(), { _id: team._id, name: team.name });
+    });
+  });
+
+  const result = studentList.map((studentDoc) => {
+    const obj = studentDoc.toObject ? studentDoc.toObject() : { ...studentDoc };
+    const u = obj.user;
+    const uId = u && u._id ? u._id.toString() : u ? u.toString() : null;
+    obj.team = uId ? (userTeamMap.get(uId) || null) : null;
+    return obj;
+  });
+
+  return isArray ? result : result[0];
+}
+
 // createStudent creates a User and Student profile inside a single MongoDB
 // transaction. The transaction guarantees that either both documents are
 // persisted or neither is, preventing orphaned User records without a
@@ -31,7 +70,8 @@ export const createStudent = async (data) => {
       user.student = createdStudent._id;
       await user.save({ session });
     });
-    return Student.findById(createdStudent._id).populate("user", "name email role profileImage");
+    const student = await Student.findById(createdStudent._id).populate("user", "name email role profileImage");
+    return await attachTeamsToStudents(student);
   } catch (err) {
     if (err?.code === 11000) throw appError("A student with this email or roll number already exists", 409);
     throw err;
@@ -41,21 +81,28 @@ export const createStudent = async (data) => {
 };
 
 export const getAllStudents = async () => {
-  return await Student.find().populate("user", "name email profileImage");
+  const students = await Student.find().populate("user", "name email profileImage");
+  return await attachTeamsToStudents(students);
 };
 
 export const getStudentById = async (id) => {
   assertObjectId(id);
-  return await Student.findById(id).populate("user", "name email profileImage");
+  const student = await Student.findById(id).populate("user", "name email profileImage");
+  if (!student) return null;
+  return await attachTeamsToStudents(student);
 };
 
 export const getAuthenticatedStudent = async (userId) => {
-  return Student.findOne({ user: userId }).populate("user", "name email role profileImage");
+  const student = await Student.findOne({ user: userId }).populate("user", "name email role profileImage");
+  if (!student) return null;
+  return await attachTeamsToStudents(student);
 };
 
 export const updateStudent = async (id, data) => {
   assertObjectId(id);
-  return await Student.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("user", "name email profileImage");
+  const student = await Student.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("user", "name email profileImage");
+  if (!student) return null;
+  return await attachTeamsToStudents(student);
 };
 
 // deleteStudent removes a Student and their linked User inside a transaction.

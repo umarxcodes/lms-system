@@ -15,6 +15,7 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -188,8 +189,28 @@ export default function AdminStudents() {
       field: "team",
       headerName: "Team",
       flex: 1,
-      minWidth: 130,
+      minWidth: 140,
       valueGetter: (value, row) => row.team?.name || row.teamId?.name || "Unassigned",
+      renderCell: (params) => {
+        const teamName = params.row.team?.name || params.row.teamId?.name;
+        return teamName ? (
+          <Chip
+            label={teamName}
+            size="small"
+            sx={{
+              bgcolor: "#eff6ff",
+              color: "#1e40af",
+              fontWeight: 600,
+              borderRadius: 1.5,
+              border: "1px solid #bfdbfe",
+            }}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
+            Unassigned
+          </Typography>
+        );
+      },
     },
     {
       field: "actions",
