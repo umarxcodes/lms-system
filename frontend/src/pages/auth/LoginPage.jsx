@@ -17,9 +17,11 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import SecurityIcon from "@mui/icons-material/Security";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import StatusBadge from "../../components/common/StatusBadge";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -89,8 +91,9 @@ export default function LoginPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "#f8fafc",
-        backgroundImage: "radial-gradient(circle at 50% 0%, rgba(30, 64, 175, 0.04) 0%, transparent 75%)",
+        bgcolor: "#F8FAFC",
+        backgroundImage:
+          "radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 60%), radial-gradient(circle at 0% 100%, rgba(124, 58, 237, 0.03) 0%, transparent 50%)",
         py: 6,
         px: 2,
       }}
@@ -99,110 +102,101 @@ export default function LoginPage() {
         maxWidth="xs"
         sx={{
           maxWidth: 420,
-          animation: "loginCardFade 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-          willChange: "opacity, transform",
-          "@keyframes loginCardFade": {
-            "0%": {
-              opacity: 0,
-              transform: "translateY(8px)",
-            },
-            "100%": {
-              opacity: 1,
-              transform: "translateY(0)",
-            },
-          },
-          "@media (prefers-reduced-motion: reduce)": {
-            animation: "none",
+          animation: "loginFade 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          "@keyframes loginFade": {
+            "0%": { opacity: 0, transform: "translateY(10px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
           },
         }}
       >
         <Stack spacing={3.5} alignItems="center">
-          {/* Centralized SMIT Branding */}
+          {/* Header Branding */}
           <Box sx={{ textAlign: "center", width: "100%" }}>
             <Box
               component="img"
               src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
               alt="SMIT Logo"
               sx={{
-                height: 68,
+                height: 64,
                 width: "auto",
                 objectFit: "contain",
                 mx: "auto",
                 display: "block",
                 mb: 1.5,
-                filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.05))",
+                filter: "drop-shadow(0 4px 10px rgba(0, 0, 0, 0.04))",
               }}
             />
             <Typography
               variant="h5"
               sx={{
                 fontWeight: 800,
-                color: "#0f172a",
-                fontSize: "1.25rem",
+                color: "#0F172A",
+                fontSize: "1.35rem",
                 letterSpacing: "-0.02em",
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                mb: 0.5,
               }}
             >
-              Saylani LMS Portal
+              SMIT LMS Portal
             </Typography>
             <Typography
               variant="caption"
               sx={{
-                color: "#64748b",
+                color: "#64748B",
                 fontWeight: 600,
-                fontSize: "0.78rem",
-                letterSpacing: "0.02em",
+                fontSize: "0.8rem",
               }}
             >
               Saylani Mass I.T. Training Program
             </Typography>
           </Box>
 
-          {/* Saylani Portal Card with Soft Shadow */}
+          {/* Login Card */}
           <Card
             elevation={0}
             sx={{
               width: "100%",
-              borderRadius: 4,
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.02)",
+              borderRadius: "16px",
+              bgcolor: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              boxShadow: "0 20px 40px -15px rgba(15, 23, 42, 0.06), 0 0 1px 1px rgba(0,0,0,0.02)",
             }}
           >
             <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 800,
-                    color: "#0f172a",
-                    fontSize: "1.15rem",
-                    letterSpacing: "-0.01em",
-                    mb: 0.5,
-                  }}
-                >
-                  Sign In to Account
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "#64748b",
-                    fontSize: "0.825rem",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Enter your Email Address and Password registered with SMIT.
-                </Typography>
-              </Box>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      color: "#0F172A",
+                      fontSize: "1.1rem",
+                      mb: 0.2,
+                    }}
+                  >
+                    Sign In
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#64748B",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    Access your account dashboard
+                  </Typography>
+                </Box>
+                <StatusBadge status="brand" label="Secure Auth" icon={SecurityIcon} />
+              </Stack>
 
               {error && (
                 <Alert
                   severity="error"
                   sx={{
                     mb: 3,
-                    borderRadius: 2.5,
+                    borderRadius: "10px",
                     fontSize: "0.825rem",
                     fontWeight: 600,
+                    border: "1px solid #FEE2E2",
                   }}
                   onClose={() => setError("")}
                 >
@@ -218,12 +212,12 @@ export default function LoginPage() {
                       variant="caption"
                       sx={{
                         fontWeight: 700,
-                        color: "#334155",
-                        fontSize: "0.78rem",
+                        color: "#475569",
+                        fontSize: "0.75rem",
                         mb: 0.8,
                         display: "block",
                         textTransform: "uppercase",
-                        letterSpacing: "0.03em",
+                        letterSpacing: "0.04em",
                       }}
                     >
                       Email Address *
@@ -239,23 +233,19 @@ export default function LoginPage() {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <EmailOutlinedIcon fontSize="small" sx={{ color: "#94a3b8" }} />
+                            <EmailOutlinedIcon fontSize="small" sx={{ color: "#94A3B8" }} />
                           </InputAdornment>
                         ),
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: 2.5,
-                          bgcolor: "#ffffff",
+                          borderRadius: "10px",
+                          bgcolor: "#FFFFFF",
                           fontSize: "0.875rem",
-                          "& fieldset": {
-                            borderColor: "#cbd5e1",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#94a3b8",
-                          },
+                          "& fieldset": { borderColor: "#E2E8F0" },
+                          "&:hover fieldset": { borderColor: "#CBD5E1" },
                           "&.Mui-focused fieldset": {
-                            borderColor: "#1e40af",
+                            borderColor: "#2563EB",
                             borderWidth: "1.5px",
                           },
                         },
@@ -269,12 +259,12 @@ export default function LoginPage() {
                       variant="caption"
                       sx={{
                         fontWeight: 700,
-                        color: "#334155",
-                        fontSize: "0.78rem",
+                        color: "#475569",
+                        fontSize: "0.75rem",
                         mb: 0.8,
                         display: "block",
                         textTransform: "uppercase",
-                        letterSpacing: "0.03em",
+                        letterSpacing: "0.04em",
                       }}
                     >
                       Password *
@@ -282,7 +272,7 @@ export default function LoginPage() {
                     <TextField
                       fullWidth
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your account password"
+                      placeholder="Enter account password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       variant="outlined"
@@ -290,7 +280,7 @@ export default function LoginPage() {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <LockOutlinedIcon fontSize="small" sx={{ color: "#94a3b8" }} />
+                            <LockOutlinedIcon fontSize="small" sx={{ color: "#94A3B8" }} />
                           </InputAdornment>
                         ),
                         endAdornment: (
@@ -298,13 +288,18 @@ export default function LoginPage() {
                             <IconButton
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
-                              aria-label="toggle password visibility"
                               size="small"
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                "&:hover": { bgcolor: "#F1F5F9" },
+                              }}
                             >
                               {showPassword ? (
-                                <VisibilityOff fontSize="small" sx={{ color: "#64748b" }} />
+                                <VisibilityOff fontSize="small" sx={{ color: "#64748B", fontSize: 18 }} />
                               ) : (
-                                <Visibility fontSize="small" sx={{ color: "#64748b" }} />
+                                <Visibility fontSize="small" sx={{ color: "#64748B", fontSize: 18 }} />
                               )}
                             </IconButton>
                           </InputAdornment>
@@ -312,17 +307,13 @@ export default function LoginPage() {
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: 2.5,
-                          bgcolor: "#ffffff",
+                          borderRadius: "10px",
+                          bgcolor: "#FFFFFF",
                           fontSize: "0.875rem",
-                          "& fieldset": {
-                            borderColor: "#cbd5e1",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#94a3b8",
-                          },
+                          "& fieldset": { borderColor: "#E2E8F0" },
+                          "&:hover fieldset": { borderColor: "#CBD5E1" },
                           "&.Mui-focused fieldset": {
-                            borderColor: "#1e40af",
+                            borderColor: "#2563EB",
                             borderWidth: "1.5px",
                           },
                         },
@@ -330,37 +321,34 @@ export default function LoginPage() {
                     />
                   </Box>
 
-                  {/* Login Button */}
+                  {/* Submit Button */}
                   <Button
                     type="submit"
                     variant="contained"
                     fullWidth
                     disabled={loading}
                     startIcon={
-                      loading ? (
-                        <CircularProgress size={18} color="inherit" />
-                      ) : null
+                      loading ? <CircularProgress size={18} color="inherit" /> : null
                     }
                     sx={{
-                      background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
-                      color: "#ffffff",
-                      fontWeight: 800,
+                      bgcolor: "#2563EB",
+                      color: "#FFFFFF",
+                      fontWeight: 700,
                       fontSize: "0.875rem",
-                      textTransform: "uppercase",
-                      py: 1.4,
+                      textTransform: "none",
+                      py: 1.3,
                       mt: 1,
-                      borderRadius: 2.5,
-                      letterSpacing: "0.06em",
-                      boxShadow: "0 4px 14px rgba(30, 64, 175, 0.25)",
-                      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      borderRadius: "10px",
+                      boxShadow: "0 2px 8px rgba(37, 99, 235, 0.2)",
+                      transition: "all 0.18s ease-in-out",
                       "&:hover": {
-                        background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)",
-                        boxShadow: "0 6px 18px rgba(30, 64, 175, 0.35)",
+                        bgcolor: "#1D4ED8",
+                        boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
                         transform: "translateY(-1px)",
                       },
                     }}
                   >
-                    {loading ? "Signing in..." : "LOG IN"}
+                    {loading ? "Authenticating..." : "Sign In to Portal"}
                   </Button>
                 </Stack>
               </Box>
@@ -371,16 +359,17 @@ export default function LoginPage() {
           <Typography
             variant="caption"
             sx={{
-              color: "#94a3b8",
+              color: "#94A3B8",
               fontWeight: 600,
-              fontSize: "0.725rem",
+              fontSize: "0.75rem",
               textAlign: "center",
             }}
           >
-            © {new Date().getFullYear()} Saylani Mass I.T Training • Powered by SMIT LMS
+            © {new Date().getFullYear()} Saylani Mass I.T Training • Enterprise LMS v2.0
           </Typography>
         </Stack>
       </Container>
     </Box>
   );
 }
+
