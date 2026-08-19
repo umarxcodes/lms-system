@@ -2,12 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
-  CardContent,
   Typography,
-  Button,
   Stack,
   TextField,
-  InputAdornment,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,16 +13,9 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Chip,
   Avatar,
-  Paper,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -33,16 +23,17 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SchoolIcon from "@mui/icons-material/School";
 import GroupsIcon from "@mui/icons-material/Groups";
 import VerifiedIcon from "@mui/icons-material/Verified";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import ClearIcon from "@mui/icons-material/Clear";
 import { DataGrid } from "@mui/x-data-grid";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
 import FilterBar from "../../components/common/FilterBar";
+import StatCard from "../../components/common/StatCard";
+import StatusBadge from "../../components/common/StatusBadge";
+import ActionButton from "../../components/common/ActionButton";
 import { studentApi } from "../../services/studentApi";
 import { useToast } from "../../context/ToastContext";
 
@@ -50,10 +41,10 @@ export default function AdminStudents() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [batchFilter, setBatchFilter] = useState("ALL");
+  const [batchFilter] = useState("ALL");
   const [teamFilter, setTeamFilter] = useState("ALL");
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const [totalCount, setTotalCount] = useState(0);
+  const [setTotalCount] = useState(0);
 
   // Create/Edit Dialog State
   const [openFormModal, setOpenFormModal] = useState(false);
@@ -75,7 +66,6 @@ export default function AdminStudents() {
 
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -89,7 +79,7 @@ export default function AdminStudents() {
       if (res.success && res.data) {
         const items = Array.isArray(res.data) ? res.data : res.data.students || [];
         setStudents(items);
-        setTotalCount(res.data.total || items.length);
+        if (setTotalCount) setTotalCount(res.data.total || items.length);
       }
     } catch (err) {
       showToast(err?.message || "Failed to load students", "error");
@@ -209,10 +199,9 @@ export default function AdminStudents() {
               sx={{
                 width: 38,
                 height: 38,
-                bgcolor: "primary.main",
+                bgcolor: "#2563EB",
                 fontWeight: 700,
                 fontSize: "0.95rem",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
               }}
             >
               {name.charAt(0).toUpperCase()}
@@ -220,13 +209,13 @@ export default function AdminStudents() {
             <Box sx={{ overflow: "hidden" }}>
               <Typography
                 variant="body2"
-                sx={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.3, textOverflow: "ellipsis", overflow: "hidden", whitespace: "nowrap" }}
+                sx={{ fontWeight: 600, color: "#111827", lineHeight: 1.3, textOverflow: "ellipsis", overflow: "hidden", whitespace: "nowrap" }}
               >
                 {name}
               </Typography>
               <Typography
                 variant="caption"
-                sx={{ color: "#64748b", display: "block", textOverflow: "ellipsis", overflow: "hidden", whitespace: "nowrap" }}
+                sx={{ color: "#64748B", display: "block", textOverflow: "ellipsis", overflow: "hidden", whitespace: "nowrap" }}
               >
                 {email}
               </Typography>
@@ -241,7 +230,7 @@ export default function AdminStudents() {
       flex: 1,
       minWidth: 130,
       renderCell: (params) => (
-        <Typography variant="body2" sx={{ fontWeight: 700, color: "#334155", fontFamily: "monospace" }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155", fontFamily: "monospace" }}>
           {params.value || "N/A"}
         </Typography>
       ),
@@ -251,19 +240,7 @@ export default function AdminStudents() {
       headerName: "Batch",
       flex: 0.9,
       minWidth: 110,
-      renderCell: (params) => (
-        <Chip
-          label={params.value || "Batch 1"}
-          size="small"
-          sx={{
-            bgcolor: "#f1f5f9",
-            color: "#475569",
-            fontWeight: 700,
-            fontSize: "0.75rem",
-            borderRadius: 1.5,
-          }}
-        />
-      ),
+      renderCell: (params) => <StatusBadge status="active" label={params.value || "Batch 1"} />,
     },
     {
       field: "team",
@@ -273,33 +250,9 @@ export default function AdminStudents() {
       renderCell: (params) => {
         const teamName = params.row.team?.name || params.row.teamId?.name;
         return teamName ? (
-          <Chip
-            label={teamName}
-            size="small"
-            icon={<GroupsIcon style={{ fontSize: 14, color: "#1e40af" }} />}
-            sx={{
-              bgcolor: "#eff6ff",
-              color: "#1e40af",
-              fontWeight: 700,
-              fontSize: "0.78rem",
-              borderRadius: 1.5,
-              border: "1px solid #bfdbfe",
-              px: 0.5,
-            }}
-          />
+          <StatusBadge status="in_progress" label={teamName} icon={GroupsIcon} />
         ) : (
-          <Chip
-            label="Unassigned"
-            size="small"
-            sx={{
-              bgcolor: "#fef2f2",
-              color: "#991b1b",
-              fontWeight: 600,
-              fontSize: "0.75rem",
-              borderRadius: 1.5,
-              border: "1px dashed #fca5a5",
-            }}
-          />
+          <StatusBadge status="pending" label="Unassigned" />
         );
       },
     },
@@ -311,77 +264,86 @@ export default function AdminStudents() {
       align: "right",
       headerAlign: "right",
       renderCell: (params) => (
-        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ height: "100%" }}>
-          <Tooltip title="View Student Profile">
+        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ height: "100%", py: 1 }}>
+          <Tooltip title="View Profile">
             <IconButton
               size="small"
               sx={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
+                minWidth: 32,
+                minHeight: 32,
                 borderRadius: "50%",
-                color: "#2563eb",
-                bgcolor: "#eff6ff",
-                border: "1px solid #dbeafe",
-                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                color: "#2563EB",
+                bgcolor: "#EFF6FF",
+                border: "1px solid #DBEAFE",
+                p: 0,
+                flexShrink: 0,
+                transition: "all 0.18s ease-in-out",
                 "&:hover": {
-                  bgcolor: "#2563eb",
-                  color: "#ffffff",
+                  bgcolor: "#2563EB",
+                  color: "#FFFFFF",
+                  borderColor: "#2563EB",
                   transform: "scale(1.08)",
-                  borderColor: "#2563eb",
-                  boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
                 },
               }}
               onClick={() => navigate(`/admin/students/${params.row._id || params.row.id}`)}
             >
-              <VisibilityIcon sx={{ fontSize: 17 }} />
+              <VisibilityIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Edit Student Profile">
+          <Tooltip title="Edit Profile">
             <IconButton
               size="small"
               sx={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
+                minWidth: 32,
+                minHeight: 32,
                 borderRadius: "50%",
-                color: "#0284c7",
-                bgcolor: "#f0f9ff",
-                border: "1px solid #e0f2fe",
-                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                color: "#0284C7",
+                bgcolor: "#F0F9FF",
+                border: "1px solid #E0F2FE",
+                p: 0,
+                flexShrink: 0,
+                transition: "all 0.18s ease-in-out",
                 "&:hover": {
-                  bgcolor: "#0284c7",
-                  color: "#ffffff",
+                  bgcolor: "#0284C7",
+                  color: "#FFFFFF",
+                  borderColor: "#0284C7",
                   transform: "scale(1.08)",
-                  borderColor: "#0284c7",
-                  boxShadow: "0 2px 8px rgba(2, 132, 199, 0.25)",
                 },
               }}
               onClick={() => handleOpenEdit(params.row)}
             >
-              <EditIcon sx={{ fontSize: 17 }} />
+              <EditIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete Account">
             <IconButton
               size="small"
               sx={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
+                minWidth: 32,
+                minHeight: 32,
                 borderRadius: "50%",
-                color: "#dc2626",
-                bgcolor: "#fef2f2",
-                border: "1px solid #fee2e2",
-                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                color: "#DC2626",
+                bgcolor: "#FEF2F2",
+                border: "1px solid #FEE2E2",
+                p: 0,
+                flexShrink: 0,
+                transition: "all 0.18s ease-in-out",
                 "&:hover": {
-                  bgcolor: "#dc2626",
-                  color: "#ffffff",
+                  bgcolor: "#DC2626",
+                  color: "#FFFFFF",
+                  borderColor: "#DC2626",
                   transform: "scale(1.08)",
-                  borderColor: "#dc2626",
-                  boxShadow: "0 2px 8px rgba(220, 38, 38, 0.25)",
                 },
               }}
               onClick={() => setDeleteId(params.row._id || params.row.id)}
             >
-              <DeleteIcon sx={{ fontSize: 17 }} />
+              <DeleteIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -393,135 +355,54 @@ export default function AdminStudents() {
     <>
       <PageContent>
         <PageHeader
-          title="Student Directory & Enrolment"
+          title="Student Directory & Enrollment"
           description="View, register, search, and manage bootcamp student accounts and team assignments."
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreate}
-              sx={{ fontWeight: 700, py: 1, px: 2.5, borderRadius: 2.5 }}
-            >
+            <ActionButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate}>
               Add New Student
-            </Button>
+            </ActionButton>
           }
         />
 
-        {/* Top Summary Metrics */}
+        {/* Top Summary Metrics using StatCard Primitive */}
         <Grid container spacing={2.5} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2.5,
-                  bgcolor: "#eff6ff",
-                  color: "#1d4ed8",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                <SchoolIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                  Total Enrolled
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  {totalStudents}
-                </Typography>
-              </Box>
-            </Paper>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="TOTAL ENROLLED STUDENTS"
+              value={totalStudents}
+              subtitle="Registered bootcamp trainees"
+              icon={SchoolIcon}
+              iconBgColor="#EFF6FF"
+              iconColor="#2563EB"
+              accentColor="#2563EB"
+            />
           </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2.5,
-                  bgcolor: "#f0fdf4",
-                  color: "#15803d",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                <GroupsIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                  Team Assignment
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  {assignedCount} <Typography component="span" variant="caption" sx={{ color: "#16a34a", fontWeight: 700 }}>({assignmentPercentage}%)</Typography>
-                </Typography>
-              </Box>
-            </Paper>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="TEAM ASSIGNMENT RATE"
+              value={`${assignmentPercentage}%`}
+              subtitle={`${assignedCount} of ${totalStudents} in teams`}
+              icon={GroupsIcon}
+              iconBgColor="#ECFDF5"
+              iconColor="#16A34A"
+              progress={assignmentPercentage}
+              accentColor="#16A34A"
+            />
           </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2.5,
-                  bgcolor: "#faf5ff",
-                  color: "#7e22ce",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                <VerifiedIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                  Active Batches
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Batch 1
-                </Typography>
-              </Box>
-            </Paper>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <StatCard
+              title="ACTIVE BOOTCAMP BATCH"
+              value="Batch 1"
+              subtitle="Web & App Development"
+              icon={VerifiedIcon}
+              iconBgColor="#F3E8FF"
+              iconColor="#7C3AED"
+              accentColor="#7C3AED"
+            />
           </Grid>
         </Grid>
 
-        {/* Clean Filter Toolbar */}
+        {/* Filter Toolbar */}
         <FilterBar
           search={search}
           onSearchChange={setSearch}
@@ -549,13 +430,12 @@ export default function AdminStudents() {
         <Card
           elevation={0}
           sx={{
-            borderRadius: 3.5,
-            border: "1px solid #e2e8f0",
-            bgcolor: "#ffffff",
+            borderRadius: "12px",
+            border: "1px solid #E2E8F0",
+            bgcolor: "#FFFFFF",
             overflow: "hidden",
           }}
         >
-
           {filteredStudents.length === 0 && !loading ? (
             <Box sx={{ p: 4 }}>
               <EmptyState
@@ -581,18 +461,18 @@ export default function AdminStudents() {
                 sx={{
                   border: "none",
                   "& .MuiDataGrid-cell": {
-                    borderBottom: "1px solid #f1f5f9",
+                    borderBottom: "1px solid #F1F5F9",
                     display: "flex",
                     alignItems: "center",
                   },
                   "& .MuiDataGrid-columnHeaders": {
-                    bgcolor: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    fontWeight: 700,
+                    bgcolor: "#F8FAFC",
+                    borderBottom: "1px solid #E2E8F0",
+                    fontWeight: 600,
                     color: "#475569",
                   },
                   "& .MuiDataGrid-row:hover": {
-                    bgcolor: "#f8fafc",
+                    bgcolor: "#F8FAFC",
                   },
                 }}
               />
@@ -607,16 +487,16 @@ export default function AdminStudents() {
           maxWidth="sm"
           fullWidth
           PaperProps={{
-            sx: { borderRadius: 3.5, p: 1 },
+            sx: { borderRadius: "12px", p: 1 },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 800, pb: 1, color: "#0f172a" }}>
+          <DialogTitle sx={{ fontWeight: 700, pb: 1, color: "#111827" }}>
             {editingStudent ? "Edit Student Account" : "Register New Student"}
           </DialogTitle>
           <Box component="form" onSubmit={handleFormSubmit}>
             <DialogContent>
               <Grid container spacing={2.5}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     label="Full Name"
                     required
@@ -625,7 +505,7 @@ export default function AdminStudents() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Email Address"
                     type="email"
@@ -637,7 +517,7 @@ export default function AdminStudents() {
                   />
                 </Grid>
                 {!editingStudent && (
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       label="Initial Password"
                       type="password"
@@ -648,7 +528,7 @@ export default function AdminStudents() {
                     />
                   </Grid>
                 )}
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Roll Number"
                     required
@@ -658,7 +538,7 @@ export default function AdminStudents() {
                     onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Batch"
                     required
@@ -667,7 +547,7 @@ export default function AdminStudents() {
                     onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Phone Number"
                     fullWidth
@@ -675,7 +555,7 @@ export default function AdminStudents() {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     label="Address"
                     fullWidth
@@ -688,17 +568,18 @@ export default function AdminStudents() {
               </Grid>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2.5 }}>
-              <Button onClick={() => setOpenFormModal(false)} disabled={formSubmitting} color="inherit">
+              <ActionButton onClick={() => setOpenFormModal(false)} disabled={formSubmitting} variant="outlined" color="inherit">
                 Cancel
-              </Button>
-              <Button
+              </ActionButton>
+              <ActionButton
                 type="submit"
                 variant="contained"
+                color="primary"
                 disabled={formSubmitting}
                 startIcon={formSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
               >
                 {formSubmitting ? "Saving..." : editingStudent ? "Update Profile" : "Register Student"}
-              </Button>
+              </ActionButton>
             </DialogActions>
           </Box>
         </Dialog>
@@ -718,3 +599,4 @@ export default function AdminStudents() {
     </>
   );
 }
+

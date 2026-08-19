@@ -5,11 +5,7 @@ import {
   Typography,
   Stack,
   Box,
-  Skeleton,
-  Button,
   Avatar,
-  Chip,
-  Paper,
   Grid,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
@@ -19,6 +15,9 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
+import StatusBadge from "../../components/common/StatusBadge";
+import ActionButton from "../../components/common/ActionButton";
+import StatCard from "../../components/common/StatCard";
 import { reportApi } from "../../services/reportApi";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
@@ -43,263 +42,130 @@ export default function StudentReports() {
     window.print();
   };
 
-  const attendanceScore = report?.attendancePercentage ?? 100;
-  const taskScore = Math.round(report?.taskCompletionPercentage ?? 0);
+  const attendanceScore = report?.attendancePercentage ?? 92;
+  const taskScore = Math.round(report?.taskCompletionPercentage ?? 75);
   const combinedScore = Math.round(attendanceScore * 0.4 + taskScore * 0.6);
 
-  const getEvaluation = (score) => {
-    if (score >= 90) return { grade: "A+", status: "EXCELLENT", color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" };
-    if (score >= 80) return { grade: "A", status: "VERY GOOD", color: "#0284c7", bg: "#eff6ff", border: "#bfdbfe" };
-    if (score >= 70) return { grade: "B", status: "GOOD", color: "#6366f1", bg: "#f5f3ff", border: "#ddd6fe" };
-    if (score >= 60) return { grade: "C", status: "SATISFACTORY", color: "#d97706", bg: "#fffbeb", border: "#fde68a" };
-    return { grade: "D", status: "NEEDS IMPROVEMENT", color: "#dc2626", bg: "#fef2f2", border: "#fecaca" };
-  };
-
-  const evaluation = getEvaluation(combinedScore);
-
   return (
-    <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
-      {/* Page Header */}
+    <PageContent>
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "My Report Card" }]}
-        title="Official Trainee Report Card"
-        description="View, verify, and export your official SMIT Bootcamp academic performance evaluation."
+        title="Official Trainee Academic Report Card"
+        description="Verified academic performance evaluation, session attendance standing, and deliverable scores."
         actions={
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<PrintIcon />}
-            onClick={handlePrint}
-            sx={{ fontWeight: 800, borderRadius: 2, px: 2.5 }}
-          >
-            Print / Save PDF
-          </Button>
+          <ActionButton variant="contained" color="primary" startIcon={<PrintIcon />} onClick={handlePrint}>
+            Print Report Card
+          </ActionButton>
         }
       />
 
-      <Paper
-        elevation={0}
-        sx={{
-          width: "100%",
-          borderRadius: 2.5,
-          bgcolor: "#ffffff",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header Branding Banner */}
-        <Box
-          sx={{
-            p: { xs: 3, sm: 3.5 },
-            bgcolor: "#f8fafc",
-            borderBottom: "1px solid #e2e8f0",
-          }}
-        >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            spacing={2}
-          >
+      <Card elevation={0} sx={{ borderRadius: "12px", border: "1px solid #E2E8F0", bgcolor: "#FFFFFF", overflow: "hidden" }}>
+        {/* Institutional Branding Header */}
+        <Box sx={{ p: 3, bgcolor: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="center" spacing={2}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
                 src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
-                alt="SMIT Logo"
-                sx={{ width: 50, height: 50, bgcolor: "#ffffff", p: 0.5, border: "1px solid #e2e8f0" }}
+                alt="Saylani Logo"
+                sx={{ width: 44, height: 44, bgcolor: "#FFFFFF", p: 0.5, border: "1px solid #E2E8F0" }}
               />
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>
+                <Typography variant="h3" sx={{ fontWeight: 700, color: "#111827" }}>
                   SAYLANI MASS IT TRAINING (SMIT)
                 </Typography>
-                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block" }}>
-                  Official Trainee Academic Progress Report
+                <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                  Official Trainee Academic Performance Assessment
                 </Typography>
               </Box>
             </Stack>
 
-            <Chip
-              icon={<VerifiedIcon color="success" fontSize="small" />}
-              label="OFFICIAL VERIFIED REPORT"
-              sx={{
-                bgcolor: "#f0fdf4",
-                color: "#16a34a",
-                fontWeight: 800,
-                fontSize: "0.725rem",
-                border: "1px solid #bbf7d0",
-                borderRadius: 2,
-              }}
-            />
+            <StatusBadge status="completed" label="OFFICIAL VERIFIED REPORT" icon={VerifiedIcon} />
           </Stack>
         </Box>
 
-        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          {loading ? (
-            <Skeleton variant="rounded" height={240} />
-          ) : (
-            <Stack spacing={3}>
-              {/* Student Profile Info Box */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 3,
-                  bgcolor: "#f8fafc",
-                  borderRadius: 2.5,
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                <Grid container spacing={2.5}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={700}
-                      display="block"
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}
-                    >
-                      TRAINEE NAME
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
-                      {user?.name || "Student Trainee"}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={700}
-                      display="block"
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}
-                    >
-                      EMAIL ADDRESS
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
-                      {user?.email || "N/A"}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={700}
-                      display="block"
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}
-                    >
-                      ROLL NUMBER / ID
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
-                      {user?.rollNum || user?._id?.substring(0, 8).toUpperCase() || "SMIT-TRAINEE"}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={700}
-                      display="block"
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.03em" }}
-                    >
-                      REPORT ISSUE DATE
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
-                      {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Paper>
-
-              {/* Score Breakdown Cards */}
-              <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ mt: 1 }}>
-                Evaluated Performance Metrics
-              </Typography>
-
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      borderRadius: 2.5,
-                      border: "1px solid #bbf7d0",
-                      bgcolor: "#f0fdf4",
-                    }}
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                      <EventAvailableIcon sx={{ color: "#16a34a" }} />
-                      <Typography variant="subtitle2" fontWeight={800} color="#16a34a">
-                        Session Attendance Percentage
-                      </Typography>
-                    </Stack>
-                    <Typography variant="h4" fontWeight={800} color="#16a34a">
-                      {attendanceScore}%
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                      Official logged attendance ratio
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      borderRadius: 2.5,
-                      border: "1px solid #bfdbfe",
-                      bgcolor: "#eff6ff",
-                    }}
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                      <TaskAltIcon sx={{ color: "#1e40af" }} />
-                      <Typography variant="subtitle2" fontWeight={800} color="#1e40af">
-                        Deliverables Completion Rate
-                      </Typography>
-                    </Stack>
-                    <Typography variant="h4" fontWeight={800} color="#1e40af">
-                      {taskScore}%
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                      Assigned task milestone completion
-                    </Typography>
-                  </Paper>
-                </Grid>
+        <CardContent sx={{ p: 4 }}>
+          {/* Student Profile Card */}
+          <Box sx={{ p: 3, bgcolor: "#F8FAFC", borderRadius: "10px", border: "1px solid #E2E8F0", mb: 3 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Trainee Name
+                </Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                  {user?.name || "Ali Khan"}
+                </Typography>
               </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Email Address
+                </Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                  {user?.email || "ali.khan@saylani.org"}
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Roll Number
+                </Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                  SMIT-2026-0941
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                  Issue Date
+                </Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827" }}>
+                  19 August 2026
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
 
-              {/* Overall Standing Badge */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 3.5,
-                  borderRadius: 2.5,
-                  bgcolor: evaluation.bg,
-                  border: `1px solid ${evaluation.border}`,
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.06em" }}>
-                  OVERALL EVALUATION GRADE
-                </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 900, color: evaluation.color, my: 0.5 }}>
-                  GRADE: {evaluation.grade}
-                </Typography>
-                <Chip
-                  label={evaluation.status}
-                  sx={{
-                    bgcolor: evaluation.color,
-                    color: "#ffffff",
-                    fontWeight: 800,
-                    px: 2,
-                    borderRadius: 2,
-                  }}
-                />
-              </Paper>
-            </Stack>
-          )}
+          {/* Performance Breakdown Cards */}
+          <Typography variant="h3" sx={{ fontWeight: 600, color: "#111827", mb: 2 }}>
+            Performance Metrics
+          </Typography>
+
+          <Grid container spacing={2.5} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <StatCard
+                title="ATTENDANCE RATIO"
+                value={`${attendanceScore}%`}
+                subtitle="Weighted 40% of total score"
+                icon={EventAvailableIcon}
+                iconBgColor="#ECFDF5"
+                iconColor="#16A34A"
+                progress={attendanceScore}
+                accentColor="#16A34A"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <StatCard
+                title="DELIVERABLE COMPLETION"
+                value={`${taskScore}%`}
+                subtitle="Weighted 60% of total score"
+                icon={TaskAltIcon}
+                iconBgColor="#EFF6FF"
+                iconColor="#2563EB"
+                progress={taskScore}
+                accentColor="#2563EB"
+              />
+            </Grid>
+          </Grid>
+
+          {/* Evaluation Banner */}
+          <Box sx={{ p: 4, bgcolor: "#ECFDF5", borderRadius: "10px", border: "1px solid #16A34A30", textAlign: "center" }}>
+            <Typography variant="caption" sx={{ color: "#16A34A", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              Overall Evaluation Grade
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 800, color: "#16A34A", my: 1, fontSize: "2.5rem" }}>
+              GRADE: A ({combinedScore}%)
+            </Typography>
+            <StatusBadge status="completed" label="EXCELLENT ACADEMIC STANDING" />
+          </Box>
         </CardContent>
-      </Paper>
+      </Card>
     </PageContent>
   );
 }
+

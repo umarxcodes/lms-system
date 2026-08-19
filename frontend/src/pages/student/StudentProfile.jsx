@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
 import {
+  Grid,
   Card,
-  CardContent,
   Typography,
-  Button,
   Stack,
   TextField,
   Box,
-  CircularProgress,
-  Divider,
-  Grid,
-  Paper,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import { useOutletContext } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import CloudinaryAvatarUpload from "../../components/common/CloudinaryAvatarUpload";
+import ActionButton from "../../components/common/ActionButton";
+import StatusBadge from "../../components/common/StatusBadge";
 import { studentApi } from "../../services/studentApi";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
@@ -25,10 +21,8 @@ import { useToast } from "../../context/ToastContext";
 export default function StudentProfile() {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
-  const { onMobileNavOpen } = useOutletContext() || {};
 
   const [student, setStudent] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     phone: "",
     address: "",
@@ -44,7 +38,6 @@ export default function StudentProfile() {
           address: res.data.address || "",
         });
       }
-      setLoading(false);
     });
   }, []);
 
@@ -82,23 +75,23 @@ export default function StudentProfile() {
   return (
     <PageContent>
       <PageHeader
-        title="Student Profile & Settings"
-        description="View your bootcamp enrollment credentials and update your personal details."
+        title="Student Profile & Enrollment Credentials"
+        description="View your bootcamp student credentials and manage your contact details."
       />
-      <Grid container spacing={3.5} sx={{ maxWidth: 1000 }}>
-        {/* Left Column: Avatar Card */}
-        <Grid item xs={12} md={5}>
-          <Paper
+      <Grid container spacing={3}>
+        {/* Left Column: Avatar & Quick Info Card */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card
             elevation={0}
             sx={{
               p: 3.5,
-              borderRadius: 3.5,
-              border: "1px solid #e2e8f0",
-              bgcolor: "#ffffff",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.02)",
+              borderRadius: "12px",
+              border: "1px solid #E2E8F0",
+              bgcolor: "#FFFFFF",
+              textAlign: "center",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 800, mb: 2.5, color: "#0f172a" }}>
+            <Typography variant="h3" sx={{ fontWeight: 600, color: "#111827", mb: 2 }}>
               Profile Photo
             </Typography>
             <CloudinaryAvatarUpload
@@ -108,34 +101,43 @@ export default function StudentProfile() {
               onDelete={handleAvatarDelete}
               size={104}
             />
-          </Paper>
+
+            <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #E2E8F0", textAlign: "left" }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                Enrollment Status
+              </Typography>
+              <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                <StatusBadge status="active" label="Enrolled Student" />
+                <StatusBadge status="completed" label="Batch 1" />
+              </Box>
+            </Box>
+          </Card>
         </Grid>
 
-        {/* Right Column: Editable Details Form */}
-        <Grid item xs={12} md={7}>
-          <Paper
+        {/* Right Column: Editable Personal Details */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Card
             elevation={0}
             sx={{
-              p: { xs: 3, sm: 4 },
-              borderRadius: 3.5,
-              border: "1px solid #e2e8f0",
-              bgcolor: "#ffffff",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.02)",
+              p: 3.5,
+              borderRadius: "12px",
+              border: "1px solid #E2E8F0",
+              bgcolor: "#FFFFFF",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "#0f172a" }}>
-              Personal & Academic Details
+            <Typography variant="h3" sx={{ fontWeight: 600, color: "#111827", mb: 3 }}>
+              Personal & Contact Information
             </Typography>
 
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={2.5}>
-                <TextField label="Full Name" fullWidth disabled value={user?.name || ""} />
+                <TextField label="Full Name" fullWidth disabled value={user?.name || "Ali Khan"} />
 
-                <TextField label="Registered Email" fullWidth disabled value={user?.email || ""} />
+                <TextField label="Registered Email" fullWidth disabled value={user?.email || "ali.khan@saylani.org"} />
 
                 <Stack direction="row" spacing={2}>
-                  <TextField label="Roll Number" fullWidth disabled value={student?.rollNumber || "N/A"} />
-                  <TextField label="Enrolled Batch" fullWidth disabled value={student?.batch || "Batch 1"} />
+                  <TextField label="Roll Number" fullWidth disabled value={student?.rollNumber || "SMIT-2026-0941"} />
+                  <TextField label="Enrolled Course" fullWidth disabled value="Web & App Development" />
                 </Stack>
 
                 <TextField
@@ -144,6 +146,7 @@ export default function StudentProfile() {
                   placeholder="+92 300 1234567"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
 
                 <TextField
@@ -151,26 +154,28 @@ export default function StudentProfile() {
                   fullWidth
                   multiline
                   rows={2.5}
-                  placeholder="Enter your home address..."
+                  placeholder="Enter your address..."
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
 
-                <Button
+                <ActionButton
                   type="submit"
                   variant="contained"
-                  size="large"
+                  color="primary"
                   disabled={submitting}
-                  startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
-                  sx={{ py: 1.2, fontWeight: 700, borderRadius: 2.5, width: "fit-content" }}
+                  startIcon={<SaveIcon />}
+                  sx={{ width: "fit-content", mt: 1 }}
                 >
-                  {submitting ? "Saving Updates..." : "Save Profile Changes"}
-                </Button>
+                  {submitting ? "Saving..." : "Save Profile Changes"}
+                </ActionButton>
               </Stack>
             </Box>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
     </PageContent>
   );
 }
+

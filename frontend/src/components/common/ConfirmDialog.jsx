@@ -1,44 +1,71 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-  Button,
-  CircularProgress,
+  Alert,
 } from "@mui/material";
+import ActionButton from "./ActionButton";
 
 export default function ConfirmDialog({
   open,
-  title = "Confirm Action",
-  description = "Are you sure you want to proceed? This action cannot be undone.",
-  confirmLabel = "Delete",
-  cancelLabel = "Cancel",
-  confirmColor = "error",
-  loading = false,
-  onConfirm,
   onClose,
+  title = "Are you sure?",
+  description = "This action cannot be undone.",
+  confirmLabel = "Confirm",
+  destructive = false,
+  onConfirm,
 }) {
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleConfirm = async () => {
+    if (!onConfirm) return;
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      await onConfirm();
+      onClose();
+    } catch (err) {
+      setErrorMsg(err?.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>{title}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700, color: "#111827", pb: 1 }}>
+        {title}
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ color: "text.secondary" }}>{description}</DialogContentText>
+        {errorMsg && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+            {errorMsg}
+          </Alert>
+        )}
+        <DialogContentText sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+          {description}
+        </DialogContentText>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={loading} color="inherit">
-          {cancelLabel}
-        </Button>
-        <Button
-          onClick={onConfirm}
+        <ActionButton
+          variant="outlined"
           disabled={loading}
+          onClick={onClose}
+        >
+          Cancel
+        </ActionButton>
+        <ActionButton
           variant="contained"
-          color={confirmColor}
-          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+          color={destructive ? "danger" : "primary"}
+          disabled={loading}
+          onClick={handleConfirm}
         >
           {loading ? "Processing..." : confirmLabel}
-        </Button>
+        </ActionButton>
       </DialogActions>
     </Dialog>
   );
