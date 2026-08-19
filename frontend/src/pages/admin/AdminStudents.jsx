@@ -42,6 +42,7 @@ import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
+import FilterBar from "../../components/common/FilterBar";
 import { studentApi } from "../../services/studentApi";
 import { useToast } from "../../context/ToastContext";
 
@@ -520,6 +521,30 @@ export default function AdminStudents() {
           </Grid>
         </Grid>
 
+        {/* Clean Filter Toolbar */}
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by student name, email, roll number..."
+          filters={[
+            {
+              key: "teamState",
+              label: "Team Status",
+              value: teamFilter,
+              onChange: setTeamFilter,
+              options: [
+                { value: "ALL", label: "All Team States" },
+                { value: "ASSIGNED", label: "Assigned Only" },
+                { value: "UNASSIGNED", label: "Unassigned Only" },
+              ],
+            },
+          ]}
+          onReset={() => {
+            setSearch("");
+            setTeamFilter("ALL");
+          }}
+        />
+
         {/* Data Table Container */}
         <Card
           elevation={0}
@@ -530,54 +555,6 @@ export default function AdminStudents() {
             overflow: "hidden",
           }}
         >
-          <Box sx={{ p: 2.5, borderBottom: "1px solid #f1f5f9" }}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between" alignItems="center">
-              <TextField
-                placeholder="Search by student name, email, roll number..."
-                size="small"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                sx={{
-                  width: { xs: "100%", sm: 380 },
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2.5,
-                    bgcolor: "#f8fafc",
-                  },
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon fontSize="small" color="action" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: search ? (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearch("")}>
-                          <ClearIcon fontSize="small" />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null,
-                  },
-                }}
-              />
-
-              <Stack direction="row" spacing={1.5} width={{ xs: "100%", sm: "auto" }}>
-                <FormControl size="small" sx={{ minWidth: 140 }}>
-                  <Select
-                    value={teamFilter}
-                    onChange={(e) => setTeamFilter(e.target.value)}
-                    displayEmpty
-                    sx={{ borderRadius: 2.5, bgcolor: "#f8fafc", fontSize: "0.875rem" }}
-                  >
-                    <MenuItem value="ALL">All Team States</MenuItem>
-                    <MenuItem value="ASSIGNED">Assigned Only</MenuItem>
-                    <MenuItem value="UNASSIGNED">Unassigned Only</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
-            </Stack>
-          </Box>
 
           {filteredStudents.length === 0 && !loading ? (
             <Box sx={{ p: 4 }}>

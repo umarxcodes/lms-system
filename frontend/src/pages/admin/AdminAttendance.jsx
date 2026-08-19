@@ -32,6 +32,7 @@ import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import EmptyState from "../../components/common/EmptyState";
+import FilterBar from "../../components/common/FilterBar";
 import { attendanceApi } from "../../services/attendanceApi";
 import { studentApi } from "../../services/studentApi";
 import { useToast } from "../../context/ToastContext";
@@ -40,6 +41,7 @@ export default function AdminAttendance() {
   const [attendanceList, setAttendanceList] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedStatus, setSelectedStatus] = useState("");
 
@@ -143,78 +145,85 @@ export default function AdminAttendance() {
     }
   };
 
+  // Filter attendance records by search
+  const filteredAttendance = attendanceList.filter((rec) => {
+    if (!search.trim()) return true;
+    const query = search.toLowerCase().trim();
+    const sName = (rec.studentId?.name || rec.studentId?.user?.name || rec.student?.name || "").toLowerCase();
+    const sRoll = (rec.studentId?.rollNumber || rec.student?.rollNumber || "").toLowerCase();
+    return sName.includes(query) || sRoll.includes(query);
+  });
+
   return (
     <>
       <PageContent>
-      <PageHeader
-        title="Attendance Management"
-        description="Track, mark, and audit student daily attendance records."
-        actions={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenMark}>
-            Mark Attendance
-          </Button>
-        }
-      />
-        <Card sx={{ p: 3 }}>
-          <Grid container spacing={2} sx={{ mb: 3, alignItems: "center" }}>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Filter by Date"
-                type="date"
-                fullWidth
-                size="small"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Filter by Status"
-                select
-                fullWidth
-                size="small"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="present">Present</MenuItem>
-                <MenuItem value="absent">Absent</MenuItem>
-                <MenuItem value="late">Late</MenuItem>
-                <MenuItem value="excused">Excused</MenuItem>
-              </TextField>
-            </Grid>
-          </Grid>
+        <PageHeader
+          title="Attendance Management"
+          description="Track, mark, and audit student daily attendance records."
+          actions={
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenMark} sx={{ fontWeight: 700, borderRadius: 2.5 }}>
+              Mark Attendance
+            </Button>
+          }
+        />
 
+        {/* Clean Filter Bar */}
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search attendance by student name or roll number..."
+          filters={[
+            {
+              key: "status",
+              label: "Status",
+              value: selectedStatus,
+              onChange: setSelectedStatus,
+              options: [
+                { value: "", label: "All Statuses" },
+                { value: "present", label: "Present" },
+                { value: "absent", label: "Absent" },
+                { value: "late", label: "Late" },
+                { value: "excused", label: "Excused" },
+              ],
+            },
+          ]}
+          onReset={() => {
+            setSearch("");
+            setSelectedStatus("");
+            setSelectedDate(new Date().toISOString().split("T")[0]);
+          }}
+        />
+
+        <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
           {loading ? (
             <Box sx={{ py: 6, textAlign: "center" }}>
               <CircularProgress color="primary" />
             </Box>
-          ) : attendanceList.length === 0 ? (
+          ) : filteredAttendance.length === 0 ? (
             <EmptyState
               title="No attendance records"
-              description="No attendance entries found for the selected date and filters."
+              description="No attendance entries found for the selected date and active filters."
               icon={EventCheckIcon}
               actionLabel="Mark Attendance"
               onAction={handleOpenMark}
             />
           ) : (
-            <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
+            <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2 }}>
               <Table>
-                <TableHead sx={{ bgcolor: "grey.50" }}>
+                <TableHead sx={{ bgcolor: "#f8fafc" }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Student Name</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Roll #</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Notes</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="right">
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Student Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Roll #</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Notes</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }} align="right">
                       Action
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {attendanceList.map((rec) => {
+                  {filteredAttendance.map((rec) => {
                     const sName = rec.studentId?.name || rec.studentId?.user?.name || rec.student?.name || "Student";
                     const sRoll = rec.studentId?.rollNumber || rec.student?.rollNumber || "N/A";
                     return (
