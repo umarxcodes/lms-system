@@ -3,7 +3,6 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
-import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes.js";
 import studentRoutes from "./modules/students/student.routes.js";
 import attendanceRoutes from "./modules/attendance/attendance.routes.js";
@@ -25,7 +24,6 @@ app.use(cors());
 app.use(helmet());
 app.use(compression());
 app.use(morgan("dev"));
-app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
