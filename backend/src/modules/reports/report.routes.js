@@ -3,7 +3,7 @@ import { authenticate } from "../../middlewares/auth.middleware.js";
 import { requireRole } from "../../middlewares/role.middleware.js";
 import { ROLES } from "../auth/auth.model.js";
 import { attendanceReportQuerySchema, assignmentReportQuerySchema } from "./report.validation.js";
-import { getAttendanceReportController, exportAttendanceCsvController, getAssignmentReportController, exportAssignmentCsvController, getStudentReportController, getMyProgressReportController } from "./report.controller.js";
+import { getAttendanceReportController, exportAttendanceCsvController, getAssignmentReportController, exportAssignmentCsvController, getStudentReportController, exportStudentCsvController, getMyProgressReportController } from "./report.controller.js";
 
 const validateQuery = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.query);
@@ -19,6 +19,7 @@ router.get("/attendance/export.csv", authenticate, requireRole(ROLES.ADMIN), val
 router.get("/attendance", authenticate, requireRole(ROLES.ADMIN), validateQuery(attendanceReportQuerySchema), getAttendanceReportController);
 router.get("/assignments/export.csv", authenticate, requireRole(ROLES.ADMIN), validateQuery(assignmentReportQuerySchema), exportAssignmentCsvController);
 router.get("/assignments", authenticate, requireRole(ROLES.ADMIN), validateQuery(assignmentReportQuerySchema), getAssignmentReportController);
+router.get("/students/:studentId/export.csv", authenticate, requireRole(ROLES.ADMIN), exportStudentCsvController);
 router.get("/students/:studentId", authenticate, requireRole(ROLES.ADMIN), getStudentReportController);
 
 export default router;

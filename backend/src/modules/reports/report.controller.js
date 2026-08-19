@@ -53,6 +53,40 @@ export const getStudentReportController = async (req, res, next) => {
   }
 };
 
+export const exportStudentCsvController = async (req, res, next) => {
+  try {
+    const reportData = await getStudentReport(req.params.studentId);
+    const p = reportData.profile || {};
+    const att = reportData.attendance || {};
+    const t = reportData.tasks || {};
+    const filename = `student-${p.rollNumber || "report"}-card.csv`;
+
+    const columns = ["Field", "Value"];
+    const rows = [
+      ["Full Name", p.name || ""],
+      ["Email Address", p.email || ""],
+      ["Roll Number", p.rollNumber || ""],
+      ["Batch", p.batch || ""],
+      ["Assigned Team", reportData.team?.name || "Unassigned"],
+      ["Phone", p.phone || ""],
+      ["Address", p.address || ""],
+      ["Total Attendance Days", att.total || 0],
+      ["Present Days", att.present || 0],
+      ["Absent Days", att.absent || 0],
+      ["Late Days", att.late || 0],
+      ["Leave Days", att.leave || 0],
+      ["Total Tasks Assigned", t.total || 0],
+      ["Tasks Completed", t.completed || 0],
+      ["Tasks In-Progress", t.inProgress || 0],
+      ["Tasks To-Do", t.todo || 0],
+    ];
+
+    return sendCsv(res, filename, columns, rows);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getMyProgressReportController = async (req, res, next) => {
   try {
     return success(res, await getMyProgressReport(req.user.userId));

@@ -19,6 +19,7 @@ import {
   Paper,
   Button,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
@@ -26,6 +27,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import DownloadIcon from "@mui/icons-material/Download";
+import PrintIcon from "@mui/icons-material/Print";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import HomeIcon from "@mui/icons-material/Home";
@@ -49,7 +51,29 @@ export default function AdminStudentDetail() {
   const [attendance, setAttendance] = useState([]);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+
+  const handleExportReport = async () => {
+    try {
+      setExporting(true);
+      const blob = await reportApi.exportStudentCsv(id);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      const roll = student?.rollNumber || "student";
+      link.setAttribute("download", `student-${roll}-report-card.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToast("Student report card exported successfully!", "success");
+    } catch (err) {
+      showToast(err?.message || "Failed to export student report card", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -329,21 +353,36 @@ export default function AdminStudentDetail() {
 
       {/* Tab Panel 3: Report */}
       {activeTab === 3 && (
-        <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: "#0f172a" }}>
-            Student Performance Report
+        <Card elevation={0} sx={{ p: 3.5, borderRadius: 3.5, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#0f172a" }}>
+            Student Performance & Transcript Export
           </Typography>
-          <Typography variant="body2" sx={{ color: "#64748b", mb: 3 }}>
-            Aggregated attendance, submission stats, and task completion metrics.
+          <Typography variant="body2" sx={{ color: "#64748b", mb: 3.5 }}>
+            Export the official student record card containing roll number, batch, team assignment, attendance percentages, and project deliverables summary.
           </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={() => showToast("Exporting student report card...", "info")}
-            sx={{ fontWeight: 700, borderRadius: 2 }}
-          >
-            Export Student Report Card
-          </Button>
+          
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={exporting}
+              startIcon={exporting ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
+              onClick={handleExportReport}
+              sx={{ fontWeight: 700, borderRadius: 2.5, py: 1.2, px: 3 }}
+            >
+              {exporting ? "Generating Export..." : "Download Report Card (CSV)"}
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<PrintIcon />}
+              onClick={() => window.print()}
+              sx={{ fontWeight: 700, borderRadius: 2.5, py: 1.2, px: 3, borderColor: "#cbd5e1", color: "#475569" }}
+            >
+              Print / Save PDF Report
+            </Button>
+          </Stack>
         </Card>
       )}
     </PageContent>

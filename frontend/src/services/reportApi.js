@@ -5,6 +5,7 @@ export const reportApi = {
   getAttendanceReport: () => apiClient.get("/reports/attendance"),
   getAssignmentReport: () => apiClient.get("/reports/assignments"),
   getStudentReport: (studentId) => apiClient.get(`/reports/students/${studentId}`),
+  exportStudentCsv: (studentId) => apiClient.get(`/reports/students/${studentId}/export.csv`, { responseType: "blob" }),
   exportAttendanceCsvUrl: "/api/v1/reports/attendance/export.csv",
   exportAssignmentCsvUrl: "/api/v1/reports/assignments/export.csv",
 };
