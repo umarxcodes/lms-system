@@ -117,25 +117,30 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                   },
                   "&.active": {
                     background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
-                    color: "#ffffff",
+                    color: "#ffffff !important",
                     fontWeight: 700,
                     boxShadow: "0 4px 14px rgba(30, 64, 175, 0.25)",
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      left: -8,
-                      top: 8,
-                      bottom: 8,
-                      width: 4,
-                      borderRadius: "0 4px 4px 0",
-                      backgroundColor: "#1e40af",
+                    "& .MuiTypography-root": {
+                      color: "#ffffff !important",
+                      fontWeight: 700,
+                    },
+                    "& .MuiListItemText-primary": {
+                      color: "#ffffff !important",
+                      fontWeight: 700,
                     },
                     "& .MuiListItemIcon-root": {
-                      color: "#ffffff",
+                      color: "#ffffff !important",
                       transform: "scale(1.05)",
                     },
                     "&:hover": {
+                      color: "#ffffff !important",
                       boxShadow: "0 6px 16px rgba(30, 64, 175, 0.32)",
+                      "& .MuiTypography-root": {
+                        color: "#ffffff !important",
+                      },
+                      "& .MuiListItemIcon-root": {
+                        color: "#ffffff !important",
+                      },
                     },
                   },
                   "&:not(.active):hover": {
@@ -154,7 +159,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontSize: 13.5, fontWeight: "inherit" }}
+                  primaryTypographyProps={{ fontSize: 13.5, fontWeight: "inherit", color: "inherit" }}
                 />
               </ListItemButton>
             </ListItem>
