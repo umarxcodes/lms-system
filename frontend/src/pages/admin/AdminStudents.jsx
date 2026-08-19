@@ -310,32 +310,77 @@ export default function AdminStudents() {
       align: "right",
       headerAlign: "right",
       renderCell: (params) => (
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center" sx={{ height: "100%" }}>
+        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ height: "100%" }}>
           <Tooltip title="View Student Profile">
             <IconButton
               size="small"
-              sx={{ color: "#3b82f6", bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                color: "#2563eb",
+                bgcolor: "#eff6ff",
+                border: "1px solid #dbeafe",
+                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                "&:hover": {
+                  bgcolor: "#2563eb",
+                  color: "#ffffff",
+                  transform: "scale(1.08)",
+                  borderColor: "#2563eb",
+                  boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
+                },
+              }}
               onClick={() => navigate(`/admin/students/${params.row._id || params.row.id}`)}
             >
-              <VisibilityIcon fontSize="small" />
+              <VisibilityIcon sx={{ fontSize: 17 }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Edit Student Profile">
             <IconButton
               size="small"
-              sx={{ color: "#0284c7", bgcolor: "#f0f9ff", "&:hover": { bgcolor: "#e0f2fe" } }}
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                color: "#0284c7",
+                bgcolor: "#f0f9ff",
+                border: "1px solid #e0f2fe",
+                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                "&:hover": {
+                  bgcolor: "#0284c7",
+                  color: "#ffffff",
+                  transform: "scale(1.08)",
+                  borderColor: "#0284c7",
+                  boxShadow: "0 2px 8px rgba(2, 132, 199, 0.25)",
+                },
+              }}
               onClick={() => handleOpenEdit(params.row)}
             >
-              <EditIcon fontSize="small" />
+              <EditIcon sx={{ fontSize: 17 }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete Account">
             <IconButton
               size="small"
-              sx={{ color: "#ef4444", bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                color: "#dc2626",
+                bgcolor: "#fef2f2",
+                border: "1px solid #fee2e2",
+                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                "&:hover": {
+                  bgcolor: "#dc2626",
+                  color: "#ffffff",
+                  transform: "scale(1.08)",
+                  borderColor: "#dc2626",
+                  boxShadow: "0 2px 8px rgba(220, 38, 38, 0.25)",
+                },
+              }}
               onClick={() => setDeleteId(params.row._id || params.row.id)}
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon sx={{ fontSize: 17 }} />
             </IconButton>
           </Tooltip>
         </Stack>
