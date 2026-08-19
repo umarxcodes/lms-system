@@ -33,20 +33,23 @@ import { PageContent } from "../../components/layout/AppLayout";
 import StatusChip from "../../components/common/StatusChip";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import EmptyState from "../../components/common/EmptyState";
+import FilterBar from "../../components/common/FilterBar";
 import { taskApi } from "../../services/taskApi";
 import { projectApi } from "../../services/projectApi";
 import { studentApi } from "../../services/studentApi";
 import { useToast } from "../../context/ToastContext";
 
 export default function AdminTasks() {
-  const [tasks, setTasks] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
+  const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("");
 
   // Create Task Modal State
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -77,25 +80,50 @@ export default function AdminTasks() {
       setLoading(true);
       const res = await taskApi.getTasks();
       if (res.success && res.data) {
-        let items = Array.isArray(res.data) ? res.data : [];
-        if (selectedStatus) {
-          items = items.filter((t) => t.status === selectedStatus);
-        }
-        if (selectedProjectId) {
-          items = items.filter((t) => (t.project?._id || t.project || t.projectId) === selectedProjectId);
-        }
-        setTasks(items);
+        setAllTasks(Array.isArray(res.data) ? res.data : []);
       }
     } catch (err) {
       showToast(err?.message || "Failed to load tasks", "error");
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedProjectId, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // Derived Filtered Tasks List
+  const filteredTasks = allTasks.filter((t) => {
+    // Search Filter
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      const title = (t.title || "").toLowerCase();
+      const desc = (t.description || "").toLowerCase();
+      const projTitle = (t.project?.title || t.project?.name || t.projectId?.name || "").toLowerCase();
+      const studentName = (t.assignedTo?.name || t.assignedTo?.user?.name || "").toLowerCase();
+      const matches = title.includes(q) || desc.includes(q) || projTitle.includes(q) || studentName.includes(q);
+      if (!matches) return false;
+    }
+
+    // Status Filter
+    if (selectedStatus && t.status !== selectedStatus) {
+      return false;
+    }
+
+    // Project Filter
+    if (selectedProjectId) {
+      const pId = t.project?._id || t.project || t.projectId?._id || t.projectId;
+      if (pId !== selectedProjectId) return false;
+    }
+
+    // Priority Filter
+    if (selectedPriority && (t.priority || "medium") !== selectedPriority) {
+      return false;
+    }
+
+    return true;
+  });
 
   useEffect(() => {
     projectApi.getProjects().then((res) => {
@@ -221,52 +249,63 @@ export default function AdminTasks() {
           }
         />
 
-        <Card sx={{ p: 3, mb: 3 }}>
-          <Grid container spacing={2} sx={{ alignItems: "center" }}>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Filter by Status"
-                select
-                fullWidth
-                size="small"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="todo">To Do</MenuItem>
-                <MenuItem value="in-progress">In Progress</MenuItem>
-                <MenuItem value="done">Completed / Done</MenuItem>
-              </TextField>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Filter by Project"
-                select
-                fullWidth
-                size="small"
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-              >
-                <MenuItem value="">All Projects</MenuItem>
-                {projects.map((p) => (
-                  <MenuItem key={p._id || p.id} value={p._id || p.id}>
-                    {p.title || p.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          </Grid>
-        </Card>
+        {/* Clean Enterprise Filter Bar */}
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search tasks by title, description, or assigned student..."
+          filters={[
+            {
+              key: "status",
+              label: "Status",
+              value: selectedStatus,
+              onChange: setSelectedStatus,
+              options: [
+                { value: "", label: "All Statuses" },
+                { value: "todo", label: "To Do" },
+                { value: "in-progress", label: "In Progress" },
+                { value: "done", label: "Completed / Done" },
+              ],
+            },
+            {
+              key: "project",
+              label: "Project",
+              value: selectedProjectId,
+              onChange: setSelectedProjectId,
+              options: [
+                { value: "", label: "All Projects" },
+                ...projects.map((p) => ({ value: p._id || p.id, label: p.title || p.name })),
+              ],
+            },
+            {
+              key: "priority",
+              label: "Priority",
+              value: selectedPriority,
+              onChange: setSelectedPriority,
+              options: [
+                { value: "", label: "All Priorities" },
+                { value: "low", label: "Low" },
+                { value: "medium", label: "Medium" },
+                { value: "high", label: "High" },
+              ],
+            },
+          ]}
+          onReset={() => {
+            setSearch("");
+            setSelectedStatus("");
+            setSelectedProjectId("");
+            setSelectedPriority("");
+          }}
+        />
 
         {loading ? (
           <Box sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress color="primary" />
           </Box>
-        ) : tasks.length === 0 ? (
+        ) : filteredTasks.length === 0 ? (
           <EmptyState
-            title="No tasks found"
-            description="Create tasks under project modules and assign them to students."
+            title="No matching tasks"
+            description="No tasks match your search criteria or active filter selections."
             icon={ChecklistRtlIcon}
             actionLabel="Create Task"
             onAction={handleOpenCreateModal}
@@ -274,20 +313,20 @@ export default function AdminTasks() {
         ) : (
           <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 3, overflowX: "auto" }}>
             <Table>
-              <TableHead sx={{ bgcolor: "grey.50" }}>
+              <TableHead sx={{ bgcolor: "#f8fafc" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Task Title</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Assigned Student</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Priority</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="right">
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Task Title</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Project</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Assigned Student</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Priority</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#475569" }} align="right">
                     Actions
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tasks.map((t) => {
+                {filteredTasks.map((t) => {
                   const projTitle = t.project?.title || t.project?.name || t.projectId?.name || "N/A";
                   const studentName = t.assignedTo?.name || t.assignedTo?.user?.name || "Unassigned";
                   const currentStatus = t.status || "todo";
