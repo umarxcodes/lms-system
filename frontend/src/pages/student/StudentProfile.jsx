@@ -9,7 +9,10 @@ import {
   Box,
   CircularProgress,
   Divider,
+  Grid,
+  Paper,
 } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import { useOutletContext } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
@@ -49,7 +52,7 @@ export default function StudentProfile() {
     const res = await studentApi.uploadAvatar(formData);
     if (res.success && res.data?.avatarUrl) {
       updateUser({ avatarUrl: res.data.avatarUrl });
-      showToast("Profile image uploaded successfully to Cloudinary!", "success");
+      showToast("Profile photo updated successfully!", "success");
     }
   };
 
@@ -57,7 +60,7 @@ export default function StudentProfile() {
     const res = await studentApi.deleteAvatar();
     if (res.success) {
       updateUser({ avatarUrl: "" });
-      showToast("Profile image removed!", "info");
+      showToast("Profile photo removed!", "info");
     }
   };
 
@@ -67,7 +70,7 @@ export default function StudentProfile() {
     try {
       if (student?._id || student?.id) {
         await studentApi.updateStudent(student._id || student.id, formData);
-        showToast("Profile information updated!", "success");
+        showToast("Profile information updated successfully!", "success");
       }
     } catch (err) {
       showToast(err?.message || "Failed to update profile", "error");
@@ -79,38 +82,66 @@ export default function StudentProfile() {
   return (
     <PageContent>
       <PageHeader
-        title="Student Profile"
-        description="Manage your profile information and Cloudinary profile photo."
+        title="Student Profile & Settings"
+        description="View your bootcamp enrollment credentials and update your personal details."
       />
-        <Card sx={{ maxWidth: 640 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-              My Profile & Avatar
+      <Grid container spacing={3.5} sx={{ maxWidth: 1000 }}>
+        {/* Left Column: Avatar Card */}
+        <Grid item xs={12} md={5}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3.5,
+              borderRadius: 3.5,
+              border: "1px solid #e2e8f0",
+              bgcolor: "#ffffff",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.02)",
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 2.5, color: "#0f172a" }}>
+              Profile Photo
             </Typography>
-
             <CloudinaryAvatarUpload
               currentAvatarUrl={user?.avatarUrl || user?.profileImage}
               userName={user?.name}
               onUpload={handleAvatarUpload}
               onDelete={handleAvatarDelete}
+              size={104}
             />
+          </Paper>
+        </Grid>
 
-            <Divider sx={{ my: 3 }} />
+        {/* Right Column: Editable Details Form */}
+        <Grid item xs={12} md={7}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 3, sm: 4 },
+              borderRadius: 3.5,
+              border: "1px solid #e2e8f0",
+              bgcolor: "#ffffff",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.02)",
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "#0f172a" }}>
+              Personal & Academic Details
+            </Typography>
 
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={2.5}>
                 <TextField label="Full Name" fullWidth disabled value={user?.name || ""} />
 
-                <TextField label="Email Address" fullWidth disabled value={user?.email || ""} />
+                <TextField label="Registered Email" fullWidth disabled value={user?.email || ""} />
 
                 <Stack direction="row" spacing={2}>
                   <TextField label="Roll Number" fullWidth disabled value={student?.rollNumber || "N/A"} />
-                  <TextField label="Batch" fullWidth disabled value={student?.batch || "Batch 1"} />
+                  <TextField label="Enrolled Batch" fullWidth disabled value={student?.batch || "Batch 1"} />
                 </Stack>
 
                 <TextField
                   label="Phone Number"
                   fullWidth
+                  placeholder="+92 300 1234567"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
@@ -119,7 +150,8 @@ export default function StudentProfile() {
                   label="Residential Address"
                   fullWidth
                   multiline
-                  rows={2}
+                  rows={2.5}
+                  placeholder="Enter your home address..."
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 />
@@ -127,15 +159,18 @@ export default function StudentProfile() {
                 <Button
                   type="submit"
                   variant="contained"
+                  size="large"
                   disabled={submitting}
-                  startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
+                  startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+                  sx={{ py: 1.2, fontWeight: 700, borderRadius: 2.5, width: "fit-content" }}
                 >
-                  {submitting ? "Saving..." : "Update Profile"}
+                  {submitting ? "Saving Updates..." : "Save Profile Changes"}
                 </Button>
               </Stack>
             </Box>
-          </CardContent>
-        </Card>
-      </PageContent>
+          </Paper>
+        </Grid>
+      </Grid>
+    </PageContent>
   );
 }
