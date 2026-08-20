@@ -188,7 +188,9 @@ export default function AdminTasks() {
       }
 
       if (formData.dueDate) {
-        payload.deadline = new Date(formData.dueDate).toISOString();
+        // Parse as local noon to ensure the deadline falls solidly within the
+        // chosen calendar day in any timezone (avoids UTC-midnight edge cases).
+        payload.deadline = new Date(`${formData.dueDate}T12:00:00.000Z`).toISOString();
       }
 
       await taskApi.createTask(payload);

@@ -13,13 +13,18 @@ export async function getDashboardStats() {
   const { start, end } = getDayRange();
   const today = { $gte: start, $lte: end };
 
-  const [totalStudents, totalTeams, pendingTasks, attendanceRows, taskRows, dueTodayRows, students, teams] = await Promise.all([
+  const [totalStudents, totalTeams, pendingTasks, attendanceRows, taskRows, dueTodayRows, dueTodayDocuments, students, teams] = await Promise.all([
     Student.countDocuments(),
     Team.countDocuments(),
     Task.countDocuments({ status: "todo" }),
     Attendance.aggregate([{ $match: { date: today } }, { $group: { _id: "$status", count: { $sum: 1 } } }]),
     Task.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
     Task.aggregate([{ $match: { deadline: today } }, { $group: { _id: "$status", count: { $sum: 1 } } }]),
+    Task.find({ deadline: today })
+      .populate("project", "title name")
+      .populate({ path: "assignedTo", select: "name email" })
+      .sort({ deadline: 1 })
+      .lean(),
     Student.find().sort({ createdAt: -1 }).limit(5).populate("user", "name email").lean(),
     Team.aggregate([
       { $project: { _id: 1, name: 1, createdAt: 1, memberCount: { $size: "$members" } } },
@@ -39,6 +44,7 @@ export async function getDashboardStats() {
     summary: { totalStudents, presentToday: attendance.present, absentToday: attendance.absent, totalTeams, pendingTasks },
     attendance,
     tasks,
+    dueTodayTasks: dueTodayDocuments,
     students: students.map((student) => ({ id: student._id.toString(), rollNumber: student.rollNumber, batch: student.batch, name: student.user?.name, email: student.user?.email })),
     teams: { total: totalTeams, items: teams.map((team) => ({ id: team._id.toString(), name: team.name, memberCount: team.memberCount })) }
   };
