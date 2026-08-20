@@ -129,7 +129,7 @@ export default function AdminCreateProject() {
         title="Create Project"
         description="Assign a new capstone or module project to a student team."
         breadcrumbs={[
-          { label: "Dashboard", to: "/admin/dashboard" },
+          { label: "Home", to: "/admin/dashboard" },
           { label: "Projects", to: "/admin/projects" },
           { label: "Create Project" },
         ]}

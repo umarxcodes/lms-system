@@ -285,7 +285,7 @@ export default function StudentDashboard() {
               value={team?.name || "Unassigned"}
               icon={GroupsIcon}
               iconBgColor="#eff6ff"
-              iconColor="#1e40af"
+              iconColor="#2563EB"
               subtitle={team ? `${team.members?.length || 0} collaborators` : "Contact instructor"}
             />
           )}

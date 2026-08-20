@@ -1,9 +1,17 @@
-import React from "react";
-import { Grid, Card, Typography, Box, Stack, Avatar, Skeleton } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import FolderIcon from "@mui/icons-material/Folder";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import React from 'react'
+import {
+  Grid,
+  Card,
+  Typography,
+  Box,
+  Stack,
+  Avatar,
+  Skeleton,
+} from '@mui/material'
+import PersonIcon from '@mui/icons-material/Person'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import FolderIcon from '@mui/icons-material/Folder'
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
 
 export default function ProgressSummaryCards({
   loading,
@@ -14,38 +22,38 @@ export default function ProgressSummaryCards({
 }) {
   const cardsData = [
     {
-      title: "Total Students",
+      title: 'Total Students',
       value: totalStudents,
-      subtitle: "Active trainees in bootcamp",
+      subtitle: 'Active trainees in bootcamp',
       icon: <PersonIcon />,
-      iconBg: "#eff6ff",
-      iconColor: "#1e40af",
+      iconBg: '#eff6ff',
+      iconColor: '#1e40af',
     },
     {
-      title: "Overall Progress",
+      title: 'Overall Progress',
       value: `${Math.round(overallProgress)}%`,
-      subtitle: "Average completion rate",
+      subtitle: 'Average completion rate',
       icon: <TrendingUpIcon />,
-      iconBg: "#f0fdf4",
-      iconColor: "#16a34a",
+      iconBg: '#f0fdf4',
+      iconColor: '#16a34a',
     },
     {
-      title: "Completed Projects",
+      title: 'Completed Projects',
       value: completedProjectsCount,
-      subtitle: "Finished capstone projects",
+      subtitle: 'Finished capstone projects',
       icon: <FolderIcon />,
-      iconBg: "#fdf4ff",
-      iconColor: "#9333ea",
+      iconBg: '#fdf4ff',
+      iconColor: '#9333ea',
     },
     {
-      title: "Pending Tasks",
+      title: 'Pending Tasks',
       value: pendingTasksCount,
-      subtitle: "Tasks awaiting completion",
+      subtitle: 'Tasks awaiting completion',
       icon: <AssignmentTurnedInIcon />,
-      iconBg: "#fff7ed",
-      iconColor: "#ea580c",
+      iconBg: '#fff7ed',
+      iconColor: '#ea580c',
     },
-  ];
+  ]
 
   return (
     <Grid container spacing={2.5}>
@@ -55,32 +63,48 @@ export default function ProgressSummaryCards({
             elevation={0}
             sx={{
               p: 2.5,
-              height: "100%",
-              bgcolor: "#ffffff",
-              border: "1px solid #e2e8f0",
+              height: '100%',
+              bgcolor: '#ffffff',
+              border: '1px solid #e2e8f0',
               borderRadius: 2.5,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 16px rgba(0, 0, 0, 0.05)",
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.05)',
               },
             }}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Box>
                 <Typography
                   variant="caption"
                   color="text.secondary"
                   fontWeight={700}
-                  sx={{ textTransform: "uppercase", letterSpacing: "0.04em", fontSize: "0.7rem" }}
+                  sx={{
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    fontSize: '0.7rem',
+                  }}
                 >
                   {card.title}
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: "#0f172a" }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 800, mt: 0.5, color: '#0f172a' }}
+                >
                   {loading ? <Skeleton width={48} /> : card.value}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5, display: "block" }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={500}
+                  sx={{ mt: 0.5, display: 'block' }}
+                >
                   {card.subtitle}
                 </Typography>
               </Box>
@@ -100,5 +124,5 @@ export default function ProgressSummaryCards({
         </Grid>
       ))}
     </Grid>
-  );
+  )
 }

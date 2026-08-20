@@ -167,7 +167,7 @@ export default function AdminSettings() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Settings" }]}
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Settings" }]}
         title="Settings & Preferences"
         description="Manage your personal account profile, security credentials, notification channels, and global portal configuration."
       />

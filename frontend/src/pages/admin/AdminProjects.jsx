@@ -161,7 +161,7 @@ export default function AdminProjects() {
         {/* Page Header */}
         <PageHeader
           breadcrumbs={[
-            { label: "Dashboard", to: "/admin/dashboard" },
+            { label: "Home", to: "/admin/dashboard" },
             { label: "Projects" },
           ]}
           title="Project Management"

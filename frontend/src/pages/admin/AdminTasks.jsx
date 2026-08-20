@@ -255,6 +255,7 @@ export default function AdminTasks() {
         <PageHeader
           title="Task Management"
           description="Assign, track, and review student deliverables across projects."
+          breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Tasks" }]}
           actions={
             <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateModal}>
               Create Task

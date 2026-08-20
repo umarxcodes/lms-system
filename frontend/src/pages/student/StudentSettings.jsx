@@ -137,7 +137,7 @@ export default function StudentSettings() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "Settings" }]}
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "Settings" }]}
         title="Student Account Settings"
         description="Manage your trainee profile details, password credentials, and notification preferences."
       />

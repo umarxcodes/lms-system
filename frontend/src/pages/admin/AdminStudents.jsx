@@ -357,6 +357,7 @@ export default function AdminStudents() {
         <PageHeader
           title="Student Directory & Enrollment"
           description="View, register, search, and manage bootcamp student accounts and team assignments."
+          breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Students" }]}
           actions={
             <ActionButton variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenCreate}>
               Add New Student

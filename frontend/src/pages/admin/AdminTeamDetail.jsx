@@ -135,7 +135,7 @@ export default function AdminTeamDetail() {
         {/* Page Header */}
         <PageHeader
           breadcrumbs={[
-            { label: "Dashboard", to: "/admin/dashboard" },
+            { label: "Home", to: "/admin/dashboard" },
             { label: "Teams", to: "/admin/teams" },
             { label: team?.name || "Team Detail" },
           ]}

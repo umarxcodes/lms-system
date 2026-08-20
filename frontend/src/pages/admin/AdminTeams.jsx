@@ -152,7 +152,7 @@ export default function AdminTeams() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Teams" }]}
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Teams" }]}
         title="Team Management"
         description="Manage and organize bootcamp teams and their members."
         actions={

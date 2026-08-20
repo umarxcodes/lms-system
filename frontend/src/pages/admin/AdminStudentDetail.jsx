@@ -173,6 +173,11 @@ export default function AdminStudentDetail() {
           <PageHeader
             title={`Student Profile: ${studentName}`}
             description={`Roll Number: ${student?.rollNumber || "N/A"} | Batch: ${student?.batch || "Batch 1"}`}
+            breadcrumbs={[
+              { label: "Home", to: "/admin/dashboard" },
+              { label: "Students", to: "/admin/students" },
+              { label: studentName },
+            ]}
             actions={
               <Button
                 startIcon={<ArrowBackIcon />}

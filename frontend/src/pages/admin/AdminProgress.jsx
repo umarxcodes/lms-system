@@ -227,7 +227,7 @@ export default function AdminProgress() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Progress" }]}
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Progress" }]}
         title="Progress Management"
         description="Track and monitor student, team, and project bootcamp progress."
       />

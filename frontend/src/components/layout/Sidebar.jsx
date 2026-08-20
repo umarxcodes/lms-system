@@ -116,39 +116,32 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     transform: "scale(0.98)",
                   },
                   "&.active": {
-                    background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
-                    color: "#ffffff !important",
+                    bgcolor: "#EFF6FF",
+                    color: "#2563EB !important",
                     fontWeight: 700,
-                    boxShadow: "0 4px 14px rgba(30, 64, 175, 0.25)",
                     "& .MuiTypography-root": {
-                      color: "#ffffff !important",
+                      color: "#2563EB !important",
                       fontWeight: 700,
                     },
                     "& .MuiListItemText-primary": {
-                      color: "#ffffff !important",
+                      color: "#2563EB !important",
                       fontWeight: 700,
                     },
                     "& .MuiListItemIcon-root": {
-                      color: "#ffffff !important",
+                      color: "#2563EB !important",
                       transform: "scale(1.05)",
                     },
                     "&:hover": {
-                      color: "#ffffff !important",
-                      boxShadow: "0 6px 16px rgba(30, 64, 175, 0.32)",
-                      "& .MuiTypography-root": {
-                        color: "#ffffff !important",
-                      },
-                      "& .MuiListItemIcon-root": {
-                        color: "#ffffff !important",
-                      },
+                      bgcolor: "#DBEAFE",
+                      color: "#1D4ED8 !important",
                     },
                   },
                   "&:not(.active):hover": {
-                    bgcolor: "rgba(30, 64, 175, 0.05)",
-                    color: "primary.main",
+                    bgcolor: "#F8FAFC",
+                    color: "#2563EB",
                     transform: "translateX(2px)",
                     "& .MuiListItemIcon-root": {
-                      color: "primary.main",
+                      color: "#2563EB",
                       transform: "scale(1.05)",
                     },
                   },

@@ -4,27 +4,27 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#1e40af", // SMIT Navy/Royal Blue
+      main: "#2563eb", // Brand Blue
       light: "#3b82f6",
-      dark: "#1e3a8a",
+      dark: "#1d4ed8",
       contrastText: "#ffffff",
       50: "#eff6ff",
       100: "#dbeafe",
       200: "#bfdbfe",
     },
     secondary: {
-      main: "#0284c7", // Sky blue accent
-      light: "#38bdf8",
-      dark: "#0369a1",
+      main: "#7c3aed", // Accent Purple
+      light: "#a855f7",
+      dark: "#6d28d9",
       contrastText: "#ffffff",
-      50: "#f0f9ff",
+      50: "#f3e8ff",
     },
     background: {
       default: "#f8fafc",
       paper: "#ffffff",
     },
     text: {
-      primary: "#0f172a",
+      primary: "#111827",
       secondary: "#64748b",
       disabled: "#94a3b8",
     },
@@ -39,17 +39,18 @@ const theme = createTheme({
       600: "#475569",
       700: "#334155",
       800: "#1e293b",
-      900: "#0f172a",
+      900: "#111827",
     },
     status: {
       present: "#16a34a",
       absent: "#dc2626",
-      late: "#d97706",
+      late: "#f59e0b",
       excused: "#0284c7",
       pending: "#64748b",
       inProgress: "#2563eb",
       completed: "#16a34a",
-      onHold: "#eab308",
+      purple: "#7c3aed",
+      onHold: "#f59e0b",
     },
   },
   typography: {
@@ -62,15 +63,15 @@ const theme = createTheme({
       "Roboto",
       "sans-serif",
     ].join(","),
-    h1: { fontSize: "2.1rem", fontWeight: 800, letterSpacing: "-0.025em" },
-    h2: { fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.02em" },
-    h3: { fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.015em" },
-    h4: { fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.01em" },
-    h5: { fontSize: "1.05rem", fontWeight: 700 },
-    h6: { fontSize: "0.9rem", fontWeight: 700 },
+    h1: { fontSize: "2.1rem", fontWeight: 800, letterSpacing: "-0.025em", color: "#111827" },
+    h2: { fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#111827" },
+    h3: { fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.015em", color: "#111827" },
+    h4: { fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.01em", color: "#111827" },
+    h5: { fontSize: "1.05rem", fontWeight: 700, color: "#111827" },
+    h6: { fontSize: "0.9rem", fontWeight: 700, color: "#111827" },
     subtitle1: { fontSize: "0.95rem", color: "#64748b" },
     subtitle2: { fontSize: "0.85rem", color: "#64748b", fontWeight: 500 },
-    body1: { fontSize: "0.925rem", color: "#0f172a" },
+    body1: { fontSize: "0.925rem", color: "#111827" },
     body2: { fontSize: "0.85rem", color: "#475569" },
     button: { textTransform: "none", fontWeight: 700, letterSpacing: "0.01em" },
   },
@@ -121,7 +122,7 @@ const theme = createTheme({
           boxShadow: "none",
           willChange: "transform, opacity, box-shadow",
           "&:hover": {
-            boxShadow: "0 4px 14px rgba(30, 64, 175, 0.18)",
+            boxShadow: "0 4px 14px rgba(37, 99, 235, 0.18)",
             transform: "translateY(-1px)",
           },
           "&:active": {
@@ -130,17 +131,17 @@ const theme = createTheme({
           },
         },
         containedPrimary: {
-          background: "linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)",
+          background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
           "&:hover": {
-            background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)",
+            background: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
           },
         },
         outlinedPrimary: {
           borderColor: "#cbd5e1",
-          color: "#1e40af",
+          color: "#2563eb",
           "&:hover": {
-            borderColor: "#1e40af",
-            backgroundColor: "rgba(30, 64, 175, 0.04)",
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37, 99, 235, 0.04)",
           },
         },
       },
@@ -192,7 +193,7 @@ const theme = createTheme({
           padding: "12px 16px",
         },
         body: {
-          color: "#0f172a",
+          color: "#111827",
           fontSize: "0.875rem",
           borderBottom: "1px solid #f1f5f9",
           padding: "14px 16px",
@@ -204,7 +205,7 @@ const theme = createTheme({
         root: {
           transition: "background-color 0.15s ease",
           "&:hover": {
-            backgroundColor: "rgba(30, 64, 175, 0.02) !important",
+            backgroundColor: "rgba(37, 99, 235, 0.03) !important",
           },
           "&:last-child td": {
             borderBottom: "none",
@@ -226,9 +227,9 @@ const theme = createTheme({
             borderColor: "#94a3b8",
           },
           "&.Mui-focused fieldset": {
-            borderColor: "#1e40af",
+            borderColor: "#2563eb",
             borderWidth: "1.5px",
-            boxShadow: "0 0 0 3px rgba(30, 64, 175, 0.12)",
+            boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.12)",
           },
         },
       },
@@ -269,7 +270,7 @@ const theme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: "#0f172a",
+          backgroundColor: "#111827",
           borderRadius: 6,
           fontSize: "0.75rem",
           fontWeight: 600,

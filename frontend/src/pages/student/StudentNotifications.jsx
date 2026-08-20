@@ -124,7 +124,7 @@ export default function StudentNotifications() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/student/dashboard" }, { label: "Notifications" }]}
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "Notifications" }]}
         title="Notifications & Alerts"
         description="Stay updated with important bootcamp activities, deliverables, and official announcements."
         actions={

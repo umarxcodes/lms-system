@@ -192,7 +192,7 @@ export default function AdminNotifications() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Notifications" }]}
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Notifications" }]}
         title="Notifications & Broadcasts"
         description="Broadcast system announcements to students and review administrative alerts."
         actions={

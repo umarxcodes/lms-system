@@ -148,7 +148,7 @@ export default function AdminReports() {
     <PageContent px={{ xs: 2, sm: 3, md: 4 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Reports" }]}
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Reports" }]}
         title="Reports Management"
         description="View and analyze bootcamp performance, attendance, progress, and project deliverables information."
       />
