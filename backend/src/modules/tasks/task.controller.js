@@ -63,7 +63,8 @@ export const updateTaskStatusController = async (req, res, next) => {
 
 export const assignTaskController = async (req, res, next) => {
   try {
-    const task = await assignTask(req.params.id, req.body.userId);
+    const targetUserId = req.body.userId || req.body.assignedTo || req.body.studentId;
+    const task = await assignTask(req.params.id, targetUserId);
     if (!task) return error(res, "Task not found", 404);
     return success(res, task, "Task assigned");
   } catch (err) {

@@ -9,7 +9,7 @@ export const taskApi = {
   updateTaskStatus: (id, status) =>
     apiClient.patch(`/tasks/${id}/status`, { status }),
   assignTask: (id, assignedTo) =>
-    apiClient.patch(`/tasks/${id}/assign`, { assignedTo }),
+    apiClient.patch(`/tasks/${id}/assign`, { assignedTo, userId: assignedTo }),
   updateTask: (id, data) => apiClient.patch(`/tasks/${id}`, data),
   deleteTask: (id) => apiClient.delete(`/tasks/${id}`),
 }
