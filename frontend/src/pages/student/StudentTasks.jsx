@@ -224,6 +224,7 @@ export default function StudentTasks() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Tasks" }]}
         title="My Tasks & Deliverables"
         description="Track your assigned sprint tasks, update statuses, and submit deliverables."
       />

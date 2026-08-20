@@ -33,7 +33,11 @@ import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNone
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { useNavigate } from "react-router-dom";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import MuiLink from "@mui/material/Link";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
 import StatCard from "../../components/common/StatCard";
@@ -54,10 +58,12 @@ import {
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
+  LabelList,
 } from "recharts";
 
-const ATTENDANCE_COLORS = ["#16a34a", "#dc2626", "#d97706", "#0284c7"];
-const TASK_BAR_COLOR = "#9333ea";
+const ATTENDANCE_COLORS = ["#2563EB", "#EF4444", "#F59E0B", "#10B981"];
+const TASK_BAR_COLOR = "#9333EA";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -151,8 +157,27 @@ export default function StudentDashboard() {
 
   return (
     <PageContent>
-      {/* ─── Header ─── */}
+      {/* ─── Header + Breadcrumb ─── */}
       <Box>
+        <Breadcrumbs
+          separator={<NavigateNextIcon sx={{ fontSize: 14, color: "#94A3B8" }} />}
+          aria-label="breadcrumb"
+          sx={{ mb: 0.75 }}
+        >
+          <MuiLink
+            component={RouterLink}
+            to="/student/dashboard"
+            underline="hover"
+            sx={{ display: "flex", alignItems: "center", gap: 0.4, color: "#64748B", fontSize: "0.78rem", fontWeight: 600 }}
+          >
+            <HomeOutlinedIcon sx={{ fontSize: 14 }} />
+            Home
+          </MuiLink>
+          <Typography variant="caption" sx={{ color: "#0F172A", fontWeight: 700, fontSize: "0.78rem" }}>
+            Dashboard
+          </Typography>
+        </Breadcrumbs>
+
         <Stack
           direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
@@ -341,15 +366,34 @@ export default function StudentDashboard() {
                   </Typography>
                 </Box>
               ) : (
-                <Box sx={{ flex: 1, minHeight: 0 }}>
+                <Box sx={{ flex: 1, minHeight: 0, position: "relative" }}>
+                  {/* Centered donut label */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: "43%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      textAlign: "center",
+                      pointerEvents: "none",
+                      zIndex: 1,
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1 }}>
+                      {attendancePercentage}%
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, fontSize: "0.72rem" }}>
+                      Present
+                    </Typography>
+                  </Box>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
                         cy="45%"
-                        innerRadius={60}
-                        outerRadius={88}
+                        innerRadius={65}
+                        outerRadius={90}
                         paddingAngle={3}
                         dataKey="value"
                         strokeWidth={0}
@@ -360,14 +404,14 @@ export default function StudentDashboard() {
                       </Pie>
                       <RechartsTooltip
                         formatter={(val, name) => [`${val} sessions`, name]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0" }}
+                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                       />
                       <Legend
                         verticalAlign="bottom"
                         height={32}
                         iconType="circle"
                         iconSize={8}
-                        formatter={(val) => <span style={{ color: "#64748b", fontSize: 12 }}>{val}</span>}
+                        formatter={(val) => <span style={{ color: "#475569", fontSize: 12, fontWeight: 600 }}>{val}</span>}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -402,26 +446,31 @@ export default function StudentDashboard() {
               ) : (
                 <Box sx={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={taskDistribution} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                    <BarChart data={taskDistribution} margin={{ top: 22, right: 12, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                       <XAxis
                         dataKey="name"
-                        stroke="#94a3b8"
+                        stroke="#64748B"
                         fontSize={12}
+                        fontWeight={600}
                         tickLine={false}
-                        axisLine={{ stroke: "#e2e8f0" }}
+                        axisLine={{ stroke: "#E2E8F0" }}
                       />
                       <YAxis
-                        stroke="#94a3b8"
+                        stroke="#64748B"
                         fontSize={12}
+                        fontWeight={600}
                         allowDecimals={false}
                         tickLine={false}
                         axisLine={false}
                       />
                       <RechartsTooltip
                         formatter={(val) => [`${val} tasks`, "Count"]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0" }}
+                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                       />
-                      <Bar dataKey="count" fill={TASK_BAR_COLOR} radius={[4, 4, 0, 0]} barSize={36} />
+                      <Bar dataKey="count" fill={TASK_BAR_COLOR} radius={[6, 6, 0, 0]} barSize={44}>
+                        <LabelList dataKey="count" position="top" style={{ fill: "#475569", fontSize: 12, fontWeight: 700 }} />
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </Box>

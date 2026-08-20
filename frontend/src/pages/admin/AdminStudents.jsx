@@ -44,7 +44,7 @@ export default function AdminStudents() {
   const [batchFilter] = useState("ALL");
   const [teamFilter, setTeamFilter] = useState("ALL");
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const [setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Create/Edit Dialog State
   const [openFormModal, setOpenFormModal] = useState(false);

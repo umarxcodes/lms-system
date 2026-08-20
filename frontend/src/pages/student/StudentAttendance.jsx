@@ -60,6 +60,7 @@ export default function StudentAttendance() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Attendance" }]}
         title="My Attendance Logs"
         description="Official record of your session attendance, monthly status, and instructor notes."
       />
@@ -112,7 +113,7 @@ export default function StudentAttendance() {
 
       {/* Monthly Attendance Grid */}
       <Card elevation={0} sx={{ bgcolor: "#FFFFFF", borderRadius: "12px", border: "1px solid #E2E8F0", p: 3, mb: 3 }}>
-        <Typography variant="h3" sx={{ fontWeight: 600, color: "#111827", mb: 0.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "#111827", mb: 0.5 }}>
           Current Month Attendance Calendar
         </Typography>
         <Typography variant="body2" sx={{ color: "#64748B", mb: 2 }}>

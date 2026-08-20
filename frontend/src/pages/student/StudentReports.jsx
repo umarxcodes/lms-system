@@ -49,6 +49,7 @@ export default function StudentReports() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Reports" }]}
         title="Official Trainee Academic Report Card"
         description="Verified academic performance evaluation, session attendance standing, and deliverable scores."
         actions={

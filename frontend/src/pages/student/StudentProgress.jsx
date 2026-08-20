@@ -104,6 +104,7 @@ export default function StudentProgress() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Progress" }]}
         title="Academic Progress & Performance Metrics"
         description="Detailed analytics of your attendance standing, task completion rate, and capstone milestone velocity."
       />

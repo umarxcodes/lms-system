@@ -187,6 +187,7 @@ export default function StudentProjects() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Project" }]}
         title="Capstone Project Overview"
         description="Track your assigned team project milestones, overall progress, and technical submission requirements."
       />

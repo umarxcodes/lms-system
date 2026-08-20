@@ -75,6 +75,7 @@ export default function StudentProfile() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Profile" }]}
         title="Student Profile & Enrollment Credentials"
         description="View your bootcamp student credentials and manage your contact details."
       />

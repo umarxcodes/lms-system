@@ -158,6 +158,7 @@ export default function AdminAttendance() {
     <>
       <PageContent>
         <PageHeader
+          breadcrumbs={[{ label: "Dashboard", to: "/admin/dashboard" }, { label: "Attendance" }]}
           title="Attendance Management"
           description="Track, mark, and audit student daily attendance records."
           actions={

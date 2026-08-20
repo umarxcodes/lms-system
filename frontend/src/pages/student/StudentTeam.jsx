@@ -166,6 +166,7 @@ export default function StudentTeam() {
   return (
     <PageContent>
       <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/student/dashboard" }, { label: "My Team" }]}
         title={team?.name ? `Team Roster: ${team.name}` : "My Team: Team Alpha"}
         description="Collaborate with your team members on Capstone project modules and deliverables."
       />

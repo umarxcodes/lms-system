@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Grid,
   Card,
+  Breadcrumbs,
+  Link,
   CardContent,
   Typography,
   Box,
@@ -35,7 +37,9 @@ import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { useNavigate } from "react-router-dom";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
 import StatCard from "../../components/common/StatCard";
@@ -56,11 +60,13 @@ import {
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
+  LabelList,
 } from "recharts";
 
-// Semantic status colors aligned with theme palette
-const ATTENDANCE_COLORS = ["#16a34a", "#dc2626", "#d97706", "#0284c7"];
-const TASK_BAR_COLOR = "#1e40af";
+// Brand-aligned semantic colors
+const ATTENDANCE_COLORS = ["#2563EB", "#EF4444", "#F59E0B", "#10B981"];
+const TASK_BAR_COLOR = "#2563EB";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -134,6 +140,11 @@ export default function AdminDashboard() {
           { name: "Absent", value: summary.absentToday || 0 },
         ].filter((d) => d.value > 0);
 
+  // Compute attendance rate for donut center label
+  const totalAttendance = finalPieData.reduce((s, d) => s + d.value, 0);
+  const presentCount = finalPieData.find((d) => d.name === "Present")?.value || 0;
+  const attendanceRate = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
+
   const barData = [
     { name: "To Do", count: taskStatus.pending ?? taskStatus.todo ?? 0 },
     { name: "In Progress", count: taskStatus.inProgress ?? taskStatus["in-progress"] ?? 0 },
@@ -153,8 +164,27 @@ export default function AdminDashboard() {
 
   return (
     <PageContent>
-      {/* ─── Page Header ─── */}
+      {/* ─── Page Header + Breadcrumb (Issue 5) ─── */}
       <Box>
+        <Breadcrumbs
+          separator={<NavigateNextIcon sx={{ fontSize: 14, color: "#94A3B8" }} />}
+          aria-label="breadcrumb"
+          sx={{ mb: 0.75 }}
+        >
+          <Link
+            component={RouterLink}
+            to="/admin/dashboard"
+            underline="hover"
+            sx={{ display: "flex", alignItems: "center", gap: 0.4, color: "#64748B", fontSize: "0.78rem", fontWeight: 600 }}
+          >
+            <HomeOutlinedIcon sx={{ fontSize: 14 }} />
+            Home
+          </Link>
+          <Typography variant="caption" sx={{ color: "#0F172A", fontWeight: 700, fontSize: "0.78rem" }}>
+            Dashboard
+          </Typography>
+        </Breadcrumbs>
+
         <Stack
           direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
@@ -245,9 +275,9 @@ export default function AdminDashboard() {
               title="Total Students"
               value={summary.totalStudents ?? 0}
               icon={PeopleAltOutlinedIcon}
-              iconBgColor="#eff6ff"
-              iconColor="#1e40af"
-              subtitle="Registered bootcamp trainees"
+              iconBgColor="#EFF6FF"
+              iconColor="#2563EB"
+              subtitle={`${summary.totalStudents ?? 0} registered trainees`}
             />
           )}
         </Grid>
@@ -259,8 +289,8 @@ export default function AdminDashboard() {
               title="Present Today"
               value={summary.presentToday ?? 0}
               icon={EventAvailableIcon}
-              iconBgColor="#f0fdf4"
-              iconColor="#16a34a"
+              iconBgColor="#F0FDF4"
+              iconColor="#16A34A"
               subtitle={`${summary.absentToday ?? 0} absent today`}
             />
           )}
@@ -270,12 +300,12 @@ export default function AdminDashboard() {
             <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
           ) : (
             <StatCard
-              title="Teams"
+              title="Active Teams"
               value={summary.totalTeams ?? 0}
               icon={GroupsIcon}
-              iconBgColor="#faf5ff"
-              iconColor="#9333ea"
-              subtitle="Active project teams"
+              iconBgColor="#FAF5FF"
+              iconColor="#9333EA"
+              subtitle={`${summary.totalTeams ?? 0} active team${summary.totalTeams === 1 ? "" : "s"}`}
             />
           )}
         </Grid>
@@ -287,9 +317,9 @@ export default function AdminDashboard() {
               title="Pending Tasks"
               value={summary.pendingTasks ?? 0}
               icon={AssignmentTurnedInIcon}
-              iconBgColor="#fff7ed"
-              iconColor="#ea580c"
-              subtitle="Awaiting completion"
+              iconBgColor="#FFF7ED"
+              iconColor="#EA580C"
+              subtitle={`${summary.pendingTasks ?? 0} awaiting completion`}
             />
           )}
         </Grid>
@@ -346,15 +376,34 @@ export default function AdminDashboard() {
                   </Button>
                 </Box>
               ) : (
-                <Box sx={{ flex: 1, minHeight: 0 }}>
+                <Box sx={{ flex: 1, minHeight: 0, position: "relative" }}>
+                  {/* Centered donut label */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: "43%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      textAlign: "center",
+                      pointerEvents: "none",
+                      zIndex: 1,
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1 }}>
+                      {attendanceRate}%
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, fontSize: "0.72rem" }}>
+                      Present
+                    </Typography>
+                  </Box>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={finalPieData}
                         cx="50%"
                         cy="45%"
-                        innerRadius={60}
-                        outerRadius={88}
+                        innerRadius={65}
+                        outerRadius={90}
                         paddingAngle={3}
                         dataKey="value"
                         strokeWidth={0}
@@ -365,14 +414,14 @@ export default function AdminDashboard() {
                       </Pie>
                       <RechartsTooltip
                         formatter={(val, name) => [`${val} students`, name]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0" }}
+                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                       />
                       <Legend
                         verticalAlign="bottom"
                         height={32}
                         iconType="circle"
                         iconSize={8}
-                        formatter={(val) => <span style={{ color: "#64748b", fontSize: 12 }}>{val}</span>}
+                        formatter={(val) => <span style={{ color: "#475569", fontSize: 12, fontWeight: 600 }}>{val}</span>}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -407,26 +456,31 @@ export default function AdminDashboard() {
               ) : (
                 <Box sx={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={barData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                    <BarChart data={barData} margin={{ top: 22, right: 12, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                       <XAxis
                         dataKey="name"
-                        stroke="#94a3b8"
+                        stroke="#64748B"
                         fontSize={12}
+                        fontWeight={600}
                         tickLine={false}
-                        axisLine={{ stroke: "#e2e8f0" }}
+                        axisLine={{ stroke: "#E2E8F0" }}
                       />
                       <YAxis
-                        stroke="#94a3b8"
+                        stroke="#64748B"
                         fontSize={12}
+                        fontWeight={600}
                         allowDecimals={false}
                         tickLine={false}
                         axisLine={false}
                       />
                       <RechartsTooltip
                         formatter={(val) => [`${val} tasks`, "Count"]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0" }}
+                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                       />
-                      <Bar dataKey="count" fill={TASK_BAR_COLOR} radius={[4, 4, 0, 0]} barSize={36} />
+                      <Bar dataKey="count" fill={TASK_BAR_COLOR} radius={[6, 6, 0, 0]} barSize={44}>
+                        <LabelList dataKey="count" position="top" style={{ fill: "#475569", fontSize: 12, fontWeight: 700 }} />
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </Box>
@@ -673,18 +727,19 @@ export default function AdminDashboard() {
                     textAlign: "center",
                     bgcolor: "#F8FAFC",
                     borderRadius: "12px",
-                    border: "1px stroke #E2E8F0",
+                    border: "1px solid #E2E8F0",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     flex: 1,
+                    minHeight: 260,
                   }}
                 >
                   <Box
                     sx={{
-                      width: 44,
-                      height: 44,
+                      width: 56,
+                      height: 56,
                       borderRadius: "50%",
                       bgcolor: "#F0FDF4",
                       color: "#16A34A",
@@ -694,19 +749,19 @@ export default function AdminDashboard() {
                       mb: 1.5,
                     }}
                   >
-                    <TaskAltIcon sx={{ fontSize: 24 }} />
+                    <TaskAltIcon sx={{ fontSize: 28 }} />
                   </Box>
-                  <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
-                    All deliverables for today are completed!
+                  <Typography variant="body1" sx={{ color: "#0F172A", fontWeight: 700 }}>
+                    All caught up for today!
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5, maxWidth: 280 }}>
+                  <Typography variant="body2" sx={{ color: "#64748B", mt: 0.75, maxWidth: 300 }}>
                     No pending tasks due today. Great job keeping your bootcamp on schedule!
                   </Typography>
                   <Button
                     size="small"
                     variant="outlined"
                     onClick={() => navigate("/admin/tasks")}
-                    sx={{ mt: 2, fontWeight: 700, borderRadius: "8px", textTransform: "none" }}
+                    sx={{ mt: 2.5, fontWeight: 700, borderRadius: "8px", textTransform: "none", px: 2.5 }}
                   >
                     Manage Tasks
                   </Button>
@@ -815,28 +870,12 @@ export default function AdminDashboard() {
                   >
                     <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />
                   </Box>
-                  <Box>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
-                        Recent Students
-                      </Typography>
-                      {!loading && (
-                        <Chip
-                          label={`${recentStudents.length} Enrolled`}
-                          size="small"
-                          sx={{
-                            bgcolor: "#EFF6FF",
-                            color: "#1D4ED8",
-                            fontWeight: 700,
-                            fontSize: "0.7rem",
-                            height: 22,
-                            borderRadius: "6px",
-                          }}
-                        />
-                      )}
-                    </Stack>
+                <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
+                      Recent Students
+                    </Typography>
                     <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
-                      Newly registered bootcamp trainees
+                      {!loading ? `${recentStudents.length} enrolled · newly registered trainees` : "Newly registered bootcamp trainees"}
                     </Typography>
                   </Box>
                 </Stack>
@@ -872,12 +911,13 @@ export default function AdminDashboard() {
                     textAlign: "center",
                     bgcolor: "#F8FAFC",
                     borderRadius: "12px",
-                    border: "1px stroke #E2E8F0",
+                    border: "1px solid #E2E8F0",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     flex: 1,
+                    minHeight: 260,
                   }}
                 >
                   <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
@@ -889,7 +929,7 @@ export default function AdminDashboard() {
                 </Box>
               ) : (
                 <Stack spacing={1.25}>
-                  {recentStudents.slice(0, 5).map((student) => {
+                  {recentStudents.slice(0, 4).map((student) => {
                     const studentName = student.name || student.user?.name || "Student";
                     const rollNo = student.rollNumber || "No Roll Number";
 
