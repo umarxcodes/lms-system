@@ -60,7 +60,7 @@ export default function ConfirmDialog({
         </ActionButton>
         <ActionButton
           variant="contained"
-          color={destructive ? "danger" : "primary"}
+          color={destructive ? "error" : "primary"}
           disabled={loading}
           onClick={handleConfirm}
         >

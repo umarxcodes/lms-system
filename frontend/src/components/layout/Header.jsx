@@ -71,8 +71,8 @@ export default function Header({ onMobileNavOpen }) {
           setNotifications(res.data);
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Silently catch — notification errors must not surface to console
     }
   };
 
@@ -82,8 +82,8 @@ export default function Header({ onMobileNavOpen }) {
       setUnreadCount(0);
       setNotifications([]);
       setNotifAnchorEl(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Silently catch — notification errors must not surface to console
     }
   };
 

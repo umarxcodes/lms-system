@@ -181,13 +181,6 @@ export default function StudentProjects() {
     },
   ];
 
-  const defaultMockTasks = [
-    { id: 1, title: "Database Models & Schema Definition", priority: "high", status: "completed" },
-    { id: 2, title: "Auth & RBAC Middleware Verification", priority: "high", status: "completed" },
-    { id: 3, title: "Student Dashboard UI Modernization", priority: "high", status: "completed" },
-    { id: 4, title: "End-to-End API Integration & Unit Testing", priority: "medium", status: "in_progress" },
-  ];
-
   return (
     <PageContent>
       <PageHeader
@@ -297,10 +290,10 @@ export default function StudentProjects() {
 
         <DataTable
           columns={columns}
-          data={tasks.length > 0 ? tasks : defaultMockTasks}
+          data={tasks}
           loading={loading}
-          emptyTitle="No project tasks found"
-          emptyDescription="Project tasks will appear here as they are assigned."
+          emptyTitle="No tasks assigned yet"
+          emptyDescription="Project milestone tasks will appear here once your admin assigns them."
         />
       </Card>
 

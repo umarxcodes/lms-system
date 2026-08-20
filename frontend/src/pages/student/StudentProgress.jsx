@@ -69,7 +69,7 @@ export default function StudentProgress() {
     (t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed"
   ).length;
 
-  const attendanceScore = report?.attendancePercentage ?? 92;
+  const attendanceScore = report?.attendancePercentage ?? 0;
   const taskScore = totalTasks > 0
     ? Math.round((completedTasks / totalTasks) * 100)
     : (report?.taskCompletionPercentage ?? 75);
@@ -101,13 +101,6 @@ export default function StudentProgress() {
     },
   ];
 
-  const defaultMockTasks = [
-    { id: 1, title: "Database Models & Schema Definition", status: "completed" },
-    { id: 2, title: "Auth & RBAC Middleware Verification", status: "completed" },
-    { id: 3, title: "Student Dashboard UI Modernization", status: "completed" },
-    { id: 4, title: "End-to-End API Integration & Unit Testing", status: "in_progress" },
-  ];
-
   return (
     <PageContent>
       <PageHeader
@@ -134,7 +127,7 @@ export default function StudentProgress() {
           <StatCard
             title="ATTENDANCE PERCENTAGE"
             value={`${attendanceScore}%`}
-            subtitle="24 of 26 sessions present"
+            subtitle={report ? `${report.presentCount ?? "—"} of ${report.totalSessions ?? "—"} sessions present` : "No attendance data yet"}
             icon={EventAvailableIcon}
             iconBgColor="#ECFDF5"
             iconColor="#16A34A"
@@ -146,7 +139,7 @@ export default function StudentProgress() {
           <StatCard
             title="DELIVERABLE RATE"
             value={`${Math.round(taskScore)}%`}
-            subtitle="12 of 16 tasks done"
+            subtitle={totalTasks > 0 ? `${completedTasks} of ${totalTasks} tasks done` : "No tasks assigned yet"}
             icon={TaskAltIcon}
             iconBgColor="#F3E8FF"
             iconColor="#7C3AED"
@@ -157,12 +150,12 @@ export default function StudentProgress() {
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="CAPSTONE MILESTONES"
-            value="75%"
-            subtitle="Sprint Phase 3"
+            value={`${taskScore}%`}
+            subtitle={totalTasks > 0 ? `${completedTasks} completed` : "No milestones yet"}
             icon={FolderIcon}
             iconBgColor="#FFFBEB"
             iconColor="#F59E0B"
-            progress={75}
+            progress={taskScore}
             accentColor="#F59E0B"
           />
         </Grid>
@@ -188,12 +181,12 @@ export default function StudentProgress() {
               Project Milestone Completion
             </Typography>
             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#2563EB" }}>
-              75%
+              {taskScore}%
             </Typography>
           </Stack>
           <LinearProgress
             variant="determinate"
-            value={75}
+            value={Math.min(100, Math.max(0, taskScore))}
             sx={{
               height: 10,
               borderRadius: 5,
@@ -215,10 +208,10 @@ export default function StudentProgress() {
 
         <DataTable
           columns={columns}
-          data={myTasks.length > 0 ? myTasks : defaultMockTasks}
+          data={myTasks}
           loading={loading}
           emptyTitle="No deliverables found"
-          emptyDescription="Your task deliverables will appear here."
+          emptyDescription="Your assigned task deliverables will appear here once your admin assigns tasks."
         />
       </Card>
     </PageContent>

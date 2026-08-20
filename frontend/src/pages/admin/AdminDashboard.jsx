@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Grid,
   Card,
-  Breadcrumbs,
-  Link,
   CardContent,
   Typography,
   Box,
@@ -37,11 +35,10 @@ import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
+import PageHeader from "../../components/common/PageHeader";
 import StatCard from "../../components/common/StatCard";
 import StatusChip from "../../components/common/StatusChip";
 import ActionButton from "../../components/common/ActionButton";
@@ -164,43 +161,13 @@ export default function AdminDashboard() {
 
   return (
     <PageContent>
-      {/* ─── Page Header + Breadcrumb (Issue 5) ─── */}
-      <Box>
-        <Breadcrumbs
-          separator={<NavigateNextIcon sx={{ fontSize: 14, color: "#94A3B8" }} />}
-          aria-label="breadcrumb"
-          sx={{ mb: 0.75 }}
-        >
-          <Link
-            component={RouterLink}
-            to="/admin/dashboard"
-            underline="hover"
-            sx={{ display: "flex", alignItems: "center", gap: 0.4, color: "#64748B", fontSize: "0.78rem", fontWeight: 600 }}
-          >
-            <HomeOutlinedIcon sx={{ fontSize: 14 }} />
-            Home
-          </Link>
-          <Typography variant="caption" sx={{ color: "#0F172A", fontWeight: 700, fontSize: "0.78rem" }}>
-            Dashboard
-          </Typography>
-        </Breadcrumbs>
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          spacing={1}
-        >
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 0.25 }}>
-              {greeting}, {user?.name || "Administrator"}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Here's an overview of your bootcamp operations · {dateStr}
-            </Typography>
-          </Box>
-
-          <Tooltip title="Refresh data">
+      {/* ─── Page Header ─── */}
+      <PageHeader
+        breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Dashboard" }]}
+        title={`${greeting}, ${user?.name || "Administrator"}`}
+        description={`Here's an overview of your bootcamp operations · ${dateStr}`}
+        actions={
+          <Tooltip title="Refresh dashboard data">
             <IconButton
               onClick={() => fetchDashboard(true)}
               disabled={loading || refreshing}
@@ -226,8 +193,8 @@ export default function AdminDashboard() {
               />
             </IconButton>
           </Tooltip>
-        </Stack>
-      </Box>
+        }
+      />
 
       {/* ─── Error State ─── */}
       {errorMsg && (

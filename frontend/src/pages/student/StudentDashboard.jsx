@@ -318,7 +318,7 @@ export default function StudentDashboard() {
             <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
           ) : (
             <StatCard
-              title="Projects Completed"
+              title="Task Completion"
               value={`${projectProgress}%`}
               icon={TrendingUpIcon}
               iconBgColor="#faf5ff"

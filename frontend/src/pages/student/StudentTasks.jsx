@@ -89,10 +89,10 @@ export default function StudentTasks() {
     return true;
   });
 
-  const todoCount = tasks.filter((t) => t.status === "todo" || !t.status).length || 3;
-  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length || 3;
-  const reviewCount = tasks.filter((t) => t.status === "under_review").length || 1;
-  const completedCount = tasks.filter((t) => t.status === "completed").length || 1;
+  const todoCount = tasks.filter((t) => t.status === "todo" || !t.status).length;
+  const inProgressCount = tasks.filter((t) => t.status === "in_progress" || t.status === "in-progress").length;
+  const reviewCount = tasks.filter((t) => t.status === "under_review").length;
+  const completedCount = tasks.filter((t) => t.status === "completed" || t.status === "done").length;
 
   const columns = [
     {
@@ -214,13 +214,6 @@ export default function StudentTasks() {
     },
   ];
 
-  const defaultMockTasks = [
-    { id: 1, title: "Design System Tokens", project: { name: "Capstone LMS Portal" }, priority: "high", status: "completed" },
-    { id: 2, title: "JWT Silent Auth Refresh", project: { name: "Capstone LMS Portal" }, priority: "high", status: "in_progress" },
-    { id: 3, title: "DataTable Modernization", project: { name: "Capstone LMS Portal" }, priority: "medium", status: "in_progress" },
-    { id: 4, title: "Unit Test Coverage Setup", project: { name: "Capstone LMS Portal" }, priority: "low", status: "todo" },
-  ];
-
   return (
     <PageContent>
       <PageHeader
@@ -315,10 +308,10 @@ export default function StudentTasks() {
       {/* Tasks DataTable */}
       <DataTable
         columns={columns}
-        data={filteredTasks.length > 0 ? filteredTasks : defaultMockTasks}
+        data={filteredTasks}
         loading={loading}
         emptyTitle="No tasks found"
-        emptyDescription="There are no tasks matching your search and filter criteria."
+        emptyDescription="You don't have any assigned tasks yet. Tasks will appear here once your admin assigns them to you."
       />
 
       {/* Confirm Delete Dialog */}

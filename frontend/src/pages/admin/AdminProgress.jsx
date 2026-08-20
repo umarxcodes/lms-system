@@ -94,8 +94,8 @@ export default function AdminProgress() {
         return {
           id: p._id || p.id,
           studentId: null,
-          studentName: pTeam?.name ? `${pTeam.name} Lead` : "Bootcamp Trainee",
-          studentEmail: pTeam?.createdBy?.email || "trainee@saylani.com",
+          studentName: pTeam?.name ? `${pTeam.name} Lead` : "Unassigned Team",
+          studentEmail: pTeam?.createdBy?.email || "—",
           teamName: pTeam?.name || "Unassigned Squad",
           projectId: p._id || p.id,
           projectName: p.name || p.title || "Untitled Project",

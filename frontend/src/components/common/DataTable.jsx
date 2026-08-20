@@ -57,7 +57,7 @@ export default function DataTable({
                 <TableCell
                   key={col.id || col.field || idx}
                   align={col.align || "left"}
-                  sx={{ fontWeight: 700, color: "text.primary", whiteSpace: "nowrap" }}
+                  sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
                 >
                   {col.label}
                 </TableCell>
