@@ -64,8 +64,15 @@ export default function StudentProgress() {
     };
   }, [showToast]);
 
+  const totalTasks = myTasks.length;
+  const completedTasks = myTasks.filter(
+    (t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed"
+  ).length;
+
   const attendanceScore = report?.attendancePercentage ?? 92;
-  const taskScore = report?.taskCompletionPercentage ?? 75;
+  const taskScore = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
+    : (report?.taskCompletionPercentage ?? 75);
   const overallProgress = Math.round(attendanceScore * 0.4 + taskScore * 0.6);
 
   const columns = [

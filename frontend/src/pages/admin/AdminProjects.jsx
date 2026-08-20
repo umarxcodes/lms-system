@@ -15,6 +15,7 @@ import { ProjectToolbar } from "../../components/projects/ProjectToolbar";
 import { EditProjectDialog } from "../../components/projects/EditProjectDialog";
 import { projectApi } from "../../services/projectApi";
 import { teamApi } from "../../services/teamApi";
+import { taskApi } from "../../services/taskApi";
 import { useToast } from "../../context/ToastContext";
 
 export default function AdminProjects() {
@@ -41,10 +42,45 @@ export default function AdminProjects() {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await projectApi.getProjects();
-      if (res.success && res.data) {
-        setProjects(Array.isArray(res.data) ? res.data : []);
+      const [projRes, tasksRes] = await Promise.allSettled([
+        projectApi.getProjects(),
+        taskApi.getTasks(),
+      ]);
+
+      let rawProjects = [];
+      let rawTasks = [];
+
+      if (projRes.status === "fulfilled" && projRes.value.success && projRes.value.data) {
+        rawProjects = Array.isArray(projRes.value.data) ? projRes.value.data : [];
       }
+      if (tasksRes.status === "fulfilled" && tasksRes.value.success && tasksRes.value.data) {
+        rawTasks = Array.isArray(tasksRes.value.data) ? tasksRes.value.data : [];
+      }
+
+      // Compute progress dynamically for each project based on tasks
+      const enrichedProjects = rawProjects.map((p) => {
+        const pId = (p._id || p.id)?.toString();
+        const pTasks = rawTasks.filter((t) => {
+          const taskProjId = (t.project?._id || t.project || t.projectId?._id || t.projectId)?.toString();
+          return taskProjId === pId;
+        });
+        const completedCount = pTasks.filter(
+          (t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed"
+        ).length;
+        const totalCount = pTasks.length;
+        const calcProgress = totalCount > 0
+          ? Math.round((completedCount / totalCount) * 100)
+          : (p.status === "completed" ? 100 : (p.progress || 0));
+
+        return {
+          ...p,
+          progress: calcProgress,
+          totalTasks: totalCount,
+          completedTasks: completedCount,
+        };
+      });
+
+      setProjects(enrichedProjects);
     } catch (err) {
       showToast(err?.message || "Failed to load projects", "error");
     } finally {

@@ -80,7 +80,11 @@ export default function StudentProjects() {
   };
 
   const activeProject = project || mockProject;
-  const progress = activeProject.progress || 75;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed").length;
+  const progress = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
+    : (activeProject.status === "completed" ? 100 : (activeProject.progress || 0));
 
   const columns = [
     {

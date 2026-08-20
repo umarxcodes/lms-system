@@ -139,10 +139,12 @@ export default function AdminProjectDetail() {
 
   const projTitle = project?.title || project?.name || "Project Detail";
   const teamName = project?.team?.name || project?.teamId?.name || "Unassigned Team";
-  const progress = project?.progress || 0;
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === "done").length;
+  const completedTasks = tasks.filter((t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed").length;
   const remainingTasks = totalTasks - completedTasks;
+  const progress = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
+    : (project?.status === "completed" ? 100 : (project?.progress || 0));
 
   const formattedDeadline = project?.deadline
     ? new Date(project.deadline).toLocaleDateString("en-US", {

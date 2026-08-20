@@ -124,10 +124,19 @@ export default function StudentDashboard() {
   const totalAtt = attendance.total || 0;
   const presentAtt = attendance.present || 0;
   const attendancePercentage = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) : 100;
-  const pendingTasksCount = myTasks.filter((t) => t.status === "todo" || t.status === "in-progress").length;
+  const pendingTasksCount = myTasks.filter(
+    (t) => (t.status || "").toLowerCase() === "todo" || (t.status || "").toLowerCase() === "in-progress" || (t.status || "").toLowerCase() === "in_progress"
+  ).length;
+  const totalTasksCount = myTasks.length;
+  const completedTasksCount = myTasks.filter(
+    (t) => (t.status || "").toLowerCase() === "done" || (t.status || "").toLowerCase() === "completed"
+  ).length;
+
   const totalProjects = projects.length;
   const completedProjects = projects.filter((p) => p.status === "completed").length;
-  const projectProgress = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
+  const projectProgress = totalTasksCount > 0
+    ? Math.round((completedTasksCount / totalTasksCount) * 100)
+    : (totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0);
 
   // Chart data
   const rawPieData = [
@@ -316,7 +325,7 @@ export default function StudentDashboard() {
               iconColor="#9333ea"
               progress={projectProgress}
               accentColor="#9333ea"
-              subtitle={`${completedProjects} of ${totalProjects} finished`}
+              subtitle={totalTasksCount > 0 ? `${completedTasksCount} of ${totalTasksCount} tasks completed` : `${completedProjects} of ${totalProjects} finished`}
             />
           )}
         </Grid>

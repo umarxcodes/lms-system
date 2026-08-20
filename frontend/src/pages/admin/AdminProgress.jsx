@@ -129,23 +129,33 @@ export default function AdminProgress() {
         return pTeamId && pTeamId === teamId;
       });
 
-      // Find tasks assigned to this student or team
+      // Find tasks assigned to this student, team, or project
       const studentTasks = tasks.filter((t) => {
         const assignId = (t.assignedTo?._id || t.assignedTo?.id || t.assignedTo)?.toString();
         const taskTeamId = (t.team?._id || t.team?.id || t.team)?.toString();
-        return assignId === sId || assignId === uId || (taskTeamId && taskTeamId === teamId);
+        const taskProjId = (t.project?._id || t.project?.id || t.project || t.projectId?._id || t.projectId)?.toString();
+        const studentProjId = (studentProject?._id || studentProject?.id)?.toString();
+
+        return (
+          assignId === sId ||
+          assignId === uId ||
+          (taskTeamId && teamId && taskTeamId === teamId) ||
+          (studentProjId && taskProjId && taskProjId === studentProjId)
+        );
       });
 
       const completedTasks = studentTasks.filter(
-        (t) => t.status === "completed" || t.status === "done"
+        (t) => (t.status || "").toLowerCase() === "completed" || (t.status || "").toLowerCase() === "done"
       ).length;
       const totalTasks = studentTasks.length;
 
       let prog = 0;
-      if (studentProject && typeof studentProject.progress === "number") {
-        prog = Math.round(studentProject.progress);
-      } else if (totalTasks > 0) {
+      if (totalTasks > 0) {
         prog = Math.round((completedTasks / totalTasks) * 100);
+      } else if (studentProject?.status === "completed") {
+        prog = 100;
+      } else if (studentProject && typeof studentProject.progress === "number" && studentProject.progress > 0) {
+        prog = Math.round(studentProject.progress);
       }
 
       let st = "pending";
