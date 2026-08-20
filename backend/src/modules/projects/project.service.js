@@ -126,7 +126,12 @@ export const updateProjectStatus = async (id, status) => {
 
 export const updateProject = async (id, data) => {
   assertObjectId(id, "Project id");
-  const project = await Project.findByIdAndUpdate(id, data, { returnDocument: "after", runValidators: true }).populate("team", "name");
+  const updateData = { ...data };
+  if (updateData.teamId) {
+    updateData.team = updateData.teamId;
+    delete updateData.teamId;
+  }
+  const project = await Project.findByIdAndUpdate(id, updateData, { returnDocument: "after", runValidators: true }).populate("team", "name");
   if (project) await notifyProjectTeam(project, "Project updated", `Project details for ${project.title} were updated.`);
   return await attachTaskStatsToProjects(project);
 };
