@@ -767,23 +767,57 @@ export default function StudentDashboard() {
         </Grid>
 
         {/* Team Roster */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider", height: "100%" }}>
-            <CardContent sx={{ p: 2.5 }}>
+        <Grid item xs={12} md={5}>
+          <Card
+            elevation={0}
+            sx={{
+              border: "1px solid #E2E8F0",
+              borderRadius: "16px",
+              height: "100%",
+              bgcolor: "#FFFFFF",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Team Roster
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Your project collaborators
-                  </Typography>
-                </Box>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "8px",
+                      bgcolor: "#F0FDF4",
+                      color: "#16A34A",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <GroupsIcon sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
+                      Team Roster
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+                      Your project collaborators
+                    </Typography>
+                  </Box>
+                </Stack>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => navigate("/student/team")}
-                  sx={{ fontWeight: 600 }}
+                  sx={{
+                    fontWeight: 700,
+                    textTransform: "none",
+                    color: "#2563EB",
+                    borderRadius: "8px",
+                    px: 1.5,
+                    "&:hover": { bgcolor: "#EFF6FF" },
+                  }}
                 >
                   View Team
                 </Button>
@@ -793,64 +827,90 @@ export default function StudentDashboard() {
               {loading ? (
                 <Stack spacing={1.5}>
                   {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={40} sx={{ borderRadius: 1.5 }} />
+                    <Skeleton key={i} variant="rounded" height={54} sx={{ borderRadius: "12px" }} />
                   ))}
                 </Stack>
               ) : !team ? (
-                <Box sx={{ p: 3, textAlign: "center" }}>
-                  <InfoOutlinedIcon color="action" sx={{ mb: 1 }} />
-                  <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                <Box
+                  sx={{
+                    py: 5,
+                    px: 3,
+                    textAlign: "center",
+                    bgcolor: "#F8FAFC",
+                    borderRadius: "12px",
+                    border: "1px stroke #E2E8F0",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                  }}
+                >
+                  <InfoOutlinedIcon sx={{ color: "#94A3B8", fontSize: 28, mb: 1 }} />
+                  <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
                     Not assigned to a team yet.
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "text.disabled", display: "block", mt: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5 }}>
                     Contact your instructor to join a project team.
                   </Typography>
                 </Box>
               ) : (
-                <Stack spacing={1}>
-                  <Box sx={{ p: 1.5, bgcolor: "grey.50", borderRadius: 2, border: "1px solid #e2e8f0" }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main" }}>
-                      {team.name}
-                    </Typography>
+                <Stack spacing={1.25}>
+                  <Box sx={{ p: 1.75, bgcolor: "#F8FAFC", borderRadius: "12px", border: "1px solid #E2E8F0" }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#2563EB" }}>
+                        {team.name}
+                      </Typography>
+                      <Chip
+                        label={`${team.members?.length || 0} Members`}
+                        size="small"
+                        sx={{ bgcolor: "#EFF6FF", color: "#1D4ED8", fontWeight: 700, fontSize: "0.7rem", height: 20 }}
+                      />
+                    </Stack>
                     {team.description && (
-                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5, display: "block" }}>
                         {team.description}
                       </Typography>
                     )}
                   </Box>
 
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: "text.disabled", uppercase: true, px: 0.5 }}>
-                    Members ({team.members?.length || 0})
-                  </Typography>
-
                   {(team.members || []).slice(0, 4).map((m) => (
-                    <Stack
+                    <Paper
                       key={m._id || m.id}
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="center"
-                      sx={{ p: 0.75, borderRadius: 1.5 }}
+                      elevation={0}
+                      sx={{
+                        p: 1.25,
+                        px: 1.5,
+                        borderRadius: "10px",
+                        border: "1px solid #E2E8F0",
+                        bgcolor: "#FFFFFF",
+                      }}
                     >
-                      <Avatar
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          fontSize: "0.75rem",
-                          bgcolor: "primary.main",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {(m.name || "M")[0].toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }} noWrap>
-                          {m.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "text.disabled" }} noWrap>
-                          {m.email}
-                        </Typography>
-                      </Box>
-                    </Stack>
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+                        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                          <Avatar
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              fontSize: "0.8rem",
+                              bgcolor: "#2563EB",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {(m.name || "M")[0].toUpperCase()}
+                          </Avatar>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }} noWrap>
+                              {m.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "#64748B" }} noWrap>
+                              {m.email}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <ActionButton type="view" title="View teammate details" />
+                      </Stack>
+                    </Paper>
                   ))}
                 </Stack>
               )}

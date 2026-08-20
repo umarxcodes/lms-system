@@ -785,23 +785,73 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Recent Students */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider", height: "100%" }}>
-            <CardContent sx={{ p: 2.5 }}>
+        <Grid item xs={12} md={5}>
+          <Card
+            elevation={0}
+            sx={{
+              border: "1px solid #E2E8F0",
+              borderRadius: "16px",
+              height: "100%",
+              bgcolor: "#FFFFFF",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Recent Students
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Newly enrolled trainees
-                  </Typography>
-                </Box>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "8px",
+                      bgcolor: "#EFF6FF",
+                      color: "#2563EB",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Box>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
+                        Recent Students
+                      </Typography>
+                      {!loading && (
+                        <Chip
+                          label={`${recentStudents.length} Enrolled`}
+                          size="small"
+                          sx={{
+                            bgcolor: "#EFF6FF",
+                            color: "#1D4ED8",
+                            fontWeight: 700,
+                            fontSize: "0.7rem",
+                            height: 22,
+                            borderRadius: "6px",
+                          }}
+                        />
+                      )}
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+                      Newly registered bootcamp trainees
+                    </Typography>
+                  </Box>
+                </Stack>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => navigate("/admin/students")}
-                  sx={{ fontWeight: 600 }}
+                  sx={{
+                    fontWeight: 700,
+                    textTransform: "none",
+                    color: "#2563EB",
+                    borderRadius: "8px",
+                    px: 1.5,
+                    "&:hover": { bgcolor: "#EFF6FF" },
+                  }}
                 >
                   All Students
                 </Button>
@@ -810,54 +860,105 @@ export default function AdminDashboard() {
 
               {loading ? (
                 <Stack spacing={1.5}>
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={40} sx={{ borderRadius: 1.5 }} />
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} variant="rounded" height={54} sx={{ borderRadius: "12px" }} />
                   ))}
                 </Stack>
               ) : recentStudents.length === 0 ? (
-                <Box sx={{ py: 4, textAlign: "center" }}>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                <Box
+                  sx={{
+                    py: 5,
+                    px: 3,
+                    textAlign: "center",
+                    bgcolor: "#F8FAFC",
+                    borderRadius: "12px",
+                    border: "1px stroke #E2E8F0",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
                     No students enrolled yet.
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5 }}>
+                    New student registrations will appear here.
                   </Typography>
                 </Box>
               ) : (
-                <Stack spacing={0.5}>
-                  {recentStudents.slice(0, 5).map((s) => (
-                    <Stack
-                      key={s._id || s.id}
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="center"
-                      onClick={() => navigate(`/admin/students/${s._id || s.id}`)}
-                      sx={{
-                        p: 1,
-                        borderRadius: 2,
-                        cursor: "pointer",
-                        transition: "background-color 0.15s ease",
-                        "&:hover": { bgcolor: "grey.50" },
-                      }}
-                    >
-                      <Avatar
+                <Stack spacing={1.25}>
+                  {recentStudents.slice(0, 5).map((student) => {
+                    const studentName = student.name || student.user?.name || "Student";
+                    const rollNo = student.rollNumber || "No Roll Number";
+
+                    return (
+                      <Paper
+                        key={student._id || student.id}
+                        elevation={0}
+                        onClick={() => navigate(`/admin/students/${student._id || student.id}`)}
                         sx={{
-                          width: 32,
-                          height: 32,
-                          fontSize: "0.8rem",
-                          bgcolor: "primary.main",
-                          fontWeight: 700,
+                          p: 1.5,
+                          px: 1.75,
+                          borderRadius: "12px",
+                          border: "1px solid #E2E8F0",
+                          bgcolor: "#FFFFFF",
+                          cursor: "pointer",
+                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                          "&:hover": {
+                            borderColor: "#2563EB",
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
+                            transform: "translateY(-1px)",
+                            bgcolor: "#F8FAFC",
+                          },
                         }}
                       >
-                        {(s.name || s.user?.name || "S")[0].toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }} noWrap>
-                          {s.name || s.user?.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "text.disabled" }}>
-                          {s.rollNumber || "No roll number"}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  ))}
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+                          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                            <Avatar
+                              sx={{
+                                width: 36,
+                                height: 36,
+                                fontSize: "0.85rem",
+                                bgcolor: "#2563EB",
+                                color: "#FFFFFF",
+                                fontWeight: 800,
+                                boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
+                              }}
+                            >
+                              {studentName[0].toUpperCase()}
+                            </Avatar>
+
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }} noWrap>
+                                {studentName}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", mt: 0.25 }} noWrap>
+                                Roll: {rollNo}
+                              </Typography>
+                            </Box>
+                          </Stack>
+
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Chip
+                              label="Active"
+                              size="small"
+                              sx={{
+                                bgcolor: "#F0FDF4",
+                                color: "#16A34A",
+                                fontWeight: 700,
+                                fontSize: "0.7rem",
+                                height: 22,
+                                borderRadius: "6px",
+                              }}
+                            />
+                            <ActionButton type="view" title="View student profile" />
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
                 </Stack>
               )}
             </CardContent>
