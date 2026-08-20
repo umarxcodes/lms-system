@@ -502,7 +502,7 @@ export default function AdminDashboard() {
               label: "Create Task",
               desc: "Add deliverable",
               icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/tasks",
+              to: "/admin/tasks?create=true",
               color: "#EA580C",
               bg: "#FFF7ED",
             },

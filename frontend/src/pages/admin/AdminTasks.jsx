@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Card,
   Typography,
@@ -22,11 +23,14 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import CloseIcon from "@mui/icons-material/Close";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 import PageHeader from "../../components/common/PageHeader";
 import { PageContent } from "../../components/layout/AppLayout";
@@ -137,7 +141,16 @@ export default function AdminTasks() {
     });
   }, []);
 
-  const handleOpenCreateModal = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("create") === "true") {
+      setOpenCreateModal(true);
+    }
+  }, [location.search]);
+
+  const handleOpenCreateModal = useCallback(() => {
     setFormData({
       title: "",
       description: "",
@@ -147,7 +160,7 @@ export default function AdminTasks() {
       dueDate: "",
     });
     setOpenCreateModal(true);
-  };
+  }, [projects]);
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
@@ -375,12 +388,61 @@ export default function AdminTasks() {
         )}
       </PageContent>
 
-      {/* Create Task Modal */}
-      <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Create New Task</DialogTitle>
+      {/* ─── Create Task Modal ─── */}
+      <Dialog
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            bgcolor: "#FFFFFF",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ p: 2.5, pb: 1.5 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "10px",
+                  bgcolor: "#EFF6FF",
+                  color: "#2563EB",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AssignmentIcon sx={{ fontSize: 22 }} />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+                  Create New Task
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+                  Set up deliverables, assign trainees, and define project milestones
+                </Typography>
+              </Box>
+            </Stack>
+            <IconButton
+              onClick={() => setOpenCreateModal(false)}
+              size="small"
+              sx={{ color: "#94A3B8", "&:hover": { color: "#0F172A", bgcolor: "#F1F5F9" } }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+
+        <Divider />
+
         <Box component="form" onSubmit={handleCreateSubmit}>
-          <DialogContent dividers>
-            <Grid container spacing={2}>
+          <DialogContent sx={{ p: 3 }}>
+            <Grid container spacing={2.5}>
               <Grid item xs={12}>
                 <TextField
                   label="Task Title"
@@ -388,19 +450,25 @@ export default function AdminTasks() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Build User Authentication Service"
+                  placeholder="e.g. Build User Authentication REST API"
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 />
               </Grid>
 
               <Grid item xs={12}>
                 <TextField
-                  label="Description"
+                  label="Description & Instructions"
                   fullWidth
                   multiline
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe task objectives and technical requirements..."
+                  placeholder="Provide technical guidelines, acceptance criteria, or reference links..."
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 />
               </Grid>
 
@@ -412,6 +480,9 @@ export default function AdminTasks() {
                   required
                   value={formData.projectId}
                   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 >
                   {projects.length === 0 ? (
                     <MenuItem value="" disabled>
@@ -429,16 +500,26 @@ export default function AdminTasks() {
 
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Assign Student (Optional)"
+                  label="Assign Student"
                   select
                   fullWidth
                   value={formData.assignedTo}
                   onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 >
-                  <MenuItem value="">Unassigned</MenuItem>
+                  <MenuItem value="">Unassigned (Open pool)</MenuItem>
                   {students.map((s) => (
                     <MenuItem key={s.user?._id || s._id || s.id} value={s.user?._id || s._id || s.id}>
-                      {s.name || s.user?.name}
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {s.name || s.user?.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748B" }}>
+                          ({s.rollNumber || "Trainee"})
+                        </Typography>
+                      </Stack>
                     </MenuItem>
                   ))}
                 </TextField>
@@ -446,15 +527,33 @@ export default function AdminTasks() {
 
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Priority"
+                  label="Priority Level"
                   select
                   fullWidth
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 >
-                  <MenuItem value="low">Low</MenuItem>
-                  <MenuItem value="medium">Medium</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
+                  <MenuItem value="low">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#16A34A" }} />
+                      <span>Low Priority</span>
+                    </Stack>
+                  </MenuItem>
+                  <MenuItem value="medium">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#D97706" }} />
+                      <span>Medium Priority</span>
+                    </Stack>
+                  </MenuItem>
+                  <MenuItem value="high">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#DC2626" }} />
+                      <span>High Priority</span>
+                    </Stack>
+                  </MenuItem>
                 </TextField>
               </Grid>
 
@@ -466,31 +565,99 @@ export default function AdminTasks() {
                   value={formData.dueDate}
                   onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                   InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    sx: { borderRadius: "10px" },
+                  }}
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions sx={{ p: 2.5 }}>
-            <Button onClick={() => setOpenCreateModal(false)} disabled={createSubmitting}>
+
+          <Divider />
+
+          <DialogActions sx={{ p: 2.5, px: 3, bgcolor: "#F8FAFC" }}>
+            <Button
+              onClick={() => setOpenCreateModal(false)}
+              disabled={createSubmitting}
+              sx={{ fontWeight: 600, color: "#64748B", borderRadius: "8px", textTransform: "none" }}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={createSubmitting}
-              startIcon={createSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
+              startIcon={createSubmitting ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+              sx={{
+                fontWeight: 700,
+                borderRadius: "8px",
+                textTransform: "none",
+                bgcolor: "#2563EB",
+                px: 2.5,
+                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
+                "&:hover": { bgcolor: "#1D4ED8" },
+              }}
             >
-              {createSubmitting ? "Creating..." : "Create Task"}
+              {createSubmitting ? "Creating Task..." : "Create Task"}
             </Button>
           </DialogActions>
         </Box>
       </Dialog>
 
-      {/* Assign Student Modal */}
-      <Dialog open={openAssignModal} onClose={() => setOpenAssignModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Assign Task to Student</DialogTitle>
+      {/* ─── Assign Student Modal ─── */}
+      <Dialog
+        open={openAssignModal}
+        onClose={() => setOpenAssignModal(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            bgcolor: "#FFFFFF",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ p: 2.5, pb: 1.5 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: "10px",
+                  bgcolor: "#EFF6FF",
+                  color: "#2563EB",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <PersonAddIcon sx={{ fontSize: 20 }} />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
+                  Assign Task
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#64748B" }}>
+                  Select student to complete deliverable
+                </Typography>
+              </Box>
+            </Stack>
+            <IconButton
+              onClick={() => setOpenAssignModal(false)}
+              size="small"
+              sx={{ color: "#94A3B8", "&:hover": { color: "#0F172A", bgcolor: "#F1F5F9" } }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+
+        <Divider />
+
         <Box component="form" onSubmit={handleAssignSubmit}>
-          <DialogContent dividers>
+          <DialogContent sx={{ p: 3 }}>
             <TextField
               label="Select Student"
               select
@@ -498,16 +665,33 @@ export default function AdminTasks() {
               required
               value={assignStudentId}
               onChange={(e) => setAssignStudentId(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px" },
+              }}
             >
               {students.map((s) => (
                 <MenuItem key={s.user?._id || s._id || s.id} value={s.user?._id || s._id || s.id}>
-                  {s.name || s.user?.name} ({s.rollNumber || "Student"})
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                      {s.name || s.user?.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748B" }}>
+                      ({s.rollNumber || "Student"})
+                    </Typography>
+                  </Stack>
                 </MenuItem>
               ))}
             </TextField>
           </DialogContent>
-          <DialogActions sx={{ p: 2.5 }}>
-            <Button onClick={() => setOpenAssignModal(false)} disabled={assignSubmitting}>
+
+          <Divider />
+
+          <DialogActions sx={{ p: 2.5, px: 3, bgcolor: "#F8FAFC" }}>
+            <Button
+              onClick={() => setOpenAssignModal(false)}
+              disabled={assignSubmitting}
+              sx={{ fontWeight: 600, color: "#64748B", borderRadius: "8px", textTransform: "none" }}
+            >
               Cancel
             </Button>
             <Button
@@ -515,6 +699,14 @@ export default function AdminTasks() {
               variant="contained"
               disabled={assignSubmitting}
               startIcon={assignSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
+              sx={{
+                fontWeight: 700,
+                borderRadius: "8px",
+                textTransform: "none",
+                bgcolor: "#2563EB",
+                px: 2.5,
+                "&:hover": { bgcolor: "#1D4ED8" },
+              }}
             >
               {assignSubmitting ? "Assigning..." : "Assign Task"}
             </Button>
