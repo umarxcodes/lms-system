@@ -32,11 +32,13 @@ import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import { useNavigate } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
 import StatCard from "../../components/common/StatCard";
 import StatusChip from "../../components/common/StatusChip";
+import ActionButton from "../../components/common/ActionButton";
 import { studentApi } from "../../services/studentApi";
 import { notificationApi } from "../../services/notificationApi";
 import { useAuth } from "../../context/AuthContext";
@@ -579,23 +581,73 @@ export default function StudentDashboard() {
       {/* ─── Deliverables & Team Roster ─── */}
       <Grid container spacing={2.5}>
         {/* Assigned Tasks */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider", height: "100%" }}>
-            <CardContent sx={{ p: 2.5 }}>
+        <Grid item xs={12} md={7}>
+          <Card
+            elevation={0}
+            sx={{
+              border: "1px solid #E2E8F0",
+              borderRadius: "16px",
+              height: "100%",
+              bgcolor: "#FFFFFF",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Assigned Tasks
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Deliverables assigned to you
-                  </Typography>
-                </Box>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "8px",
+                      bgcolor: "#FFF7ED",
+                      color: "#EA580C",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ChecklistIcon sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Box>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
+                        Assigned Tasks
+                      </Typography>
+                      {!loading && (
+                        <Chip
+                          label={myTasks.length > 0 ? `${myTasks.length} Assigned` : "All Complete"}
+                          size="small"
+                          sx={{
+                            bgcolor: myTasks.length > 0 ? "#FFF7ED" : "#F0FDF4",
+                            color: myTasks.length > 0 ? "#C2410C" : "#15803D",
+                            fontWeight: 700,
+                            fontSize: "0.7rem",
+                            height: 22,
+                            borderRadius: "6px",
+                          }}
+                        />
+                      )}
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+                      Deliverables assigned specifically to you
+                    </Typography>
+                  </Box>
+                </Stack>
                 <Button
                   size="small"
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => navigate("/student/tasks")}
-                  sx={{ fontWeight: 600 }}
+                  sx={{
+                    fontWeight: 700,
+                    textTransform: "none",
+                    color: "#2563EB",
+                    borderRadius: "8px",
+                    px: 1.5,
+                    "&:hover": { bgcolor: "#EFF6FF" },
+                  }}
                 >
                   All Tasks
                 </Button>
@@ -605,38 +657,110 @@ export default function StudentDashboard() {
               {loading ? (
                 <Stack spacing={1.5}>
                   {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={40} sx={{ borderRadius: 1.5 }} />
+                    <Skeleton key={i} variant="rounded" height={60} sx={{ borderRadius: "12px" }} />
                   ))}
                 </Stack>
               ) : myTasks.length === 0 ? (
-                <Box sx={{ py: 4, textAlign: "center" }}>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    No pending tasks assigned to you.
+                <Box
+                  sx={{
+                    py: 5,
+                    px: 3,
+                    textAlign: "center",
+                    bgcolor: "#F8FAFC",
+                    borderRadius: "12px",
+                    border: "1px stroke #E2E8F0",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      bgcolor: "#F0FDF4",
+                      color: "#16A34A",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 1.5,
+                    }}
+                  >
+                    <TaskAltIcon sx={{ fontSize: 24 }} />
+                  </Box>
+                  <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
+                    You have no pending tasks assigned!
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5, maxWidth: 280 }}>
+                    Great job completing your deliverables. Check back when new projects are assigned.
                   </Typography>
                 </Box>
               ) : (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Task</TableCell>
-                        <TableCell>Project</TableCell>
-                        <TableCell>Status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {myTasks.slice(0, 5).map((t) => (
-                        <TableRow key={t._id || t.id}>
-                          <TableCell sx={{ fontWeight: 600 }}>{t.title}</TableCell>
-                          <TableCell>{t.project?.name || t.projectId?.name || "—"}</TableCell>
-                          <TableCell>
-                            <StatusChip status={t.status || "todo"} />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <Stack spacing={1.25}>
+                  {myTasks.slice(0, 5).map((task) => {
+                    const projTitle = task.project?.title || task.project?.name || task.projectId?.name || "Unassigned Project";
+
+                    return (
+                      <Paper
+                        key={task._id || task.id}
+                        elevation={0}
+                        onClick={() => navigate("/student/tasks")}
+                        sx={{
+                          p: 1.75,
+                          borderRadius: "12px",
+                          border: "1px solid #E2E8F0",
+                          bgcolor: "#FFFFFF",
+                          cursor: "pointer",
+                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                          "&:hover": {
+                            borderColor: "#2563EB",
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
+                            transform: "translateY(-1px)",
+                            bgcolor: "#F8FAFC",
+                          },
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+                          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                            <Box
+                              sx={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: "50%",
+                                bgcolor: task.status === "completed" || task.status === "done" ? "#F0FDF4" : "#FFF7ED",
+                                color: task.status === "completed" || task.status === "done" ? "#16A34A" : "#EA580C",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <ChecklistIcon sx={{ fontSize: 18 }} />
+                            </Box>
+
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }} noWrap>
+                                {task.title}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", mt: 0.5 }} noWrap>
+                                {projTitle}
+                              </Typography>
+                            </Box>
+                          </Stack>
+
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+                            <StatusChip status={task.priority || "medium"} />
+                            <StatusChip status={task.status || "todo"} />
+                            <ActionButton type="view" title="View task details" />
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
+                </Stack>
               )}
             </CardContent>
           </Card>
