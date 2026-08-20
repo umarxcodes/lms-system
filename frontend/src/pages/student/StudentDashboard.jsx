@@ -31,6 +31,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
 import { useNavigate } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
@@ -428,53 +429,152 @@ export default function StudentDashboard() {
         </Grid>
       </Grid>
 
-      {/* ─── Shortcuts ─── */}
-      <Box>
-        <Typography
-          variant="caption"
-          sx={{
-            display: "block",
-            fontWeight: 700,
-            color: "text.disabled",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            mb: 1.5,
-          }}
-        >
-          Quick Navigation
-        </Typography>
-        <Stack direction="row" flexWrap="wrap" gap={1}>
-          {[
-            { label: "My Attendance", icon: <EventAvailableIcon fontSize="small" />, to: "/student/attendance" },
-            { label: "My Tasks", icon: <ChecklistIcon fontSize="small" />, to: "/student/tasks" },
-            { label: "My Team", icon: <GroupsIcon fontSize="small" />, to: "/student/team" },
-            { label: "My Progress", icon: <TrendingUpIcon fontSize="small" />, to: "/student/progress" },
-            { label: "My Reports", icon: <AssessmentOutlinedIcon fontSize="small" />, to: "/student/reports" },
-          ].map((action) => (
-            <Button
-              key={action.label}
-              size="small"
-              variant="outlined"
-              startIcon={action.icon}
-              onClick={() => navigate(action.to)}
-              sx={{
-                borderColor: "divider",
-                color: "text.secondary",
-                fontWeight: 600,
-                fontSize: "0.8rem",
-                px: 1.5,
-                "&:hover": {
-                  borderColor: "primary.main",
-                  color: "primary.main",
-                  bgcolor: "primary.50",
-                },
-              }}
-            >
-              {action.label}
-            </Button>
-          ))}
+      {/* ─── Quick Actions / Shortcuts ─── */}
+      <Card
+        elevation={0}
+        sx={{
+          border: "1px solid #E2E8F0",
+          borderRadius: "16px",
+          bgcolor: "#FFFFFF",
+          p: 2.5,
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02)",
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "8px",
+              bgcolor: "#EFF6FF",
+              color: "#2563EB",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FlashOnIcon sx={{ fontSize: 16 }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+              Quick Actions
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+              Direct shortcuts to your personal learning modules
+            </Typography>
+          </Box>
         </Stack>
-      </Box>
+
+        <Grid container spacing={2}>
+          {[
+            {
+              label: "My Attendance",
+              desc: "Logs & presence",
+              icon: <EventAvailableIcon sx={{ fontSize: 18 }} />,
+              to: "/student/attendance",
+              color: "#16A34A",
+              bg: "#F0FDF4",
+            },
+            {
+              label: "My Tasks",
+              desc: "View deliverables",
+              icon: <ChecklistIcon sx={{ fontSize: 18 }} />,
+              to: "/student/tasks",
+              color: "#EA580C",
+              bg: "#FFF7ED",
+            },
+            {
+              label: "My Team",
+              desc: "Collaborators",
+              icon: <GroupsIcon sx={{ fontSize: 18 }} />,
+              to: "/student/team",
+              color: "#2563EB",
+              bg: "#EFF6FF",
+            },
+            {
+              label: "My Progress",
+              desc: "Milestones & grade",
+              icon: <TrendingUpIcon sx={{ fontSize: 18 }} />,
+              to: "/student/progress",
+              color: "#9333EA",
+              bg: "#FAF5FF",
+            },
+            {
+              label: "My Reports",
+              desc: "Performance summary",
+              icon: <AssessmentOutlinedIcon sx={{ fontSize: 18 }} />,
+              to: "/student/reports",
+              color: "#0D9488",
+              bg: "#F0FDFA",
+            },
+          ].map((action) => (
+            <Grid key={action.label} item xs={12} sm={6} md={2.4}>
+              <Paper
+                elevation={0}
+                onClick={() => navigate(action.to)}
+                sx={{
+                  p: 2,
+                  borderRadius: "12px",
+                  border: "1px solid #E2E8F0",
+                  bgcolor: "#FFFFFF",
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  "&:hover": {
+                    borderColor: action.color,
+                    boxShadow: `0 8px 20px -4px ${action.color}1A`,
+                    transform: "translateY(-2px)",
+                    "& .action-arrow": {
+                      transform: "translateX(3px)",
+                      color: action.color,
+                    },
+                  },
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      bgcolor: action.bg,
+                      color: action.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {action.icon}
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.85rem", lineHeight: 1.2 }}
+                      noWrap
+                    >
+                      {action.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#64748B", fontSize: "0.725rem", display: "block" }}
+                      noWrap
+                    >
+                      {action.desc}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <ArrowForwardIcon
+                  className="action-arrow"
+                  sx={{ fontSize: 16, color: "#94A3B8", transition: "all 0.2s ease", flexShrink: 0, ml: 1 }}
+                />
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Card>
 
       {/* ─── Deliverables & Team Roster ─── */}
       <Grid container spacing={2.5}>

@@ -33,6 +33,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
 import { useNavigate } from "react-router-dom";
 
 import { PageContent } from "../../components/layout/AppLayout";
@@ -434,52 +435,151 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* ─── Quick Actions ─── */}
-      <Box>
-        <Typography
-          variant="caption"
-          sx={{
-            display: "block",
-            fontWeight: 700,
-            color: "text.disabled",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            mb: 1.5,
-          }}
-        >
-          Quick Actions
-        </Typography>
-        <Stack direction="row" flexWrap="wrap" gap={1}>
-          {[
-            { label: "Add Student", icon: <AddIcon fontSize="small" />, to: "/admin/students" },
-            { label: "Create Team", icon: <GroupsIcon fontSize="small" />, to: "/admin/teams" },
-            { label: "Create Project", icon: <FolderOpenIcon fontSize="small" />, to: "/admin/projects" },
-            { label: "Create Task", icon: <AssignmentIcon fontSize="small" />, to: "/admin/tasks" },
-            { label: "View Reports", icon: <AssessmentOutlinedIcon fontSize="small" />, to: "/admin/reports" },
-          ].map((action) => (
-            <Button
-              key={action.label}
-              size="small"
-              variant="outlined"
-              startIcon={action.icon}
-              onClick={() => navigate(action.to)}
-              sx={{
-                borderColor: "divider",
-                color: "text.secondary",
-                fontWeight: 600,
-                fontSize: "0.8rem",
-                px: 1.5,
-                "&:hover": {
-                  borderColor: "primary.main",
-                  color: "primary.main",
-                  bgcolor: "primary.50",
-                },
-              }}
-            >
-              {action.label}
-            </Button>
-          ))}
+      <Card
+        elevation={0}
+        sx={{
+          border: "1px solid #E2E8F0",
+          borderRadius: "16px",
+          bgcolor: "#FFFFFF",
+          p: 2.5,
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02)",
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "8px",
+              bgcolor: "#EFF6FF",
+              color: "#2563EB",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FlashOnIcon sx={{ fontSize: 16 }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
+              Quick Actions
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
+              Frequently used management shortcuts & operations
+            </Typography>
+          </Box>
         </Stack>
-      </Box>
+
+        <Grid container spacing={2}>
+          {[
+            {
+              label: "Add Student",
+              desc: "Register trainee",
+              icon: <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />,
+              to: "/admin/students",
+              color: "#2563EB",
+              bg: "#EFF6FF",
+            },
+            {
+              label: "Create Team",
+              desc: "Build new group",
+              icon: <GroupsIcon sx={{ fontSize: 18 }} />,
+              to: "/admin/teams",
+              color: "#9333EA",
+              bg: "#FAF5FF",
+            },
+            {
+              label: "Create Project",
+              desc: "Assign capstone",
+              icon: <FolderOpenIcon sx={{ fontSize: 18 }} />,
+              to: "/admin/projects",
+              color: "#0284C7",
+              bg: "#F0F9FF",
+            },
+            {
+              label: "Create Task",
+              desc: "Add deliverable",
+              icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
+              to: "/admin/tasks",
+              color: "#EA580C",
+              bg: "#FFF7ED",
+            },
+            {
+              label: "View Reports",
+              desc: "Analytics & export",
+              icon: <AssessmentOutlinedIcon sx={{ fontSize: 18 }} />,
+              to: "/admin/reports",
+              color: "#16A34A",
+              bg: "#F0FDF4",
+            },
+          ].map((action) => (
+            <Grid key={action.label} item xs={12} sm={6} md={2.4}>
+              <Paper
+                elevation={0}
+                onClick={() => navigate(action.to)}
+                sx={{
+                  p: 2,
+                  borderRadius: "12px",
+                  border: "1px solid #E2E8F0",
+                  bgcolor: "#FFFFFF",
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  "&:hover": {
+                    borderColor: action.color,
+                    boxShadow: `0 8px 20px -4px ${action.color}1A`,
+                    transform: "translateY(-2px)",
+                    "& .action-arrow": {
+                      transform: "translateX(3px)",
+                      color: action.color,
+                    },
+                  },
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      bgcolor: action.bg,
+                      color: action.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {action.icon}
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.85rem", lineHeight: 1.2 }}
+                      noWrap
+                    >
+                      {action.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#64748B", fontSize: "0.725rem", display: "block" }}
+                      noWrap
+                    >
+                      {action.desc}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <ArrowForwardIcon
+                  className="action-arrow"
+                  sx={{ fontSize: 16, color: "#94A3B8", transition: "all 0.2s ease", flexShrink: 0, ml: 1 }}
+                />
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Card>
 
       {/* ─── Data Tables ─── */}
       <Grid container spacing={2.5}>
