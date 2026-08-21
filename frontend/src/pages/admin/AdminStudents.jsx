@@ -14,6 +14,7 @@ import {
   IconButton,
   Tooltip,
   Avatar,
+  Button
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -494,6 +495,7 @@ export default function AdminStudents() {
           <DialogTitle sx={{ fontWeight: 700, pb: 1, color: "#111827" }}>
             {editingStudent ? "Edit Student Account" : "Register New Student"}
           </DialogTitle>
+
           <Box component="form" onSubmit={handleFormSubmit}>
             <DialogContent>
               <Grid container spacing={2.5}>
@@ -568,11 +570,12 @@ export default function AdminStudents() {
                 </Grid>
               </Grid>
             </DialogContent>
+
             <DialogActions sx={{ px: 3, pb: 2.5 }}>
               <ActionButton onClick={() => setOpenFormModal(false)} disabled={formSubmitting} variant="outlined" color="inherit">
                 Cancel
               </ActionButton>
-              <ActionButton
+              <Button
                 type="submit"
                 variant="contained"
                 color="primary"
@@ -580,8 +583,9 @@ export default function AdminStudents() {
                 startIcon={formSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
               >
                 {formSubmitting ? "Saving..." : editingStudent ? "Update Profile" : "Register Student"}
-              </ActionButton>
+              </Button>
             </DialogActions>
+
           </Box>
         </Dialog>
 
