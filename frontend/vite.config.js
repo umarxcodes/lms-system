@@ -8,8 +8,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "https://lms-system-tawny-kappa.vercel.app",
         changeOrigin: true,
+        secure: false,
       },
     },
   },
