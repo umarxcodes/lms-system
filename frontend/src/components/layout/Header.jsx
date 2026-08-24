@@ -18,30 +18,28 @@ import {
   ListItemText,
   Button,
   Tooltip,
+  Chip,
 } from "@mui/material";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { notificationApi } from "../../services/notificationApi";
 
 export default function Header({ onMobileNavOpen }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Notification Popover State
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
-
-  // Profile Menu State
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
 
-  // Fetch unread notifications for students
   useEffect(() => {
     let isMounted = true;
     const fetchNotifications = async () => {
@@ -52,14 +50,12 @@ export default function Header({ onMobileNavOpen }) {
             setUnreadCount(countRes.data?.count || 0);
           }
         }
-      } catch (err) {
-        // Silently catch notification errors
+      } catch {
+        // Silently ignore notification errors
       }
     };
     fetchNotifications();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [user]);
 
   const handleOpenNotif = async (event) => {
@@ -72,7 +68,7 @@ export default function Header({ onMobileNavOpen }) {
         }
       }
     } catch {
-      // Silently catch — notification errors must not surface to console
+      // Silently ignore
     }
   };
 
@@ -83,197 +79,204 @@ export default function Header({ onMobileNavOpen }) {
       setNotifications([]);
       setNotifAnchorEl(null);
     } catch {
-      // Silently catch — notification errors must not surface to console
+      // Silently ignore
     }
+  };
+
+  const handleLogout = () => {
+    setProfileAnchorEl(null);
+    logout();
+    navigate("/login");
   };
 
   const isProfileOpen = Boolean(profileAnchorEl);
   const isNotifOpen = Boolean(notifAnchorEl);
+
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+  const userRoleLabel = user?.role === "ADMIN" ? "Admin" : "Student";
 
   return (
     <AppBar
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: "background.paper",
+        bgcolor: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         color: "text.primary",
         borderBottom: "1px solid",
-        borderColor: "divider",
+        borderColor: "rgba(226,232,240,0.8)",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
       <Toolbar
         sx={{
-          minHeight: { xs: 64, md: 70 },
+          minHeight: { xs: 60, md: 64 },
           px: { xs: 2, md: 3 },
           justifyContent: "space-between",
           gap: 2,
         }}
       >
-        {/* Left: Mobile Drawer Toggle + Desktop Collapse Button + Brand Logo & Title */}
-        <Stack direction="row" alignItems="center" spacing={1.5}>
+        {/* ─── Left: Mobile toggle + Brand ─── */}
+        <Stack direction="row" alignItems="center" spacing={2}>
           {/* Mobile Drawer Toggle */}
           <IconButton
             onClick={onMobileNavOpen}
             edge="start"
+            size="small"
             sx={{
               display: { xs: "flex", md: "none" },
-              color: "text.primary",
-              bgcolor: "grey.100",
-              p: 1,
+              color: "text.secondary",
+              width: 36,
+              height: 36,
+              "&:hover": { bgcolor: "grey.100", color: "text.primary" },
             }}
-            aria-label="open navigation drawer"
+            aria-label="Open navigation"
           >
-            <MenuIcon fontSize="small" />
+            <MenuIcon sx={{ fontSize: 20 }} />
           </IconButton>
 
-
-          {/* SMIT Brand Logo & Title */}
-          <Stack direction="row" alignItems="center" spacing={1.5}>
+          {/* Brand */}
+          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ cursor: "default", userSelect: "none" }}>
             <Box
               component="img"
               src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1786599373/logo.6lrMPvRL_phqqyj.png"
               alt="SMIT Logo"
               sx={{
-                height: 38,
+                height: 32,
                 width: "auto",
                 objectFit: "contain",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.06))",
-                transition: "transform 0.2s ease",
-                "&:hover": { transform: "scale(1.02)" },
+                filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.08))",
               }}
             />
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
-                component="h1"
+                component="span"
                 sx={{
-                  fontSize: { xs: 16, md: 18 },
+                  fontSize: "0.95rem",
                   fontWeight: 800,
                   color: "text.primary",
-                  fontFamily: '"Plus Jakarta Sans", sans-serif',
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.1,
+                  letterSpacing: "-0.025em",
+                  lineHeight: 1,
+                  display: "block",
                 }}
               >
                 SMIT LMS
               </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, fontSize: "0.72rem" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "text.disabled", fontWeight: 600, fontSize: "0.67rem", letterSpacing: "0.02em" }}
+              >
                 Saylani Mass I.T. Training
               </Typography>
             </Box>
           </Stack>
         </Stack>
 
-        {/* Right: Notifications & User Profile Menu */}
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          {/* Notifications Button */}
-          <Tooltip title="Notifications">
+        {/* ─── Right: Notifications + Profile ─── */}
+        <Stack direction="row" alignItems="center" spacing={1}>
+          {/* Notification Button */}
+          <Tooltip title="Notifications" arrow>
             <IconButton
               onClick={handleOpenNotif}
+              size="small"
               sx={{
-                bgcolor: "grey.50",
-                border: "1px solid",
-                borderColor: "divider",
-                color: "grey.700",
-                width: 40,
-                height: 40,
-                transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&:hover": { bgcolor: "grey.100", transform: "scale(1.06)" },
-                "&:active": { transform: "scale(0.95)" },
+                width: 36,
+                height: 36,
+                color: "text.secondary",
+                transition: "all 0.18s ease",
+                "&:hover": { bgcolor: "grey.100", color: "text.primary" },
+                "&:active": { transform: "scale(0.93)" },
               }}
-              aria-label="open notifications"
+              aria-label="Notifications"
             >
-              {unreadCount > 0 ? (
-                <Badge
-                  badgeContent={unreadCount}
-                  color="error"
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      animation: "badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                      "@keyframes badgePop": {
-                        "0%": { transform: "scale(0)" },
-                        "100%": { transform: "scale(1)" },
-                      },
-                    },
-                  }}
-                >
-                  <NotificationsNoneOutlinedIcon fontSize="small" />
-                </Badge>
-              ) : (
-                <NotificationsNoneOutlinedIcon fontSize="small" />
-              )}
+              <Badge
+                badgeContent={unreadCount > 0 ? unreadCount : null}
+                color="error"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    fontSize: "0.6rem",
+                    height: 16,
+                    minWidth: 16,
+                    fontWeight: 800,
+                  },
+                }}
+              >
+                <NotificationsNoneOutlinedIcon sx={{ fontSize: 20 }} />
+              </Badge>
             </IconButton>
           </Tooltip>
 
-          {/* User Profile Pill Button */}
-          <Tooltip title="User Profile & Settings">
-            <Button
+          {/* Divider */}
+          <Box sx={{ width: 1, height: 22, bgcolor: "divider", mx: 0.5 }} />
+
+          {/* Profile Pill */}
+          <Tooltip title="Account settings" arrow>
+            <Box
               onClick={(e) => setProfileAnchorEl(e.currentTarget)}
               sx={{
-                p: 0.5,
-                pr: { xs: 0.5, sm: 1.5 },
-                bgcolor: "grey.50",
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 3,
-                color: "text.primary",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                px: 1,
+                py: 0.5,
+                borderRadius: 2.5,
+                cursor: "pointer",
+                border: "1px solid transparent",
                 transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&:hover": { bgcolor: "grey.100", borderColor: "grey.300", transform: "translateY(-1px)" },
+                "&:hover": {
+                  bgcolor: "grey.100",
+                  borderColor: "divider",
+                },
                 "&:active": { transform: "scale(0.98)" },
               }}
-              aria-label="open user profile menu"
+              role="button"
+              aria-label="Open user menu"
             >
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Avatar
-                  src={user?.avatarUrl || user?.profileImage || ""}
-                  alt={user?.name || "User"}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    bgcolor: "primary.main",
-                    fontWeight: 800,
-                    fontSize: 14,
-                    boxShadow: "0 2px 6px rgba(30,64,175,0.2)",
-                  }}
+              <Avatar
+                src={user?.avatarUrl || user?.profileImage || ""}
+                alt={user?.name || "User"}
+                sx={{
+                  width: 30,
+                  height: 30,
+                  fontSize: "0.8rem",
+                  fontWeight: 800,
+                  bgcolor: "primary.main",
+                  boxShadow: "0 0 0 2px #ffffff, 0 0 0 3px #dbeafe",
+                }}
+              >
+                {userInitial}
+              </Avatar>
+
+              <Box sx={{ display: { xs: "none", sm: "block" }, lineHeight: 1.2 }}>
+                <Typography
+                  sx={{ fontWeight: 700, fontSize: "0.8rem", color: "text.primary", lineHeight: 1.3 }}
+                  noWrap
                 >
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                </Avatar>
+                  {user?.name || "User"}
+                </Typography>
+                <Typography
+                  sx={{ fontSize: "0.68rem", color: "text.disabled", fontWeight: 600, lineHeight: 1 }}
+                >
+                  {userRoleLabel}
+                </Typography>
+              </Box>
 
-                <Box sx={{ display: { xs: "none", sm: "block" }, textAlign: "left", lineHeight: 1.15, maxWidth: 140 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: "0.825rem",
-                      color: "text.primary",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {user?.name || "User Account"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.02em" }}>
-                    {user?.role || "ACCOUNT"}
-                  </Typography>
-                </Box>
-
-                <KeyboardArrowDownIcon
-                  fontSize="small"
-                  sx={{
-                    color: "text.secondary",
-                    display: { xs: "none", sm: "block" },
-                    transition: "transform 0.18s ease",
-                    transform: isProfileOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  }}
-                />
-              </Stack>
-            </Button>
+              <KeyboardArrowDownIcon
+                sx={{
+                  fontSize: 16,
+                  color: "text.disabled",
+                  display: { xs: "none", sm: "block" },
+                  transition: "transform 0.18s ease",
+                  transform: isProfileOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </Box>
           </Tooltip>
         </Stack>
       </Toolbar>
 
-      {/* Notifications Popover */}
+      {/* ─── Notifications Popover ─── */}
       <Popover
         open={isNotifOpen}
         anchorEl={notifAnchorEl}
@@ -281,66 +284,103 @@ export default function Header({ onMobileNavOpen }) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{
+          elevation: 0,
           sx: {
-            width: 340,
-            p: 2,
-            borderRadius: 4,
-            mt: 1,
-            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.1)",
-            border: "1px solid #e2e8f0",
-            animation: "menuEntrance 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            willChange: "opacity, transform",
-            "@keyframes menuEntrance": {
-              "0%": { opacity: 0, transform: "translateY(-4px) scale(0.98)" },
-              "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
-            },
+            width: 360,
+            borderRadius: 3,
+            mt: 1.5,
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow: "0 12px 40px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.04)",
+            overflow: "hidden",
           },
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1rem" }}>
-            Notifications
-          </Typography>
+        {/* Popover Header */}
+        <Box sx={{ px: 2.5, py: 2, borderBottom: "1px solid", borderColor: "divider", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Stack direction="row" spacing={1.25} alignItems="center">
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary", fontSize: "0.9rem" }}>
+              Notifications
+            </Typography>
+            {unreadCount > 0 && (
+              <Chip
+                label={unreadCount}
+                size="small"
+                sx={{ height: 20, fontSize: "0.68rem", fontWeight: 800, bgcolor: "error.main", color: "#fff", borderRadius: "10px", "& .MuiChip-label": { px: "6px" } }}
+              />
+            )}
+          </Stack>
           {notifications.length > 0 && (
-            <Button size="small" startIcon={<MarkEmailReadIcon />} onClick={handleMarkAllRead}>
+            <Button
+              size="small"
+              startIcon={<MarkEmailReadIcon sx={{ fontSize: 14 }} />}
+              onClick={handleMarkAllRead}
+              sx={{ fontWeight: 700, fontSize: "0.75rem", textTransform: "none", color: "primary.main" }}
+            >
               Mark all read
             </Button>
           )}
-        </Stack>
-        <Divider sx={{ mb: 1 }} />
+        </Box>
+
+        {/* Popover Body */}
         {notifications.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "text.secondary", py: 3, textAlign: "center" }}>
-            No unread notifications.
-          </Typography>
+          <Box sx={{ py: 5, textAlign: "center" }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: "50%", bgcolor: "grey.100", color: "grey.400", display: "grid", placeItems: "center", mx: "auto", mb: 1.5 }}>
+              <NotificationsNoneOutlinedIcon sx={{ fontSize: 22 }} />
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>
+              You're all caught up
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.disabled" }}>
+              No unread notifications right now.
+            </Typography>
+          </Box>
         ) : (
-          <List disablePadding sx={{ maxHeight: 280, overflowY: "auto" }}>
-            {notifications.map((n) => (
-              <ListItem key={n._id || n.id} divider disableGutters sx={{ py: 1 }}>
+          <List disablePadding sx={{ maxHeight: 300, overflowY: "auto" }}>
+            {notifications.map((n, idx) => (
+              <ListItem
+                key={n._id || n.id}
+                disableGutters
+                sx={{
+                  px: 2.5,
+                  py: 1.5,
+                  borderBottom: idx < notifications.length - 1 ? "1px solid" : "none",
+                  borderColor: "grey.100",
+                  "&:hover": { bgcolor: "grey.50" },
+                  transition: "background 0.15s ease",
+                  alignItems: "flex-start",
+                  gap: 1.5,
+                }}
+              >
+                <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "primary.main", mt: "6px", flexShrink: 0 }} />
                 <ListItemText
                   primary={n.title}
                   secondary={n.message}
-                  primaryTypographyProps={{ fontWeight: 700, variant: "body2" }}
-                  secondaryTypographyProps={{ variant: "caption" }}
+                  primaryTypographyProps={{ fontWeight: 700, fontSize: "0.825rem", color: "text.primary" }}
+                  secondaryTypographyProps={{ fontSize: "0.775rem", color: "text.secondary", mt: 0.25 }}
                 />
               </ListItem>
             ))}
           </List>
         )}
-        <Divider sx={{ my: 1 }} />
-        <Button
-          fullWidth
-          size="small"
-          onClick={() => {
-            setNotifAnchorEl(null);
-            navigate(user?.role === "ADMIN" ? "/admin/notifications" : "/student/notifications");
-          }}
-          sx={{ fontWeight: 800, textTransform: "none", color: "primary.main" }}
-        >
-          View all notifications →
-        </Button>
+
+        {/* Popover Footer */}
+        <Box sx={{ borderTop: "1px solid", borderColor: "divider", p: 1.5 }}>
+          <Button
+            fullWidth
+            size="small"
+            onClick={() => {
+              setNotifAnchorEl(null);
+              navigate(user?.role === "ADMIN" ? "/admin/notifications" : "/student/notifications");
+            }}
+            sx={{ fontWeight: 700, textTransform: "none", color: "primary.main", borderRadius: 2, "&:hover": { bgcolor: "primary.50" } }}
+          >
+            View all notifications
+          </Button>
+        </Box>
       </Popover>
 
-      {/* User Profile Menu */}
+      {/* ─── Profile Dropdown Menu ─── */}
       <Menu
         anchorEl={profileAnchorEl}
         open={isProfileOpen}
@@ -348,63 +388,74 @@ export default function Header({ onMobileNavOpen }) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{
+          elevation: 0,
           sx: {
-            width: 230,
+            width: 240,
             borderRadius: 3,
-            mt: 1,
-            p: 0.5,
-            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.1)",
-            border: "1px solid #e2e8f0",
-            animation: "menuEntrance 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            willChange: "opacity, transform",
-            "@keyframes menuEntrance": {
-              "0%": { opacity: 0, transform: "translateY(-4px) scale(0.98)" },
-              "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
-            },
+            mt: 1.5,
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow: "0 12px 40px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.04)",
+            overflow: "hidden",
           },
         }}
       >
-        <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "text.primary" }}>
-            {user?.name || "User"}
-          </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-            {user?.email}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              display: "inline-block",
-              mt: 0.75,
-              px: 1.2,
-              py: 0.3,
-              borderRadius: 1.5,
-              bgcolor: "primary.50",
-              color: "primary.main",
-              fontWeight: 800,
-              fontSize: "0.7rem",
-            }}
-          >
-            {user?.role}
-          </Typography>
+        {/* User info header */}
+        <Box sx={{ px: 2.5, py: 2, borderBottom: "1px solid", borderColor: "grey.100" }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar
+              src={user?.avatarUrl || user?.profileImage || ""}
+              sx={{ width: 38, height: 38, bgcolor: "primary.main", fontWeight: 800, fontSize: "0.9rem", boxShadow: "0 0 0 2px #fff, 0 0 0 3px #dbeafe" }}
+            >
+              {userInitial}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }} noWrap>
+                {user?.name || "User"}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }} noWrap>
+                {user?.email}
+              </Typography>
+              <Chip
+                label={userRoleLabel}
+                size="small"
+                sx={{ mt: 0.5, height: 18, fontSize: "0.65rem", fontWeight: 800, bgcolor: "primary.50", color: "primary.dark", borderRadius: "6px", "& .MuiChip-label": { px: "6px" } }}
+              />
+            </Box>
+          </Stack>
         </Box>
 
-        <Divider />
+        {/* Menu items */}
+        <Box sx={{ p: 0.75 }}>
+          <MenuItem
+            onClick={() => {
+              setProfileAnchorEl(null);
+              navigate(user?.role === "ADMIN" ? "/admin/settings" : "/student/profile");
+            }}
+            sx={{ borderRadius: 2, px: 1.5, py: 1, transition: "all 0.15s ease" }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <PersonOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+            </ListItemIcon>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+              Profile & Settings
+            </Typography>
+          </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setProfileAnchorEl(null);
-            navigate(user?.role === "ADMIN" ? "/admin/settings" : "/student/profile");
-          }}
-          sx={{ borderRadius: 2, my: 0.5, transition: "all 0.15s ease" }}
-        >
-          <ListItemIcon>
-            <PersonOutlinedIcon fontSize="small" color="action" />
-          </ListItemIcon>
-          <Typography variant="body2" fontWeight={600}>
-            Profile & Settings
-          </Typography>
-        </MenuItem>
+          <Divider sx={{ my: 0.75 }} />
+
+          <MenuItem
+            onClick={handleLogout}
+            sx={{ borderRadius: 2, px: 1.5, py: 1, transition: "all 0.15s ease", "&:hover": { bgcolor: "error.50" } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <LogoutRoundedIcon sx={{ fontSize: 18, color: "error.main" }} />
+            </ListItemIcon>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "error.main" }}>
+              Sign out
+            </Typography>
+          </MenuItem>
+        </Box>
       </Menu>
     </AppBar>
   );
