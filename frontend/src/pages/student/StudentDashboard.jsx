@@ -20,6 +20,7 @@ import {
   Tooltip,
   Avatar,
   Divider,
+  Chip,
 } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import GroupsIcon from "@mui/icons-material/Groups";
