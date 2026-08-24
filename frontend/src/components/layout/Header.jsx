@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -29,7 +30,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { notificationApi } from "../../services/notificationApi";
 
-export default function Header({ onMobileNavOpen }) {
+export default function Header({ onMobileNavOpen, isSidebarCollapsed, onToggleSidebarCollapse }) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -110,8 +111,9 @@ export default function Header({ onMobileNavOpen }) {
           gap: 2,
         }}
       >
-        {/* Left: Mobile Drawer Toggle + Brand Logo & Title */}
-        <Stack direction="row" alignItems="center" spacing={2}>
+        {/* Left: Mobile Drawer Toggle + Desktop Collapse Button + Brand Logo & Title */}
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          {/* Mobile Drawer Toggle */}
           <IconButton
             onClick={onMobileNavOpen}
             edge="start"
@@ -125,6 +127,28 @@ export default function Header({ onMobileNavOpen }) {
           >
             <MenuIcon fontSize="small" />
           </IconButton>
+
+          {/* Desktop Sidebar Collapse Toggle */}
+          {onToggleSidebarCollapse && (
+            <Tooltip title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+              <IconButton
+                onClick={onToggleSidebarCollapse}
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  color: "grey.700",
+                  bgcolor: "grey.50",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  p: 1,
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": { bgcolor: "grey.100", transform: "scale(1.05)" },
+                }}
+                aria-label="toggle sidebar collapse"
+              >
+                {isSidebarCollapsed ? <MenuIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          )}
 
           {/* SMIT Brand Logo & Title */}
           <Stack direction="row" alignItems="center" spacing={1.5}>

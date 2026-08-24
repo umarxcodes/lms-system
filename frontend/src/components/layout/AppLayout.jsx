@@ -7,9 +7,28 @@ import PageTransition from "../common/PageTransition";
 
 export default function AppLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const handleMobileNavToggle = () => {
     setMobileNavOpen((prev) => !prev);
+  };
+
+  const handleSidebarCollapseToggle = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("sidebar_collapsed", String(next));
+      } catch {
+        // Silently catch storage errors
+      }
+      return next;
+    });
   };
 
   return (
@@ -26,11 +45,20 @@ export default function AppLayout() {
       }}
     >
       {/* Full Top Header across whole screen */}
-      <Header onMobileNavOpen={handleMobileNavToggle} />
+      <Header
+        onMobileNavOpen={handleMobileNavToggle}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleSidebarCollapse={handleSidebarCollapseToggle}
+      />
 
       {/* Main Body below Header */}
       <Box sx={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
-        <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
+        <Sidebar
+          mobileOpen={mobileNavOpen}
+          onMobileClose={() => setMobileNavOpen(false)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleSidebarCollapseToggle}
+        />
 
         <Box
           component="main"
@@ -41,6 +69,7 @@ export default function AppLayout() {
             height: "100%",
             overflowY: "auto",
             position: "relative",
+            transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
           <PageTransition>
