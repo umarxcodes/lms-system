@@ -285,7 +285,7 @@ export default function Sidebar({ mobileOpen, onMobileClose, isCollapsed = false
                 {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </Avatar>
               <Box sx={{ overflow: "hidden", lineHeight: 1.2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", noWrap: true }}>
+                <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: "text.primary" }}>
                   {user?.name || "Logged User"}
                 </Typography>
                 <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.72rem" }}>

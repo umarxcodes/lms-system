@@ -45,11 +45,7 @@ export default function AppLayout() {
       }}
     >
       {/* Full Top Header across whole screen */}
-      <Header
-        onMobileNavOpen={handleMobileNavToggle}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onToggleSidebarCollapse={handleSidebarCollapseToggle}
-      />
+      <Header onMobileNavOpen={handleMobileNavToggle} />
 
       {/* Main Body below Header */}
       <Box sx={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
