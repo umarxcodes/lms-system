@@ -7,20 +7,13 @@ import {
   Box,
   Stack,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Button,
   Alert,
   IconButton,
   Tooltip,
-  Chip,
   Avatar,
-  Divider,
+  Chip,
 } from "@mui/material";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -28,7 +21,6 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import AddIcon from "@mui/icons-material/Add";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
@@ -40,8 +32,10 @@ import { useNavigate } from "react-router-dom";
 import { PageContent } from "../../components/layout/AppLayout";
 import PageHeader from "../../components/common/PageHeader";
 import StatCard from "../../components/common/StatCard";
-import StatusChip from "../../components/common/StatusChip";
+import StatusBadge from "../../components/common/StatusBadge";
 import ActionButton from "../../components/common/ActionButton";
+import SectionCard from "../../components/common/SectionCard";
+import QuickActionCard from "../../components/common/QuickActionCard";
 import { dashboardApi } from "../../services/dashboardApi";
 import { notificationApi } from "../../services/notificationApi";
 import { useAuth } from "../../context/AuthContext";
@@ -61,9 +55,121 @@ import {
   LabelList,
 } from "recharts";
 
-// Brand-aligned semantic colors
+// ─── Chart palette
 const ATTENDANCE_COLORS = ["#2563EB", "#EF4444", "#F59E0B", "#10B981"];
 const TASK_BAR_COLOR = "#2563EB";
+
+// ─── Quick action definitions
+const QUICK_ACTIONS = [
+  { label: "Students", desc: "Register trainee", icon: <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />, to: "/admin/students", color: "#2563EB", bg: "#EFF6FF" },
+  { label: "Teams", desc: "Build new group", icon: <GroupsIcon sx={{ fontSize: 18 }} />, to: "/admin/teams", color: "#9333EA", bg: "#FAF5FF" },
+  { label: "Projects", desc: "Assign capstone", icon: <FolderOpenIcon sx={{ fontSize: 18 }} />, to: "/admin/projects", color: "#0284C7", bg: "#F0F9FF" },
+  { label: "Tasks", desc: "Add deliverable", icon: <AssignmentIcon sx={{ fontSize: 18 }} />, to: "/admin/tasks?create=true", color: "#EA580C", bg: "#FFF7ED" },
+  { label: "Reports", desc: "Analytics & export", icon: <AssessmentOutlinedIcon sx={{ fontSize: 18 }} />, to: "/admin/reports", color: "#16A34A", bg: "#F0FDF4" },
+];
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function TaskRow({ task, onClick }) {
+  const projTitle = task.project?.title || task.project?.name || task.projectId?.name || "Unassigned";
+  const studentName = task.assignedTo?.name || task.assignedTo?.user?.name || "Unassigned";
+
+  return (
+    <Paper
+      elevation={0}
+      onClick={onClick}
+      sx={{
+        p: 1.75,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+        cursor: "pointer",
+        transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+        "&:hover": {
+          borderColor: "primary.main",
+          boxShadow: "0 4px 14px rgba(37,99,235,0.08)",
+          transform: "translateY(-1px)",
+          bgcolor: "grey.50",
+        },
+      }}
+    >
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+          <Avatar sx={{ width: 34, height: 34, fontSize: "0.8rem", bgcolor: task.assignedTo ? "primary.main" : "grey.400", fontWeight: 700 }}>
+            {(studentName || "U")[0].toUpperCase()}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.3 }} noWrap>
+              {task.title}
+            </Typography>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 0.25 }}>
+              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }} noWrap>
+                {projTitle}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "divider" }}>•</Typography>
+              <Typography variant="caption" sx={{ color: "text.disabled" }} noWrap>
+                {studentName}
+              </Typography>
+            </Stack>
+          </Box>
+        </Stack>
+        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
+          <StatusBadge status={task.priority || "medium"} />
+          <StatusBadge status={task.status || "todo"} />
+          <ActionButton type="view" title="View task" />
+        </Stack>
+      </Stack>
+    </Paper>
+  );
+}
+
+function StudentRow({ student, onClick }) {
+  const studentName = student.name || student.user?.name || "Student";
+  const rollNo = student.rollNumber || "—";
+
+  return (
+    <Paper
+      elevation={0}
+      onClick={onClick}
+      sx={{
+        p: 1.5,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+        cursor: "pointer",
+        transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+        "&:hover": {
+          borderColor: "primary.main",
+          boxShadow: "0 4px 14px rgba(37,99,235,0.08)",
+          transform: "translateY(-1px)",
+          bgcolor: "grey.50",
+        },
+      }}
+    >
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+          <Avatar sx={{ width: 36, height: 36, fontSize: "0.85rem", bgcolor: "primary.main", fontWeight: 800, boxShadow: "0 2px 6px rgba(37,99,235,0.2)" }}>
+            {studentName[0].toUpperCase()}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.3 }} noWrap>
+              {studentName}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }} noWrap>
+              Roll: {rollNo}
+            </Typography>
+          </Box>
+        </Stack>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <StatusBadge status="active" label="Active" />
+          <ActionButton type="view" title="View student" />
+        </Stack>
+      </Stack>
+    </Paper>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -113,14 +219,14 @@ export default function AdminDashboard() {
     fetchDashboard();
   }, [fetchDashboard]);
 
-  // --- Data extraction with safe defaults ---
+  // ─── Data extraction ───
   const summary = data?.summary || {};
   const attendanceBreakdown = data?.attendanceBreakdown || data?.attendance || {};
   const taskStatus = data?.taskStatusBreakdown || data?.tasks || {};
   const dueTodayTasks = data?.dueTodayTasks || [];
   const recentStudents = data?.recentStudents || data?.students || [];
 
-  // --- Chart data ---
+  // ─── Chart data ───
   const pieData = [
     { name: "Present", value: attendanceBreakdown.present || 0 },
     { name: "Absent", value: attendanceBreakdown.absent || 0 },
@@ -128,7 +234,6 @@ export default function AdminDashboard() {
     { name: "Leave", value: attendanceBreakdown.leave || attendanceBreakdown.excused || 0 },
   ].filter((d) => d.value > 0);
 
-  // Fallback to summary-level data if breakdown is empty
   const finalPieData =
     pieData.length > 0
       ? pieData
@@ -137,7 +242,6 @@ export default function AdminDashboard() {
           { name: "Absent", value: summary.absentToday || 0 },
         ].filter((d) => d.value > 0);
 
-  // Compute attendance rate for donut center label
   const totalAttendance = finalPieData.reduce((s, d) => s + d.value, 0);
   const presentCount = finalPieData.find((d) => d.name === "Present")?.value || 0;
   const attendanceRate = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
@@ -148,16 +252,10 @@ export default function AdminDashboard() {
     { name: "Done", count: taskStatus.completed ?? taskStatus.done ?? 0 },
   ];
 
-  // --- Time-aware greeting ---
+  // ─── Time greeting ───
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
-  const dateStr = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
 
   return (
     <PageContent>
@@ -165,9 +263,9 @@ export default function AdminDashboard() {
       <PageHeader
         breadcrumbs={[{ label: "Home", to: "/admin/dashboard" }, { label: "Dashboard" }]}
         title={`${greeting}, ${user?.name || "Administrator"}`}
-        description={`Here's an overview of your bootcamp operations · ${dateStr}`}
+        description={`Bootcamp operations overview · ${dateStr}`}
         actions={
-          <Tooltip title="Refresh dashboard data">
+          <Tooltip title="Refresh dashboard">
             <IconButton
               onClick={() => fetchDashboard(true)}
               disabled={loading || refreshing}
@@ -185,10 +283,7 @@ export default function AdminDashboard() {
                 fontSize="small"
                 sx={{
                   animation: refreshing ? "spin 1s linear infinite" : "none",
-                  "@keyframes spin": {
-                    "0%": { transform: "rotate(0deg)" },
-                    "100%": { transform: "rotate(360deg)" },
-                  },
+                  "@keyframes spin": { "0%": { transform: "rotate(0deg)" }, "100%": { transform: "rotate(360deg)" } },
                 }}
               />
             </IconButton>
@@ -196,37 +291,17 @@ export default function AdminDashboard() {
         }
       />
 
-      {/* ─── Error State ─── */}
+      {/* ─── Alerts ─── */}
       {errorMsg && (
-        <Alert
-          severity="error"
-          sx={{ borderRadius: 3 }}
-          action={
-            <Button color="inherit" size="small" onClick={() => fetchDashboard(true)}>
-              Retry
-            </Button>
-          }
-        >
+        <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => fetchDashboard(true)}>Retry</Button>}>
           {errorMsg}
         </Alert>
       )}
-
-      {/* ─── Notification Banner (only when unread) ─── */}
       {unreadCount > 0 && (
         <Alert
           severity="info"
           icon={<NotificationsNoneOutlinedIcon fontSize="small" />}
-          sx={{ borderRadius: 3 }}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => navigate("/admin/notifications")}
-              sx={{ fontWeight: 700 }}
-            >
-              View
-            </Button>
-          }
+          action={<Button color="inherit" size="small" onClick={() => navigate("/admin/notifications")} sx={{ fontWeight: 700 }}>View</Button>}
         >
           You have <strong>{unreadCount}</strong> unread notification{unreadCount > 1 ? "s" : ""}.
         </Alert>
@@ -234,162 +309,52 @@ export default function AdminDashboard() {
 
       {/* ─── KPI Metrics ─── */}
       <Grid container spacing={2.5}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          {loading ? (
-            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
-          ) : (
-            <StatCard
-              title="Total Students"
-              value={summary.totalStudents ?? 0}
-              icon={PeopleAltOutlinedIcon}
-              iconBgColor="#EFF6FF"
-              iconColor="#2563EB"
-              subtitle={`${summary.totalStudents ?? 0} registered trainees`}
-            />
-          )}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          {loading ? (
-            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
-          ) : (
-            <StatCard
-              title="Present Today"
-              value={summary.presentToday ?? 0}
-              icon={EventAvailableIcon}
-              iconBgColor="#F0FDF4"
-              iconColor="#16A34A"
-              subtitle={`${summary.absentToday ?? 0} absent today`}
-            />
-          )}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          {loading ? (
-            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
-          ) : (
-            <StatCard
-              title="Active Teams"
-              value={summary.totalTeams ?? 0}
-              icon={GroupsIcon}
-              iconBgColor="#FAF5FF"
-              iconColor="#9333EA"
-              subtitle={`${summary.totalTeams ?? 0} active team${summary.totalTeams === 1 ? "" : "s"}`}
-            />
-          )}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          {loading ? (
-            <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
-          ) : (
-            <StatCard
-              title="Pending Tasks"
-              value={summary.pendingTasks ?? 0}
-              icon={AssignmentTurnedInIcon}
-              iconBgColor="#FFF7ED"
-              iconColor="#EA580C"
-              subtitle={`${summary.pendingTasks ?? 0} awaiting completion`}
-            />
-          )}
-        </Grid>
+        {[
+          { title: "Total Students", value: summary.totalStudents ?? 0, icon: PeopleAltOutlinedIcon, iconBgColor: "#EFF6FF", iconColor: "#2563EB", subtitle: "Registered trainees", accentColor: "#2563EB" },
+          { title: "Present Today", value: summary.presentToday ?? 0, icon: EventAvailableIcon, iconBgColor: "#F0FDF4", iconColor: "#16A34A", subtitle: `${summary.absentToday ?? 0} absent today`, accentColor: "#16A34A" },
+          { title: "Active Teams", value: summary.totalTeams ?? 0, icon: GroupsIcon, iconBgColor: "#FAF5FF", iconColor: "#9333EA", subtitle: `${summary.totalTeams ?? 0} active team${summary.totalTeams === 1 ? "" : "s"}`, accentColor: "#9333EA" },
+          { title: "Pending Tasks", value: summary.pendingTasks ?? 0, icon: AssignmentTurnedInIcon, iconBgColor: "#FFF7ED", iconColor: "#EA580C", subtitle: "Awaiting completion", accentColor: "#EA580C" },
+        ].map((card, i) => (
+          <Grid key={i} size={{ xs: 12, sm: 6, md: 3 }}>
+            {loading ? (
+              <Skeleton variant="rounded" height={120} sx={{ borderRadius: 3 }} />
+            ) : (
+              <StatCard {...card} />
+            )}
+          </Grid>
+        ))}
       </Grid>
 
       {/* ─── Charts ─── */}
       <Grid container spacing={2.5}>
         {/* Attendance Donut */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            elevation={0}
-            sx={{
-              height: 360,
-              display: "flex",
-              flexDirection: "column",
-              border: "1px solid",
-              borderColor: "divider",
-            }}
-          >
+          <Card elevation={0} sx={{ height: 360, display: "flex", flexDirection: "column", border: "1px solid", borderColor: "divider" }}>
             <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 0.25 }}>
-                Today's Attendance
-              </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary", mb: 2 }}>
-                Student attendance breakdown for today
-              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 0.25 }}>Today's Attendance</Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary", mb: 2 }}>Attendance breakdown across all students</Typography>
 
               {loading ? (
                 <Skeleton variant="rounded" height={250} sx={{ borderRadius: 2, flex: 1 }} />
               ) : finalPieData.length === 0 ? (
-                <Box
-                  sx={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    bgcolor: "grey.50",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600 }}>
-                    No attendance records for today.
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.disabled", mt: 0.5 }}>
-                    Records will appear here once attendance is marked.
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={() => navigate("/admin/attendance")}
-                    sx={{ mt: 1.5, fontWeight: 600 }}
-                  >
-                    Mark Attendance
-                  </Button>
+                <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", bgcolor: "grey.50", borderRadius: 2 }}>
+                  <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600 }}>No attendance records for today.</Typography>
+                  <Typography variant="caption" sx={{ color: "text.disabled", mt: 0.5 }}>Records will appear once attendance is marked.</Typography>
+                  <Button size="small" onClick={() => navigate("/admin/attendance")} sx={{ mt: 1.5, fontWeight: 600 }}>Mark Attendance</Button>
                 </Box>
               ) : (
                 <Box sx={{ flex: 1, minHeight: 0, position: "relative" }}>
-                  {/* Centered donut label */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: "43%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      textAlign: "center",
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1 }}>
-                      {attendanceRate}%
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, fontSize: "0.72rem" }}>
-                      Present
-                    </Typography>
+                  <Box sx={{ position: "absolute", top: "43%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", pointerEvents: "none", zIndex: 1 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary", lineHeight: 1 }}>{attendanceRate}%</Typography>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, fontSize: "0.72rem" }}>Present</Typography>
                   </Box>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie
-                        data={finalPieData}
-                        cx="50%"
-                        cy="45%"
-                        innerRadius={65}
-                        outerRadius={90}
-                        paddingAngle={3}
-                        dataKey="value"
-                        strokeWidth={0}
-                      >
-                        {finalPieData.map((_, i) => (
-                          <Cell key={`cell-${i}`} fill={ATTENDANCE_COLORS[i % ATTENDANCE_COLORS.length]} />
-                        ))}
+                      <Pie data={finalPieData} cx="50%" cy="45%" innerRadius={65} outerRadius={90} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                        {finalPieData.map((_, i) => <Cell key={i} fill={ATTENDANCE_COLORS[i % ATTENDANCE_COLORS.length]} />)}
                       </Pie>
-                      <RechartsTooltip
-                        formatter={(val, name) => [`${val} students`, name]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-                      />
-                      <Legend
-                        verticalAlign="bottom"
-                        height={32}
-                        iconType="circle"
-                        iconSize={8}
-                        formatter={(val) => <span style={{ color: "#475569", fontSize: 12, fontWeight: 600 }}>{val}</span>}
-                      />
+                      <RechartsTooltip formatter={(val, name) => [`${val} students`, name]} contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }} />
+                      <Legend verticalAlign="bottom" height={32} iconType="circle" iconSize={8} formatter={(val) => <span style={{ color: "#475569", fontSize: 12, fontWeight: 600 }}>{val}</span>} />
                     </PieChart>
                   </ResponsiveContainer>
                 </Box>
@@ -400,23 +365,10 @@ export default function AdminDashboard() {
 
         {/* Task Distribution Bar */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            elevation={0}
-            sx={{
-              height: 360,
-              display: "flex",
-              flexDirection: "column",
-              border: "1px solid",
-              borderColor: "divider",
-            }}
-          >
+          <Card elevation={0} sx={{ height: 360, display: "flex", flexDirection: "column", border: "1px solid", borderColor: "divider" }}>
             <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 0.25 }}>
-                Task Distribution
-              </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary", mb: 2 }}>
-                Current status of all bootcamp tasks
-              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary", mb: 0.25 }}>Task Distribution</Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary", mb: 2 }}>Current status of all bootcamp tasks</Typography>
 
               {loading ? (
                 <Skeleton variant="rounded" height={250} sx={{ borderRadius: 2, flex: 1 }} />
@@ -425,26 +377,9 @@ export default function AdminDashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 22, right: 12, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                      <XAxis
-                        dataKey="name"
-                        stroke="#64748B"
-                        fontSize={12}
-                        fontWeight={600}
-                        tickLine={false}
-                        axisLine={{ stroke: "#E2E8F0" }}
-                      />
-                      <YAxis
-                        stroke="#64748B"
-                        fontSize={12}
-                        fontWeight={600}
-                        allowDecimals={false}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <RechartsTooltip
-                        formatter={(val) => [`${val} tasks`, "Count"]}
-                        contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-                      />
+                      <XAxis dataKey="name" stroke="#64748B" fontSize={12} fontWeight={600} tickLine={false} axisLine={{ stroke: "#E2E8F0" }} />
+                      <YAxis stroke="#64748B" fontSize={12} fontWeight={600} allowDecimals={false} tickLine={false} axisLine={false} />
+                      <RechartsTooltip formatter={(val) => [`${val} tasks`, "Count"]} contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }} />
                       <Bar dataKey="count" fill={TASK_BAR_COLOR} radius={[6, 6, 0, 0]} barSize={44}>
                         <LabelList dataKey="count" position="top" style={{ fill: "#475569", fontSize: 12, fontWeight: 700 }} />
                       </Bar>
@@ -458,518 +393,112 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* ─── Quick Actions ─── */}
-      <Card
-        elevation={0}
-        sx={{
-          border: "1px solid #E2E8F0",
-          borderRadius: "16px",
-          bgcolor: "#FFFFFF",
-          p: 2.5,
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.02)",
-        }}
+      <SectionCard
+        icon={<FlashOnIcon sx={{ fontSize: 18 }} />}
+        iconBg="#EFF6FF"
+        iconColor="#2563EB"
+        title="Quick Actions"
+        subtitle="Frequently used management shortcuts"
+        noDivider
       >
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-          <Box
-            sx={{
-              width: 28,
-              height: 28,
-              borderRadius: "8px",
-              bgcolor: "#EFF6FF",
-              color: "#2563EB",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <FlashOnIcon sx={{ fontSize: 16 }} />
-          </Box>
-          <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", lineHeight: 1.2 }}>
-              Quick Actions
-            </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
-              Frequently used management shortcuts & operations
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Grid container spacing={2}>
-          {[
-            {
-              label: "Add Student",
-              desc: "Register trainee",
-              icon: <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/students",
-              color: "#2563EB",
-              bg: "#EFF6FF",
-            },
-            {
-              label: "Create Team",
-              desc: "Build new group",
-              icon: <GroupsIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/teams",
-              color: "#9333EA",
-              bg: "#FAF5FF",
-            },
-            {
-              label: "Create Project",
-              desc: "Assign capstone",
-              icon: <FolderOpenIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/projects",
-              color: "#0284C7",
-              bg: "#F0F9FF",
-            },
-            {
-              label: "Create Task",
-              desc: "Add deliverable",
-              icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/tasks?create=true",
-              color: "#EA580C",
-              bg: "#FFF7ED",
-            },
-            {
-              label: "View Reports",
-              desc: "Analytics & export",
-              icon: <AssessmentOutlinedIcon sx={{ fontSize: 18 }} />,
-              to: "/admin/reports",
-              color: "#16A34A",
-              bg: "#F0FDF4",
-            },
-          ].map((action) => (
-            <Grid key={action.label} item xs={12} sm={6} md={2.4}>
-              <Paper
-                elevation={0}
-                onClick={() => navigate(action.to)}
-                sx={{
-                  p: 2,
-                  borderRadius: "12px",
-                  border: "1px solid #E2E8F0",
-                  bgcolor: "#FFFFFF",
-                  cursor: "pointer",
-                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  "&:hover": {
-                    borderColor: action.color,
-                    boxShadow: `0 8px 20px -4px ${action.color}1A`,
-                    transform: "translateY(-2px)",
-                    "& .action-arrow": {
-                      transform: "translateX(3px)",
-                      color: action.color,
-                    },
-                  },
-                }}
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      bgcolor: action.bg,
-                      color: action.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {action.icon}
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 700, color: "#0F172A", fontSize: "0.85rem", lineHeight: 1.2 }}
-                      noWrap
-                    >
-                      {action.label}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#64748B", fontSize: "0.725rem", display: "block" }}
-                      noWrap
-                    >
-                      {action.desc}
-                    </Typography>
-                  </Box>
-                </Stack>
-                <ArrowForwardIcon
-                  className="action-arrow"
-                  sx={{ fontSize: 16, color: "#94A3B8", transition: "all 0.2s ease", flexShrink: 0, ml: 1 }}
-                />
-              </Paper>
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          {QUICK_ACTIONS.map((action) => (
+            <Grid key={action.label} size={{ xs: 12, sm: 6, md: 2.4 }}>
+              <QuickActionCard {...action} />
             </Grid>
           ))}
         </Grid>
-      </Card>
+      </SectionCard>
 
-      {/* ─── Data Tables ─── */}
+      {/* ─── Data Sections ─── */}
       <Grid container spacing={2.5}>
         {/* Tasks Due Today */}
-        <Grid item xs={12} md={7}>
-          <Card
-            elevation={0}
-            sx={{
-              border: "1px solid #E2E8F0",
-              borderRadius: "16px",
-              height: "100%",
-              bgcolor: "#FFFFFF",
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-            }}
-          >
-            <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Stack direction="row" spacing={1.25} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "8px",
-                      bgcolor: "#FFF7ED",
-                      color: "#EA580C",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <EventAvailableIcon sx={{ fontSize: 18 }} />
-                  </Box>
-                  <Box>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
-                        Tasks Due Today
-                      </Typography>
-                      {!loading && (
-                        <Chip
-                          label={dueTodayTasks.length > 0 ? `${dueTodayTasks.length} Due` : "Caught Up"}
-                          size="small"
-                          sx={{
-                            bgcolor: dueTodayTasks.length > 0 ? "#FFF7ED" : "#F0FDF4",
-                            color: dueTodayTasks.length > 0 ? "#C2410C" : "#15803D",
-                            fontWeight: 700,
-                            fontSize: "0.7rem",
-                            height: 22,
-                            borderRadius: "6px",
-                          }}
-                        />
-                      )}
-                    </Stack>
-                    <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
-                      Deliverables scheduled for completion today
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Button
+        <Grid size={{ xs: 12, md: 7 }}>
+          <SectionCard
+            icon={<EventAvailableIcon sx={{ fontSize: 18 }} />}
+            iconBg="#FFF7ED"
+            iconColor="#EA580C"
+            title="Tasks Due Today"
+            badge={
+              !loading && (
+                <Chip
+                  label={dueTodayTasks.length > 0 ? `${dueTodayTasks.length} Due` : "Caught Up"}
                   size="small"
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={() => navigate("/admin/tasks")}
                   sx={{
-                    fontWeight: 700,
-                    textTransform: "none",
-                    color: "#2563EB",
-                    borderRadius: "8px",
-                    px: 1.5,
-                    "&:hover": { bgcolor: "#EFF6FF" },
+                    bgcolor: dueTodayTasks.length > 0 ? "#FFF7ED" : "#F0FDF4",
+                    color: dueTodayTasks.length > 0 ? "#C2410C" : "#15803D",
+                    fontWeight: 700, fontSize: "0.7rem", height: 22, borderRadius: "6px",
                   }}
-                >
-                  All Tasks
-                </Button>
+                />
+              )
+            }
+            subtitle="Deliverables scheduled for completion today"
+            action={
+              <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate("/admin/tasks")} sx={{ fontWeight: 700, textTransform: "none", color: "primary.main", borderRadius: 2, "&:hover": { bgcolor: "primary.50" } }}>
+                All Tasks
+              </Button>
+            }
+          >
+            {loading ? (
+              <Stack spacing={1.5}>
+                {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={60} sx={{ borderRadius: 3 }} />)}
               </Stack>
-              <Divider sx={{ mb: 2 }} />
-
-              {loading ? (
-                <Stack spacing={1.5}>
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={60} sx={{ borderRadius: "12px" }} />
-                  ))}
-                </Stack>
-              ) : dueTodayTasks.length === 0 ? (
-                <Box
-                  sx={{
-                    py: 5,
-                    px: 3,
-                    textAlign: "center",
-                    bgcolor: "#F8FAFC",
-                    borderRadius: "12px",
-                    border: "1px solid #E2E8F0",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flex: 1,
-                    minHeight: 260,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "50%",
-                      bgcolor: "#F0FDF4",
-                      color: "#16A34A",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 1.5,
-                    }}
-                  >
-                    <TaskAltIcon sx={{ fontSize: 28 }} />
-                  </Box>
-                  <Typography variant="body1" sx={{ color: "#0F172A", fontWeight: 700 }}>
-                    All caught up for today!
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748B", mt: 0.75, maxWidth: 300 }}>
-                    No pending tasks due today. Great job keeping your bootcamp on schedule!
-                  </Typography>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => navigate("/admin/tasks")}
-                    sx={{ mt: 2.5, fontWeight: 700, borderRadius: "8px", textTransform: "none", px: 2.5 }}
-                  >
-                    Manage Tasks
-                  </Button>
+            ) : dueTodayTasks.length === 0 ? (
+              <Box sx={{ py: 5, textAlign: "center", bgcolor: "grey.50", borderRadius: 3, border: "1px solid", borderColor: "divider", display: "flex", flexDirection: "column", alignItems: "center", minHeight: 220, justifyContent: "center" }}>
+                <Box sx={{ width: 52, height: 52, borderRadius: "50%", bgcolor: "#F0FDF4", color: "#16A34A", display: "grid", placeItems: "center", mb: 1.5 }}>
+                  <TaskAltIcon sx={{ fontSize: 26 }} />
                 </Box>
-              ) : (
-                <Stack spacing={1.25}>
-                  {dueTodayTasks.slice(0, 5).map((task) => {
-                    const projTitle = task.project?.title || task.project?.name || task.projectId?.name || "Unassigned Project";
-                    const studentName = task.assignedTo?.name || task.assignedTo?.user?.name || "Unassigned";
-
-                    return (
-                      <Paper
-                        key={task._id || task.id}
-                        elevation={0}
-                        onClick={() => navigate("/admin/tasks")}
-                        sx={{
-                          p: 1.75,
-                          borderRadius: "12px",
-                          border: "1px solid #E2E8F0",
-                          bgcolor: "#FFFFFF",
-                          cursor: "pointer",
-                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                          "&:hover": {
-                            borderColor: "#2563EB",
-                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
-                            transform: "translateY(-1px)",
-                            bgcolor: "#F8FAFC",
-                          },
-                        }}
-                      >
-                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-                          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                            <Avatar
-                              sx={{
-                                width: 34,
-                                height: 34,
-                                fontSize: "0.8rem",
-                                bgcolor: task.assignedTo ? "#2563EB" : "#94A3B8",
-                                fontWeight: 700,
-                              }}
-                            >
-                              {(studentName || "U")[0].toUpperCase()}
-                            </Avatar>
-
-                            <Box sx={{ minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }} noWrap>
-                                {task.title}
-                              </Typography>
-                              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-                                <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }} noWrap>
-                                  {projTitle}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: "#CBD5E1" }}>
-                                  •
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: "#475569" }} noWrap>
-                                  Assigned to {studentName}
-                                </Typography>
-                              </Stack>
-                            </Box>
-                          </Stack>
-
-                          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-                            <StatusChip status={task.priority || "medium"} />
-                            <StatusChip status={task.status || "todo"} />
-                            <ActionButton type="view" title="View task details" />
-                          </Stack>
-                        </Stack>
-                      </Paper>
-                    );
-                  })}
-                </Stack>
-              )}
-            </CardContent>
-          </Card>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: "text.primary" }}>All caught up for today!</Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.75, maxWidth: 280 }}>No pending tasks due. Great job keeping the bootcamp on schedule!</Typography>
+                <Button size="small" variant="outlined" onClick={() => navigate("/admin/tasks")} sx={{ mt: 2.5, fontWeight: 700, borderRadius: 2.5, textTransform: "none", px: 2.5 }}>
+                  Manage Tasks
+                </Button>
+              </Box>
+            ) : (
+              <Stack spacing={1.25}>
+                {dueTodayTasks.slice(0, 5).map((task) => (
+                  <TaskRow key={task._id || task.id} task={task} onClick={() => navigate("/admin/tasks")} />
+                ))}
+              </Stack>
+            )}
+          </SectionCard>
         </Grid>
 
         {/* Recent Students */}
-        <Grid item xs={12} md={5}>
-          <Card
-            elevation={0}
-            sx={{
-              border: "1px solid #E2E8F0",
-              borderRadius: "16px",
-              height: "100%",
-              bgcolor: "#FFFFFF",
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-            }}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <SectionCard
+            icon={<PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />}
+            iconBg="#EFF6FF"
+            iconColor="#2563EB"
+            title="Recent Students"
+            subtitle={!loading ? `${recentStudents.length} enrolled · newly registered` : "Newly registered trainees"}
+            action={
+              <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate("/admin/students")} sx={{ fontWeight: 700, textTransform: "none", color: "primary.main", borderRadius: 2, "&:hover": { bgcolor: "primary.50" } }}>
+                All Students
+              </Button>
+            }
           >
-            <CardContent sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Stack direction="row" spacing={1.25} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "8px",
-                      bgcolor: "#EFF6FF",
-                      color: "#2563EB",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <PeopleAltOutlinedIcon sx={{ fontSize: 18 }} />
-                  </Box>
-                <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "1.05rem" }}>
-                      Recent Students
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748B", fontSize: "0.75rem" }}>
-                      {!loading ? `${recentStudents.length} enrolled · newly registered trainees` : "Newly registered bootcamp trainees"}
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Button
-                  size="small"
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={() => navigate("/admin/students")}
-                  sx={{
-                    fontWeight: 700,
-                    textTransform: "none",
-                    color: "#2563EB",
-                    borderRadius: "8px",
-                    px: 1.5,
-                    "&:hover": { bgcolor: "#EFF6FF" },
-                  }}
-                >
-                  All Students
-                </Button>
+            {loading ? (
+              <Stack spacing={1.5}>
+                {[1, 2, 3, 4].map((i) => <Skeleton key={i} variant="rounded" height={54} sx={{ borderRadius: 3 }} />)}
               </Stack>
-              <Divider sx={{ mb: 2 }} />
-
-              {loading ? (
-                <Stack spacing={1.5}>
-                  {[1, 2, 3, 4].map((i) => (
-                    <Skeleton key={i} variant="rounded" height={54} sx={{ borderRadius: "12px" }} />
-                  ))}
-                </Stack>
-              ) : recentStudents.length === 0 ? (
-                <Box
-                  sx={{
-                    py: 5,
-                    px: 3,
-                    textAlign: "center",
-                    bgcolor: "#F8FAFC",
-                    borderRadius: "12px",
-                    border: "1px solid #E2E8F0",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flex: 1,
-                    minHeight: 260,
-                  }}
-                >
-                  <Typography variant="body2" sx={{ color: "#0F172A", fontWeight: 700 }}>
-                    No students enrolled yet.
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748B", mt: 0.5 }}>
-                    New student registrations will appear here.
-                  </Typography>
-                </Box>
-              ) : (
-                <Stack spacing={1.25}>
-                  {recentStudents.slice(0, 4).map((student) => {
-                    const studentName = student.name || student.user?.name || "Student";
-                    const rollNo = student.rollNumber || "No Roll Number";
-
-                    return (
-                      <Paper
-                        key={student._id || student.id}
-                        elevation={0}
-                        onClick={() => navigate(`/admin/students/${student._id || student.id}`)}
-                        sx={{
-                          p: 1.5,
-                          px: 1.75,
-                          borderRadius: "12px",
-                          border: "1px solid #E2E8F0",
-                          bgcolor: "#FFFFFF",
-                          cursor: "pointer",
-                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                          "&:hover": {
-                            borderColor: "#2563EB",
-                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
-                            transform: "translateY(-1px)",
-                            bgcolor: "#F8FAFC",
-                          },
-                        }}
-                      >
-                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-                          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                            <Avatar
-                              sx={{
-                                width: 36,
-                                height: 36,
-                                fontSize: "0.85rem",
-                                bgcolor: "#2563EB",
-                                color: "#FFFFFF",
-                                fontWeight: 800,
-                                boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
-                              }}
-                            >
-                              {studentName[0].toUpperCase()}
-                            </Avatar>
-
-                            <Box sx={{ minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 700, color: "#0F172A", lineHeight: 1.2 }} noWrap>
-                                {studentName}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600, display: "block", mt: 0.25 }} noWrap>
-                                Roll: {rollNo}
-                              </Typography>
-                            </Box>
-                          </Stack>
-
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Chip
-                              label="Active"
-                              size="small"
-                              sx={{
-                                bgcolor: "#F0FDF4",
-                                color: "#16A34A",
-                                fontWeight: 700,
-                                fontSize: "0.7rem",
-                                height: 22,
-                                borderRadius: "6px",
-                              }}
-                            />
-                            <ActionButton type="view" title="View student profile" />
-                          </Stack>
-                        </Stack>
-                      </Paper>
-                    );
-                  })}
-                </Stack>
-              )}
-            </CardContent>
-          </Card>
+            ) : recentStudents.length === 0 ? (
+              <Box sx={{ py: 5, textAlign: "center", bgcolor: "grey.50", borderRadius: 3, border: "1px solid", borderColor: "divider", flex: 1, minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary" }}>No students enrolled yet.</Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5 }}>New student registrations will appear here.</Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.25}>
+                {recentStudents.slice(0, 4).map((student) => (
+                  <StudentRow
+                    key={student._id || student.id}
+                    student={student}
+                    onClick={() => navigate(`/admin/students/${student._id || student.id}`)}
+                  />
+                ))}
+              </Stack>
+            )}
+          </SectionCard>
         </Grid>
       </Grid>
     </PageContent>

@@ -1,67 +1,65 @@
 import React from "react";
-import { Button, IconButton, Tooltip, styled } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import AddIcon from "@mui/icons-material/Add";
 
-const StyledButton = styled(Button)(({ ownerState }) => {
-  const { color = "primary", variant = "outlined" } = ownerState || {};
+/**
+ * ActionButton — Versatile action control.
+ *
+ * Two modes:
+ * 1. Icon-only: Pass `type` = "view" | "edit" | "delete" | "add" | "arrow"
+ *    → Renders a compact circular IconButton with semantic color & hover effect.
+ * 2. Text button: Pass `children` text content
+ *    → Renders a styled MUI Button.
+ *
+ * Both modes support an optional `title` prop for Tooltip wrapping.
+ */
 
-  return {
-    borderRadius: "8px",
-    textTransform: "none",
-    fontWeight: 600,
-    fontSize: "0.875rem",
-    padding: "6px 14px",
-    transition: "all 0.15s ease",
-    boxShadow: "none",
-    "&:focus-visible": {
-      outline: "2px solid #2563EB",
-      outlineOffset: "2px",
-    },
-    ...(variant === "contained" && color === "primary" && {
-      bgcolor: "#2563EB",
-      color: "#FFFFFF",
-      "&:hover": {
-        bgcolor: "#1D4ED8",
-        boxShadow: "none",
-      },
-    }),
-    ...(variant === "contained" && color === "success" && {
-      bgcolor: "#16A34A",
-      color: "#FFFFFF",
-      "&:hover": {
-        bgcolor: "#15803D",
-        boxShadow: "none",
-      },
-    }),
-    ...(variant === "contained" && color === "error" && {
-      bgcolor: "#DC2626",
-      color: "#FFFFFF",
-      "&:hover": {
-        bgcolor: "#B91C1C",
-        boxShadow: "none",
-      },
-    }),
-    ...(variant === "outlined" && {
-      borderColor: "#E2E8F0",
-      color: "#111827",
-      bgcolor: "#FFFFFF",
-      "&:hover": {
-        borderColor: "#2563EB",
-        bgcolor: "#EFF6FF",
-        color: "#2563EB",
-      },
-    }),
-    ...(variant === "text" && {
-      color: "#2563EB",
-      "&:hover": {
-        bgcolor: "#EFF6FF",
-      },
-    }),
-  };
-});
+const ICON_CONFIG = {
+  view: {
+    icon: <ArrowForwardIcon sx={{ fontSize: 15 }} />,
+    bg: "#EFF6FF",
+    color: "#2563EB",
+    border: "#DBEAFE",
+    hoverBg: "#2563EB",
+    hoverColor: "#fff",
+  },
+  arrow: {
+    icon: <ArrowForwardIcon sx={{ fontSize: 15 }} />,
+    bg: "#EFF6FF",
+    color: "#2563EB",
+    border: "#DBEAFE",
+    hoverBg: "#2563EB",
+    hoverColor: "#fff",
+  },
+  edit: {
+    icon: <EditIcon sx={{ fontSize: 15 }} />,
+    bg: "#FFF7ED",
+    color: "#EA580C",
+    border: "#FFEDD5",
+    hoverBg: "#EA580C",
+    hoverColor: "#fff",
+  },
+  delete: {
+    icon: <DeleteIcon sx={{ fontSize: 15 }} />,
+    bg: "#FEF2F2",
+    color: "#DC2626",
+    border: "#FEE2E2",
+    hoverBg: "#DC2626",
+    hoverColor: "#fff",
+  },
+  add: {
+    icon: <AddIcon sx={{ fontSize: 15 }} />,
+    bg: "#F0FDF4",
+    color: "#16A34A",
+    border: "#DCFCE7",
+    hoverBg: "#16A34A",
+    hoverColor: "#fff",
+  },
+};
 
 export default function ActionButton({
   children,
@@ -73,39 +71,9 @@ export default function ActionButton({
   sx = {},
   ...rest
 }) {
-  // If `type` is passed (e.g. "view", "edit", "delete", "arrow") and no text children, render a sleek circular icon button
+  // ─── Icon-only mode ───
   if (type && !children) {
-    let icon = <ArrowForwardIcon sx={{ fontSize: 16 }} />;
-    let iconBg = "#EFF6FF";
-    let iconColor = "#2563EB";
-    let borderColor = "#DBEAFE";
-    let hoverBg = "#2563EB";
-    let hoverColor = "#FFFFFF";
-
-    if (type === "view") {
-      icon = <ArrowForwardIcon sx={{ fontSize: 16 }} />;
-      iconBg = "#EFF6FF";
-      iconColor = "#2563EB";
-      borderColor = "#DBEAFE";
-      hoverBg = "#2563EB";
-      hoverColor = "#FFFFFF";
-    } else if (type === "edit") {
-      icon = <EditIcon sx={{ fontSize: 16 }} />;
-      iconBg = "#FFF7ED";
-      iconColor = "#EA580C";
-      borderColor = "#FFEDD5";
-      hoverBg = "#EA580C";
-      hoverColor = "#FFFFFF";
-    } else if (type === "delete") {
-      icon = <DeleteIcon sx={{ fontSize: 16 }} />;
-      iconBg = "#FEF2F2";
-      iconColor = "#DC2626";
-      borderColor = "#FEE2E2";
-      hoverBg = "#DC2626";
-      hoverColor = "#FFFFFF";
-    } else if (type === "arrow") {
-      icon = <ArrowForwardIcon sx={{ fontSize: 16 }} />;
-    }
+    const cfg = ICON_CONFIG[type] || ICON_CONFIG.view;
 
     const iconBtn = (
       <IconButton
@@ -113,39 +81,60 @@ export default function ActionButton({
         sx={{
           width: 32,
           height: 32,
-          minWidth: 32,
-          minHeight: 32,
           borderRadius: "50%",
-          color: iconColor,
-          bgcolor: iconBg,
-          border: `1px solid ${borderColor}`,
+          color: cfg.color,
+          bgcolor: cfg.bg,
+          border: `1px solid ${cfg.border}`,
           p: 0,
           flexShrink: 0,
           transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
           "&:hover": {
-            bgcolor: hoverBg,
-            color: hoverColor,
-            borderColor: hoverBg,
-            transform: "scale(1.08)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+            bgcolor: cfg.hoverBg,
+            color: cfg.hoverColor,
+            borderColor: cfg.hoverBg,
+            transform: "scale(1.1)",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.14)",
           },
+          "&:active": { transform: "scale(0.96)" },
           ...sx,
         }}
         {...rest}
       >
-        {icon}
+        {cfg.icon}
       </IconButton>
     );
 
-    return title ? <Tooltip title={title}>{iconBtn}</Tooltip> : iconBtn;
+    return title ? <Tooltip title={title} arrow>{iconBtn}</Tooltip> : iconBtn;
   }
 
-  // Standard Button Component
+  // ─── Text button mode ───
   const btn = (
-    <StyledButton variant={variant} color={color} ownerState={{ variant, color }} sx={sx} {...rest}>
+    <Button
+      variant={variant}
+      color={color}
+      size={size}
+      sx={{
+        borderRadius: 2.5,
+        textTransform: "none",
+        fontWeight: 700,
+        fontSize: "0.875rem",
+        px: size === "small" ? 1.75 : 2.25,
+        py: size === "small" ? 0.625 : 0.875,
+        boxShadow: "none",
+        transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+        "&:hover": { boxShadow: "none" },
+        "&:focus-visible": {
+          outline: "2px solid",
+          outlineColor: "primary.main",
+          outlineOffset: "2px",
+        },
+        ...sx,
+      }}
+      {...rest}
+    >
       {children}
-    </StyledButton>
+    </Button>
   );
 
-  return title ? <Tooltip title={title}>{btn}</Tooltip> : btn;
+  return title ? <Tooltip title={title} arrow>{btn}</Tooltip> : btn;
 }

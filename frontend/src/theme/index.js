@@ -277,6 +277,68 @@ const theme = createTheme({
           padding: "6px 10px",
           transition: "opacity 0.15s ease",
         },
+        arrow: {
+          color: "#111827",
+        },
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: {
+          height: 5,
+          borderRadius: 4,
+          backgroundColor: "#e2e8f0",
+        },
+        bar: {
+          borderRadius: 4,
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          fontWeight: 600,
+          fontSize: "0.875rem",
+        },
+        standardError: {
+          border: "1px solid #FEE2E2",
+        },
+        standardInfo: {
+          border: "1px solid #DBEAFE",
+        },
+        standardWarning: {
+          border: "1px solid #FEF3C7",
+        },
+        standardSuccess: {
+          border: "1px solid #D1FAE5",
+        },
+      },
+    },
+    MuiBreadcrumbs: {
+      styleOverrides: {
+        root: {
+          fontSize: "0.8rem",
+        },
+        separator: {
+          color: "#CBD5E1",
+          mx: 0.5,
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: "#e2e8f0",
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+        },
       },
     },
   },
